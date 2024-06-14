@@ -1,8 +1,8 @@
 import Toybox.Activity;
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.Time;
 import Toybox.WatchUi;
-using Toybox.System;
 
 class depthView extends WatchUi.SimpleDataField {
 
