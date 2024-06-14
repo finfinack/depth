@@ -6,8 +6,12 @@ import Toybox.WatchUi;
 
 class depthView extends WatchUi.SimpleDataField {
 
-    private var start_pressure;
-    private var unit; // System.UNIT_METRIC or System.UNIT_STATUTE
+    const feet_per_meter = 3.28084;
+    const water_pressure = 9806.65; // pascal per meter
+
+    var start_pressure;
+ 
+    var unit; // System.UNIT_METRIC or System.UNIT_STATUTE
 
     function initialize() {
         SimpleDataField.initialize();
@@ -30,21 +34,26 @@ class depthView extends WatchUi.SimpleDataField {
         //   The ambient pressure in Pascals (Pa).
         // - rawAmbientPressure as Lang.Float or Null
         //   The raw ambient pressure in Pascals (Pa).
-        var current_pressure = info.ambientPressure;
+        var current_pressure = info.rawAmbientPressure;
         if (start_pressure == null) {
             start_pressure = current_pressure;
         }
 
-        var depthStr = "n/a";
-        if (current_pressure != null && start_pressure != null) {
-            var depth = (current_pressure - start_pressure)/1000.0;
-            if (unit == System.UNIT_METRIC) {
-                depthStr = depth.format("%.2f") + "m";
-            } else {
-                depthStr = (depth*3.28084).format("%1f") + "ft";
-            }
+        if (current_pressure == null || start_pressure == null) {
+            return "n/a";
         }
-        return depthStr;
+        // Recalibrate if the watch seems to be out of water.
+        if (start_pressure > current_pressure) {
+            start_pressure = current_pressure;
+        }
+
+        var pressure_diff = current_pressure - start_pressure;
+        var depth = pressure_diff/water_pressure;
+        if (unit == System.UNIT_METRIC) {
+            return depth.format("%.2f");
+        } else {
+            return (depth*feet_per_meter).format("%1f");
+        }
     }
 
 }
