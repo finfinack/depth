@@ -52,7 +52,7 @@ class depthView extends WatchUi.SimpleDataField {
         if (unit == System.UNIT_METRIC) {
             return depth.format("%.2f");
         } else {
-            return (depth*feet_per_meter).format("%1f");
+            return (depth*feet_per_meter).format("%.1f");
         }
     }
 
