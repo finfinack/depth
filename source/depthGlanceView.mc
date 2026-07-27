@@ -16,7 +16,9 @@ class depthGlanceView extends WatchUi.GlanceView
     function initialize() {
         GlanceView.initialize();
 
-        unit = System.getDeviceSettings().heightUnits;
+        // Depth is a vertical distance in the environment, so it follows the
+        // elevation unit setting rather than the (body) height setting.
+        unit = System.getDeviceSettings().elevationUnits;
     }
 
     function onUpdate(dc) {

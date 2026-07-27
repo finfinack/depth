@@ -23,7 +23,9 @@ class depthView extends WatchUi.View {
     function initialize() {
         View.initialize();
 
-        unit = System.getDeviceSettings().heightUnits;
+        // Depth is a vertical distance in the environment, so it follows the
+        // elevation unit setting rather than the (body) height setting.
+        unit = System.getDeviceSettings().elevationUnits;
     }
 
     // Load your resources here
