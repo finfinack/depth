@@ -1,4 +1,5 @@
 import Toybox.Activity;
+import Toybox.Application;
 import Toybox.Lang;
 import Toybox.System;
 
@@ -29,7 +30,21 @@ import Toybox.System;
 class DepthModel {
 
     const feet_per_meter = 3.28084;
-    const water_pressure = 9806.65; // pascal per meter
+
+    // Pascal per meter of water. Fresh water is the physical value for rho=1000.
+    // Salt water uses the EN13319 convention of 1 msw = 10000 Pa exactly rather
+    // than the ~10052 Pa that rho=1030 gives, so readings agree with what a dive
+    // computer or a dive table shows. The difference is about 10 cm at 20 m,
+    // well inside this sensor's error.
+    const fresh_water_pressure = 9806.65;
+    const salt_water_pressure = 10000.0;
+
+    // Values of the waterType and unitOverride settings.
+    const WATER_FRESH = 0;
+    const WATER_SALT = 1;
+    const UNITS_AUTO = 0;
+    const UNITS_METRIC = 1;
+    const UNITS_STATUTE = 2;
 
     // Depth below which the watch counts as being at the surface, in pascal.
     // 0.30 m of water; wave action and sensor noise both live inside this, and
@@ -52,7 +67,8 @@ class DepthModel {
     //! Deepest reading in meters so far, or null before the first reading.
     var max_depth as Float?;
 
-    var unit as System.UnitsSystem; // System.UNIT_METRIC or System.UNIT_STATUTE
+    var unit as System.UnitsSystem = System.UNIT_METRIC; // or System.UNIT_STATUTE
+    var water_pressure as Float = fresh_water_pressure;
 
     private var _baseline as Float?;
 
@@ -71,9 +87,35 @@ class DepthModel {
     private var _previous_pressure as Float?;
 
     function initialize() {
-        // Depth is a vertical distance in the environment, so it follows the
-        // elevation unit setting rather than the (body) height setting.
-        unit = System.getDeviceSettings().elevationUnits;
+        loadSettings();
+    }
+
+    //! Read the app settings. Called once at startup and again whenever the app
+    //! is told they changed, so the long-lived widget and glance pick a change
+    //! up without being restarted.
+    function loadSettings() as Void {
+        water_pressure = (numberSetting("waterType", WATER_FRESH) == WATER_SALT)
+            ? salt_water_pressure
+            : fresh_water_pressure;
+
+        var units = numberSetting("unitOverride", UNITS_AUTO);
+        if (units == UNITS_METRIC) {
+            unit = System.UNIT_METRIC;
+        } else if (units == UNITS_STATUTE) {
+            unit = System.UNIT_STATUTE;
+        } else {
+            // Depth is a vertical distance in the environment, so it follows the
+            // elevation unit setting rather than the (body) height setting.
+            unit = System.getDeviceSettings().elevationUnits;
+        }
+
+        // Re-zero is a trigger rather than a state, so it is acted on and then
+        // switched off again. This is the only way into a re-zero for the data
+        // fields, which have no input of their own.
+        if (booleanSetting("rezero", false)) {
+            rezero();
+            Properties.setValue("rezero", false);
+        }
     }
 
     //! Read the pressure out of the given activity info and update the current
@@ -170,6 +212,24 @@ class DepthModel {
     //! The unit suffix matching formatDepth().
     function unitLabel() as String {
         return (unit == System.UNIT_METRIC) ? "m" : "ft";
+    }
+
+    //! Read a numeric setting, falling back if it is missing or the wrong type.
+    private function numberSetting(key as String, fallback as Number) as Number {
+        var value = Properties.getValue(key);
+        if (value instanceof Lang.Number) {
+            return value;
+        }
+        return fallback;
+    }
+
+    //! Read a boolean setting, falling back if it is missing or the wrong type.
+    private function booleanSetting(key as String, fallback as Boolean) as Boolean {
+        var value = Properties.getValue(key);
+        if (value instanceof Lang.Boolean) {
+            return value;
+        }
+        return fallback;
     }
 
     //! Start the baseline over from a single sample.

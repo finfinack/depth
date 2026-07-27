@@ -4,6 +4,10 @@ import Toybox.WatchUi;
 
 class depthApp extends Application.AppBase {
 
+    // Held so a settings change can be pushed into the running views. The
+    // glance builds its own model and picks settings up when it is created.
+    private var _model as DepthModel?;
+
     function initialize() {
         AppBase.initialize();
     }
@@ -24,7 +28,18 @@ class depthApp extends Application.AppBase {
     function getInitialView() as [Views] or [Views, InputDelegates] {
         // The pages share one model so tracking continues whichever is shown.
         var model = new DepthModel();
+        _model = model;
         return [ new depthView(model, PAGE_SUMMARY), new depthDelegate(model, PAGE_SUMMARY) ];
+    }
+
+    //! Settings can change while the widget is open, so apply them straight
+    //! away rather than waiting for it to be reopened.
+    function onSettingsChanged() as Void {
+        var model = _model;
+        if (model != null) {
+            model.loadSettings();
+            WatchUi.requestUpdate();
+        }
     }
 
     (:glance)
