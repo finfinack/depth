@@ -1,7 +1,9 @@
-import Toybox.Graphics;
-import Toybox.WatchUi;
 import Toybox.Activity;
+import Toybox.Graphics;
+import Toybox.Lang;
+import Toybox.System;
 import Toybox.Timer;
+import Toybox.WatchUi;
 
 class depthView extends WatchUi.View {
 
@@ -11,12 +13,12 @@ class depthView extends WatchUi.View {
     const feet_per_meter = 3.28084;
     const water_pressure = 9806.65; // pascal per meter
 
-    var start_pressure;
-    var depth = "n/a";
+    var start_pressure as Float?;
+    var depth as String = "n/a";
     // private var max_depth = "n/a";
     // private var max_depth_value = 0.0;
 
-    var unit; // System.UNIT_METRIC or System.UNIT_STATUTE
+    var unit as System.UnitsSystem; // System.UNIT_METRIC or System.UNIT_STATUTE
 
     private var _dataTimer as Timer.Timer?;
 
@@ -26,11 +28,6 @@ class depthView extends WatchUi.View {
         // Depth is a vertical distance in the environment, so it follows the
         // elevation unit setting rather than the (body) height setting.
         unit = System.getDeviceSettings().elevationUnits;
-    }
-
-    // Load your resources here
-    function onLayout(dc as Dc) as Void {
-        setLayout(Rez.Layouts.MainLayout(dc));
     }
 
     // Called when this View is brought to the foreground. Restore
@@ -93,12 +90,6 @@ class depthView extends WatchUi.View {
     //! On a timer interval, read the pressure sensor and update the depth.
     function updateDepth() as Void {
         var info = Activity.getActivityInfo();
-        if (info == null) {
-            depth = "n/a";
-            // max_depth = "n/a";
-            WatchUi.requestUpdate();
-            return;
-        }
 
         // See Activity.Info in the documentation for available information.
         // - altitude as Lang.Float or Null

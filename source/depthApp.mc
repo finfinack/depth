@@ -16,7 +16,11 @@ class depthApp extends Application.AppBase {
     function onStop(state as Dictionary?) as Void {
     }
 
-    // Return the initial view of your application here
+    // Return the initial view of your application here.
+    // depthView is not built into the glance scope, so the type checker cannot
+    // see it when checking this function for the glance. Only the widget scope
+    // ever calls getInitialView(), so suppressing the glance check is correct.
+    (:typecheck(disableGlanceCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
         return [ new depthView() ];
     }

@@ -1,6 +1,8 @@
-import Toybox.WatchUi;
+import Toybox.Activity;
+import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Application.Storage;
+import Toybox.System;
+import Toybox.WatchUi;
 
 (:glance)
 class depthGlanceView extends WatchUi.GlanceView
@@ -8,10 +10,10 @@ class depthGlanceView extends WatchUi.GlanceView
     const feet_per_meter = 3.28084;
     const water_pressure = 9806.65; // pascal per meter
 
-    var start_pressure;
-    var depth = "n/a";
+    var start_pressure as Float?;
+    var depth as String = "n/a";
 
-    var unit; // System.UNIT_METRIC or System.UNIT_STATUTE
+    var unit as System.UnitsSystem; // System.UNIT_METRIC or System.UNIT_STATUTE
 
     function initialize() {
         GlanceView.initialize();
@@ -21,7 +23,7 @@ class depthGlanceView extends WatchUi.GlanceView
         unit = System.getDeviceSettings().elevationUnits;
     }
 
-    function onUpdate(dc) {
+    function onUpdate(dc as Dc) as Void {
         self.updateDepth();
 
         var valueFont = Graphics.FONT_TINY;
@@ -36,16 +38,12 @@ class depthGlanceView extends WatchUi.GlanceView
         dc.drawText(width / 2, depthY, valueFont, depth, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
-    function onStop() {
+    function onStop() as Void {
     }
 
     //! On a timer interval, read the pressure sensor and update the depth.
     function updateDepth() as Void {
         var info = Activity.getActivityInfo();
-        if (info == null) {
-            depth = "n/a";
-            return;
-        }
 
         // See Activity.Info in the documentation for available information.
         // - altitude as Lang.Float or Null
