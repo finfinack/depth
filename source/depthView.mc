@@ -1,3 +1,4 @@
+import Toybox.Activity;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
@@ -32,7 +33,7 @@ class depthView extends WatchUi.View {
     // the state of this View and prepare it to be shown. This includes
     // loading resources into memory.
     function onShow() as Void {
-        _model.update();
+        _model.update(Activity.getActivityInfo());
 
         // The pressure sensor updates about once per second, so polling
         // faster only costs battery. The timer is owned by the visible
@@ -90,7 +91,7 @@ class depthView extends WatchUi.View {
 
     //! On a timer interval, read the pressure sensor and update the depth.
     function updateDepth() as Void {
-        _model.update();
+        _model.update(Activity.getActivityInfo());
         WatchUi.requestUpdate();
     }
 

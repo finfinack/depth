@@ -1,3 +1,4 @@
+import Toybox.Activity;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
@@ -14,7 +15,7 @@ class depthGlanceView extends WatchUi.GlanceView
     }
 
     function onUpdate(dc as Dc) as Void {
-        _model.update();
+        _model.update(Activity.getActivityInfo());
 
         var font = Graphics.FONT_GLANCE;
         var height = dc.getHeight();
