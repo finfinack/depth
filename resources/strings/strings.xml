@@ -1,3 +1,17 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName">max_depth</string>
+
+    <string id="WaterTypeTitle">Water type</string>
+    <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>
+    <string id="WaterFresh">Fresh</string>
+    <string id="WaterSalt">Salt</string>
+
+    <string id="UnitsTitle">Units</string>
+    <string id="UnitsPrompt">Which units to show the depth in.</string>
+    <string id="UnitsAuto">Follow watch</string>
+    <string id="UnitsMetric">Meters</string>
+    <string id="UnitsStatute">Feet</string>
+
+    <string id="RezeroTitle">Re-zero depth</string>
+    <string id="RezeroPrompt">Discards the surface pressure baseline and the maximum, and starts measuring again. Switches itself back off. Use it if the activity started while the watch was already in the water.</string>
 </strings>
