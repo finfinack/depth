@@ -55,7 +55,7 @@ class max_depthView extends WatchUi.SimpleDataField {
         if (unit == System.UNIT_METRIC) {
             return max_depth.format("%.2f");
         } else {
-            return (max_depth*feet_per_meter).format("%1f");
+            return (max_depth*feet_per_meter).format("%.1f");
         }
     }
 }
