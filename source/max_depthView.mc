@@ -37,7 +37,15 @@ class max_depthView extends WatchUi.SimpleDataField {
         //   The ambient pressure in Pascals (Pa).
         // - rawAmbientPressure as Lang.Float or Null
         //   The raw ambient pressure in Pascals (Pa).
+        // rawAmbientPressure is read straight from the sensor (temperature
+        // compensated). ambientPressure is smoothed by a two-stage filter,
+        // which lags during a fast descent, so it is only a fallback for
+        // devices/contexts where the raw value is not populated.
         var current_pressure = info.rawAmbientPressure;
+        if (current_pressure == null) {
+            current_pressure = info.ambientPressure;
+        }
+
         if (start_pressure == null) {
             start_pressure = current_pressure;
         }
