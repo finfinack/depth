@@ -2,10 +2,13 @@
 
 This is a (really) simple widget for Garmin watches (Fenix, Epix, Tactix) displaying the current water depth.
 
-The widget has two pages, switched with swipe/press up and down like the built-in widgets:
+The widget has three pages, switched with swipe/press up and down like the built-in widgets:
 
-- **Depth** – the current water depth
-- **Max Depth** – the deepest reading since the widget was opened
+- **Summary** – both readings at once, shown first when the widget is opened
+- **Depth** – the current water depth, full size
+- **Max Depth** – the deepest reading since the widget was opened, full size
+
+Press Start on any page to re-zero, which drops the baseline and the maximum. That is what to use if the widget was opened while already in the water.
 
 The reading is colour coded by depth: blue below 10 m, green to 20 m, yellow to 30 m and red beyond that. The glance shows both values on one screen.
 

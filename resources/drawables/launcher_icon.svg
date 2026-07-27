@@ -4,18 +4,28 @@
     Launcher icon: a disc of water seen from the side, split by the wave of the
     surface, with an arrow marking the descent into the deep.
 
-    The icon is rasterised down to roughly 40x40 pixels on the watch and has to
-    survive the 64-colour MIP displays, so it is built from flat fills and bold
-    shapes only: no gradients, strokes, opacity or fine detail, all of which
-    either turn to mush or are not supported by the resource compiler. The white
-    band of the surface is the gap between two copies of the same wave, offset
-    vertically, rather than a stroke. The blue matches the accent the widget
-    uses for the current depth page.
+    The icon is rasterised down to 40-65 pixels depending on the device and has
+    to survive the 64-colour MIP displays, so it is built from flat fills and
+    bold shapes only: no gradients, strokes, opacity or fine detail, all of
+    which either turn to mush or are not supported by the resource compiler.
+    The white band of the surface is the gap between two copies of the same
+    wave, offset vertically, rather than a stroke. The blue matches the accent
+    the widget uses for the current depth page.
+
+    Targets ask for 40, 60, 62 or 65 px, so the icon is authored larger than all
+    of them and every device downscales rather than upscales. Leaving the size
+    at "100%" makes the resource compiler assume 400x400 and downscale 10:1,
+    which softens the edge enough that the icon reads as smaller and off-centre
+    next to a native one. width/height deliberately match the viewBox: declaring
+    a size that disagrees with it (65 against a 128 viewBox) leaves the scale up
+    to the rasteriser, and they do not agree. The disc is full bleed (r = half
+    the viewBox) so it fills the slot it is given; a 1px inset disappears into
+    rounding at these sizes.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 128 128" version="1.1">
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" version="1.1">
     <defs>
         <clipPath id="disc">
-            <circle cx="64" cy="64" r="63"/>
+            <circle cx="64" cy="64" r="64"/>
         </clipPath>
     </defs>
     <g clip-path="url(#disc)">
