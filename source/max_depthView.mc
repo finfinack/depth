@@ -1,5 +1,6 @@
 import Toybox.Activity;
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.Time;
 import Toybox.WatchUi;
 
@@ -8,10 +9,10 @@ class max_depthView extends WatchUi.SimpleDataField {
     const feet_per_meter = 3.28084;
     const water_pressure = 9806.65; // pascal per meter
 
-    var start_pressure;
-    var max_depth = 0.0;
+    var start_pressure as Float?;
+    var max_depth as Float = 0.0;
 
-    var unit; // System.UNIT_METRIC or System.UNIT_STATUTE
+    var unit as System.UnitsSystem; // System.UNIT_METRIC or System.UNIT_STATUTE
 
     function initialize() {
         SimpleDataField.initialize();
