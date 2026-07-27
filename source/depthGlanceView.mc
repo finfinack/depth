@@ -71,7 +71,7 @@ class depthGlanceView extends WatchUi.GlanceView
         if (unit == System.UNIT_METRIC) {
             depth = "Depth: " + depth_value.format("%.2f") + "m";
         } else {
-            depth = "Depth: " + (depth_value*feet_per_meter).format("%1f") + "ft";
+            depth = "Depth: " + (depth_value*feet_per_meter).format("%.1f") + "ft";
         }
     }
 }

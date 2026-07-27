@@ -29,9 +29,6 @@ class depthView extends WatchUi.View {
     // Load your resources here
     function onLayout(dc as Dc) as Void {
         setLayout(Rez.Layouts.MainLayout(dc));
-
-        _dataTimer = new Timer.Timer();
-        _dataTimer.start(method(:updateDepth), 500, true);
     }
 
     // Called when this View is brought to the foreground. Restore
@@ -39,6 +36,14 @@ class depthView extends WatchUi.View {
     // loading resources into memory.
     function onShow() as Void {
         self.updateDepth();
+
+        // The pressure sensor updates about once per second, so polling
+        // faster only costs battery. The timer is owned by the visible
+        // view: started here and stopped again in onHide().
+        if (_dataTimer == null) {
+            _dataTimer = new Timer.Timer();
+            _dataTimer.start(method(:updateDepth), 1000, true);
+        }
 
         // Request a redraw when the widget is shown
         WatchUi.requestUpdate();
@@ -77,6 +82,10 @@ class depthView extends WatchUi.View {
     // state of this View here. This includes freeing resources from
     // memory.
     function onHide() as Void {
+        if (_dataTimer != null) {
+            _dataTimer.stop();
+            _dataTimer = null;
+        }
     }
 
     //! On a timer interval, read the pressure sensor and update the depth.
@@ -119,7 +128,7 @@ class depthView extends WatchUi.View {
         if (unit == System.UNIT_METRIC) {
             depth = depth_value.format("%.2f") + "m";
         } else {
-            depth = (depth_value*feet_per_meter).format("%1f") + "ft";
+            depth = (depth_value*feet_per_meter).format("%.1f") + "ft";
         }
 
         // if (depth_value > max_depth_value) {
