@@ -22,7 +22,9 @@ class depthApp extends Application.AppBase {
     // ever calls getInitialView(), so suppressing the glance check is correct.
     (:typecheck(disableGlanceCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
-        return [ new depthView() ];
+        // The pages share one model so both keep tracking while either is shown.
+        var model = new DepthModel();
+        return [ new depthView(model, PAGE_CURRENT), new depthDelegate(model, PAGE_CURRENT) ];
     }
 
     (:glance)

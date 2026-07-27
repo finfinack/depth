@@ -2,6 +2,13 @@
 
 This is a (really) simple widget for Garmin watches (Fenix, Epix, Tactix) displaying the current water depth.
 
+The widget has two pages, switched with swipe/press up and down like the built-in widgets:
+
+- **Depth** – the current water depth
+- **Max Depth** – the deepest reading since the widget was opened
+
+The reading is colour coded by depth: blue below 10 m, green to 20 m, yellow to 30 m and red beyond that. The glance shows both values on one screen.
+
 See https://developer.garmin.com/connect-iq/connect-iq-basics/ for some information around how to set up the Garmin SDK, compile and run the app. The following is mostly a copy of one of the [examples on the Garmin Connect IQ developer page](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#yourfirstconnectiqapp).
 
 ## Running the Program

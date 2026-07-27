@@ -1,40 +1,38 @@
-import Toybox.Activity;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Timer;
 import Toybox.WatchUi;
 
+//! The widget pages, in the order they are reached by paging down.
+enum {
+    PAGE_CURRENT = 0,
+    PAGE_MAX = 1
+}
+const PAGE_COUNT = 2;
+
+//! One page of the widget: either the current or the maximum depth.
+//!
+//! Both pages share a DepthModel, so the maximum keeps being tracked while the
+//! current depth page is on screen and vice versa.
 class depthView extends WatchUi.View {
 
-    const depth_label = "Depth";
-    // const max_depth_label = "Max Depth";
-
-    const feet_per_meter = 3.28084;
-    const water_pressure = 9806.65; // pascal per meter
-
-    var start_pressure as Float?;
-    var depth as String = "n/a";
-    // private var max_depth = "n/a";
-    // private var max_depth_value = 0.0;
-
-    var unit as System.UnitsSystem; // System.UNIT_METRIC or System.UNIT_STATUTE
-
+    private var _model as DepthModel;
+    private var _page as Number;
     private var _dataTimer as Timer.Timer?;
 
-    function initialize() {
+    function initialize(model as DepthModel, page as Number) {
         View.initialize();
 
-        // Depth is a vertical distance in the environment, so it follows the
-        // elevation unit setting rather than the (body) height setting.
-        unit = System.getDeviceSettings().elevationUnits;
+        _model = model;
+        _page = page;
     }
 
     // Called when this View is brought to the foreground. Restore
     // the state of this View and prepare it to be shown. This includes
     // loading resources into memory.
     function onShow() as Void {
-        self.updateDepth();
+        _model.update();
 
         // The pressure sensor updates about once per second, so polling
         // faster only costs battery. The timer is owned by the visible
@@ -50,31 +48,34 @@ class depthView extends WatchUi.View {
 
     // Update the view
     function onUpdate(dc as Dc) as Void {
-        // Call the parent onUpdate function to redraw the layout
-        // View.onUpdate(dc);
-
-        // self.updateDepth();
-
-        var labelFont = Graphics.FONT_SMALL;
-        var valueFont = Graphics.FONT_LARGE;
-
         var width = dc.getWidth();
         var height = dc.getHeight();
 
-        var labelDepthY = height / 4;
-        var depthY = (height / 4) * 2;
-        // var labelDepthY = height / 7;
-        // var depthY = (height / 7) * 2;
-        // var labelMaxDepthY = (height / 7) * 4;
-        // var maxDepthY = (height / 7) * 5;
+        var isMax = (_page == PAGE_MAX);
+        var label = isMax ? "MAX DEPTH" : "DEPTH";
+        var accent = isMax ? Graphics.COLOR_ORANGE : Graphics.COLOR_BLUE;
+        var value = _model.depth;
+        if (isMax) {
+            value = _model.max_depth;
+        }
 
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
 
-        dc.drawText(width / 2, labelDepthY, labelFont, depth_label, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(width / 2, depthY, valueFont, depth, Graphics.TEXT_JUSTIFY_CENTER);
-        // dc.drawText(width / 2, labelMaxDepthY, labelFont, max_depth_label, Graphics.TEXT_JUSTIFY_CENTER);
-        // dc.drawText(width / 2, maxDepthY, valueFont, max_depth, Graphics.TEXT_JUSTIFY_CENTER);
+        var labelY = height * 3 / 10;
+        var valueY = height / 2;
+
+        dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(width / 2, labelY, Graphics.FONT_SMALL, label,
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+
+        // Accent rule between the label and the value.
+        var ruleY = height * 38 / 100;
+        dc.setPenWidth(2);
+        dc.drawLine(width * 35 / 100, ruleY, width * 65 / 100, ruleY);
+
+        drawValue(dc, width / 2, valueY, value);
+        drawPageIndicator(dc, width, height * 82 / 100, accent);
     }
 
     // Called when this View is removed from the screen. Save the
@@ -89,57 +90,46 @@ class depthView extends WatchUi.View {
 
     //! On a timer interval, read the pressure sensor and update the depth.
     function updateDepth() as Void {
-        var info = Activity.getActivityInfo();
-
-        // See Activity.Info in the documentation for available information.
-        // - altitude as Lang.Float or Null
-        //   The altitude above mean sea level in meters (m).
-        // - ambientPressure as Lang.Float or Null
-        //   The ambient pressure in Pascals (Pa).
-        // - rawAmbientPressure as Lang.Float or Null
-        //   The raw ambient pressure in Pascals (Pa).
-        // rawAmbientPressure is read straight from the sensor (temperature
-        // compensated). ambientPressure is smoothed by a two-stage filter,
-        // which lags during a fast descent, so it is only a fallback for
-        // devices/contexts where the raw value is not populated.
-        var current_pressure = info.rawAmbientPressure;
-        if (current_pressure == null) {
-            current_pressure = info.ambientPressure;
-        }
-        if (start_pressure == null) {
-            start_pressure = current_pressure;
-        }
-
-        if (current_pressure == null || start_pressure == null) {
-            depth = "n/a";
-            // max_depth = "n/a";
-
-            WatchUi.requestUpdate();
-            return;
-        }
-        // Recalibrate if the watch seems to be out of water.
-        if (start_pressure > current_pressure) {
-            start_pressure = current_pressure;
-        }
-
-        var pressure_diff = current_pressure - start_pressure;
-        var depth_value = pressure_diff/water_pressure;
-        if (unit == System.UNIT_METRIC) {
-            depth = depth_value.format("%.2f") + "m";
-        } else {
-            depth = (depth_value*feet_per_meter).format("%.1f") + "ft";
-        }
-
-        // if (depth_value > max_depth_value) {
-        //     max_depth_value = depth_value;
-        // }
-        // if (unit == System.UNIT_METRIC) {
-        //     max_depth = max_depth_value.format("%.2f") + "m";
-        // } else {
-        //     max_depth = (max_depth_value*feet_per_meter).format("%1f") + "ft";
-        // }
-
+        _model.update();
         WatchUi.requestUpdate();
     }
 
+    //! Draw the reading centred on (x, y): the number in a large numeric font
+    //! coloured by depth, followed by the unit in a smaller, muted font.
+    private function drawValue(dc as Dc, x as Number, y as Number, value as Float?) as Void {
+        var text = _model.formatDepth(value);
+
+        if (value == null) {
+            // The numeric fonts only contain digits, so "n/a" needs a text font.
+            dc.setColor(depthColor(value), Graphics.COLOR_TRANSPARENT);
+            dc.drawText(x, y, Graphics.FONT_LARGE, text,
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            return;
+        }
+
+        var unitText = " " + _model.unitLabel();
+        var valueWidth = dc.getTextWidthInPixels(text, Graphics.FONT_NUMBER_MEDIUM);
+        var unitWidth = dc.getTextWidthInPixels(unitText, Graphics.FONT_SMALL);
+        var valueX = x - (valueWidth + unitWidth) / 2;
+
+        dc.setColor(depthColor(value), Graphics.COLOR_TRANSPARENT);
+        dc.drawText(valueX, y, Graphics.FONT_NUMBER_MEDIUM, text,
+            Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(valueX + valueWidth, y, Graphics.FONT_SMALL, unitText,
+            Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+    }
+
+    //! One dot per page, the current one highlighted in the page accent colour.
+    private function drawPageIndicator(dc as Dc, width as Number, y as Number, accent as Graphics.ColorType) as Void {
+        var radius = 3;
+        var spacing = radius * 4;
+        var x = width / 2 - (spacing * (PAGE_COUNT - 1)) / 2;
+
+        for (var page = 0; page < PAGE_COUNT; page += 1) {
+            dc.setColor(page == _page ? accent : Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+            dc.fillCircle(x + page * spacing, y, radius);
+        }
+    }
 }
