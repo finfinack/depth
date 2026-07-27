@@ -9,9 +9,9 @@ class depthView extends WatchUi.SimpleDataField {
     const feet_per_meter = 3.28084;
     const water_pressure = 9806.65; // pascal per meter
 
-    var start_pressure;
- 
-    var unit; // System.UNIT_METRIC or System.UNIT_STATUTE
+    var start_pressure as Float?;
+
+    var unit as System.UnitsSystem; // System.UNIT_METRIC or System.UNIT_STATUTE
 
     function initialize() {
         SimpleDataField.initialize();
