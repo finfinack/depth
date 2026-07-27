@@ -16,10 +16,13 @@ class depthView extends WatchUi.SimpleDataField {
     function initialize() {
         SimpleDataField.initialize();
        
-        unit = System.getDeviceSettings().heightUnits;
+        // Depth is a vertical distance in the environment, so it follows the
+        // elevation unit setting rather than the (body) height setting.
+        unit = System.getDeviceSettings().elevationUnits;
 
-        // Set the label of the data field here.
-        label = "Depth";
+        // Set the label of the data field here. A SimpleDataField has no room
+        // for a unit suffix on the value, so it goes in the label.
+        label = (unit == System.UNIT_METRIC) ? "Depth (m)" : "Depth (ft)";
     }
 
     // The given info object contains all the current workout
