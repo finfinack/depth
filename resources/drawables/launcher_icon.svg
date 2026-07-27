@@ -1,49 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 1418 1418" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <g id="Artboard1" transform="matrix(1,0,0,1,-1173.41,-312.714)">
-        <rect x="1173.41" y="312.714" width="1417.98" height="1417.98" style="fill:none;"/>
-        <clipPath id="_clip1">
-            <rect x="1173.41" y="312.714" width="1417.98" height="1417.98"/>
+<!--
+    Launcher icon: a disc of water seen from the side, split by the wave of the
+    surface, with an arrow marking the descent into the deep.
+
+    The icon is rasterised down to roughly 40x40 pixels on the watch and has to
+    survive the 64-colour MIP displays, so it is built from flat fills and bold
+    shapes only: no gradients, strokes, opacity or fine detail, all of which
+    either turn to mush or are not supported by the resource compiler. The white
+    band of the surface is the gap between two copies of the same wave, offset
+    vertically, rather than a stroke. The blue matches the accent the widget
+    uses for the current depth page.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 128 128" version="1.1">
+    <defs>
+        <clipPath id="disc">
+            <circle cx="64" cy="64" r="63"/>
         </clipPath>
-        <g clip-path="url(#_clip1)">
-            <g transform="matrix(0.965128,0,0,0.965128,66.2372,-14.5828)">
-                <rect x="1147.61" y="339.862" width="1469.21" height="1469.21" style="fill:rgb(228,234,255);"/>
-            </g>
-            <g transform="matrix(1,0,0,1,0.411712,0.713857)">
-                <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-            </g>
-            <g transform="matrix(0.124994,0,0,1,1059.59,227.26)">
-                <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-            </g>
-            <g transform="matrix(0.249988,0,0,1,1009.39,431.821)">
-                <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-            </g>
-            <g transform="matrix(0.249988,0,0,1,1815.08,431.821)">
-                <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-            </g>
-            <g transform="matrix(0.124994,0,0,1,1369.28,227.26)">
-                <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-            </g>
-            <g transform="matrix(0.124994,0,0,1,1925.77,227.26)">
-                <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-            </g>
-            <g transform="matrix(0.124994,0,0,1,2235.45,227.26)">
-                <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-            </g>
-            <g transform="matrix(1,0,0,1,0.411712,0.713857)">
-                <g transform="matrix(3.79817e-17,0.620288,-1,6.12323e-17,2473,-56.6303)">
-                    <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-                </g>
-                <g transform="matrix(1,0,0,1,136.695,17.7336)">
-                    <g transform="matrix(0.174807,0.174807,-0.707107,0.707107,1742.53,665.99)">
-                        <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-                    </g>
-                    <g transform="matrix(-0.174807,0.174807,-0.707107,-0.707107,2584.11,1501.22)">
-                        <rect x="1210.49" y="554.263" width="1343.83" height="72.666" style="fill:rgb(0,33,204);"/>
-                    </g>
-                </g>
-            </g>
-        </g>
+    </defs>
+    <g clip-path="url(#disc)">
+        <!-- Shallow water, filling the whole disc. -->
+        <rect x="0" y="0" width="128" height="128" fill="#5CC8F5"/>
+        <!-- The surface, and the deep water 8px below it. -->
+        <path d="M -4,38 Q 20,30 44,38 Q 68,46 92,38 Q 116,30 140,38 L 140,132 L -4,132 Z" fill="#FFFFFF"/>
+        <path d="M -4,46 Q 20,38 44,46 Q 68,54 92,46 Q 116,38 140,46 L 140,132 L -4,132 Z" fill="#00539C"/>
+        <!-- Depth arrow, pointing down into the deep water. -->
+        <rect x="57" y="56" width="14" height="32" fill="#FFFFFF"/>
+        <polygon points="44,84 84,84 64,116" fill="#FFFFFF"/>
     </g>
 </svg>
