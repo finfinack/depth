@@ -14,7 +14,7 @@
     never rescales the bitmap; they differ from this one only in the width and
     height attributes below and must be kept in step with it.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" version="1.1">
+<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 128 128" version="1.1">
     <defs>
         <clipPath id="disc">
             <circle cx="64" cy="64" r="64"/>
