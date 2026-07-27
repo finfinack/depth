@@ -4,6 +4,9 @@ import Toybox.WatchUi;
 
 class depthApp extends Application.AppBase {
 
+    // Held so a settings change can be pushed into the running field.
+    private var _view as depthView?;
+
     function initialize() {
         AppBase.initialize();
     }
@@ -18,7 +21,18 @@ class depthApp extends Application.AppBase {
 
     // Return the initial view of your application here
     function getInitialView() as [Views] or [Views, InputDelegates] {
-        return [ new depthView() ];
+        var view = new depthView();
+        _view = view;
+        return [ view ];
+    }
+
+    //! Settings can change while the field is on screen, so push them through
+    //! rather than waiting for the next activity.
+    function onSettingsChanged() as Void {
+        var view = _view;
+        if (view != null) {
+            view.onSettingsChanged();
+        }
     }
 
 }

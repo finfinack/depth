@@ -12,10 +12,19 @@ class depthView extends WatchUi.SimpleDataField {
         SimpleDataField.initialize();
 
         _model = new DepthModel();
+        updateLabel();
+    }
 
-        // Set the label of the data field here. A SimpleDataField has no room
-        // for a unit suffix on the value, so it goes in the label.
+    //! A SimpleDataField has no room for a unit suffix on the value, so the unit
+    //! goes in the label — which means the label has to follow the unit setting.
+    function updateLabel() as Void {
         label = (_model.unit == System.UNIT_METRIC) ? "Depth (m)" : "Depth (ft)";
+    }
+
+    //! Called by the app when the user changes a setting.
+    function onSettingsChanged() as Void {
+        _model.loadSettings();
+        updateLabel();
     }
 
     // The given info object contains all the current workout
