@@ -95,19 +95,23 @@ The shared model has unit tests, run against the barrel on its own — see [Dept
 
 See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-basics/) for setting up the SDK in the first place.
 
-### Adding a language
+## Languages
 
-Every string the user sees now comes from `resources/strings/strings.xml` — the settings, the widget labels, the glance labels, the re-zero confirmation and the data field labels. Nothing user-facing is a literal in the source any more, so adding a language is a resource-only change:
+All three apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the widget and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
 
-1. Copy `resources/strings/strings.xml` to `resources-<lang>/strings/strings.xml` in the project and translate the values, keeping the `id`s.
-2. Add the language to `<iq:languages>` in that project's `manifest.xml`.
+1. Copy `resources/strings/strings.xml` to `resources-<lang>/strings/strings.xml` in the project and translate the values, keeping the `id`s. Use Garmin's code for `<lang>`: `deu`, `fre`, `ita`, `spa`, `por`, `dut`, `nob`, and so on — the full list is in `bin/projectInfo.xml` in the SDK.
+2. Add the language to `<iq:languages>` in that project's `manifest.xml`. Without this the build prints `String resources will be ignored` and the folder is skipped entirely.
 3. Repeat per project — the three are separate Connect IQ apps and do not share resources.
 
-Three things to know before translating:
+Four things to know before translating:
+
+- **Declare every id, including `AppName`.** A missing string does not silently fall back to English: the build warns `String id 'AppName' undefined for language 'deu'` and the app has no name in that language. `AppName` is repeated verbatim rather than translated, on purpose — it is the app's identity in the store and in the launcher, not a label.
 
 - **The widget labels are drawn into fixed slots on a round screen.** `LabelDepth`, `LabelMax` and `LabelMaxDepth` are centred at a set size and will be clipped, not wrapped, if a translation runs long. The English is already abbreviated for the summary page for exactly this reason. The glance labels are measured at run time and can be any length.
 - **The glance strings carry `scope="glance"`.** Without it the resource is not visible from glance code and the build fails with `Value 'Rez' not available in all function scopes`. Keep the attribute when copying.
-- **Units are not translated.** `m` and `ft` are appended in code rather than baked into the labels, so a translation is one word and cannot get the symbols wrong. The `n/a` shown when there is no reading comes from the barrel, which ships no resources of its own, and stays as it is.
+- **Units are not translated.** `m` and `ft` are appended in code rather than baked into the labels, so a translation is one word and cannot get the symbols wrong. The band edges in the colour range list are numerals in both systems and stay as they are. The `n/a` shown when there is no reading comes from the barrel, which ships no resources of its own, and also stays as it is.
+
+The shipped translations have been compiled but not seen on a watch: the on-screen labels in particular are the ones to check for clipping, since the accented capitals (`PROFONDITÀ`, `PROF. MÁX`) depend on the device font's glyph coverage.
 
 ### Running in the emulator
 

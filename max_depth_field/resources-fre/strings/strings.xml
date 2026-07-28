@@ -1,0 +1,27 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <!--
+        French. AppName is deliberately left untranslated: it is the app's
+        identity in the store and in the data field picker, not a label.
+
+        FieldLabel gets the unit appended to it in code, so it carries no "(m)"
+        or "(ft)" of its own. Data field labels get very little width - keep it
+        short.
+    -->
+    <string id="AppName">max_depth</string>
+
+    <string id="WaterTypeTitle">Type d'eau</string>
+    <string id="WaterTypePrompt">L'eau salée est plus dense : la même profondeur donne donc plus de pression. Le réglage Salée utilise la convention 1 msw = 10000 Pa, celle des ordinateurs de plongée.</string>
+    <string id="WaterFresh">Douce</string>
+    <string id="WaterSalt">Salée</string>
+
+    <string id="UnitsTitle">Unités</string>
+    <string id="UnitsPrompt">L'unité dans laquelle la profondeur est affichée.</string>
+    <string id="UnitsAuto">Suivre la montre</string>
+    <string id="UnitsMetric">Mètres</string>
+    <string id="UnitsStatute">Pieds</string>
+
+    <string id="RezeroTitle">Remettre à zéro</string>
+    <string id="RezeroPrompt">Efface la pression de référence en surface ainsi que le maximum, et recommence la mesure. Se désactive tout seul. À utiliser si l'activité a démarré alors que la montre était déjà dans l'eau.</string>
+
+    <string id="FieldLabel">Prof. max</string>
+</strings>

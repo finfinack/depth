@@ -1,0 +1,27 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <!--
+        Spanish. AppName is deliberately left untranslated: it is the app's
+        identity in the store and in the data field picker, not a label.
+
+        FieldLabel gets the unit appended to it in code, so it carries no "(m)"
+        or "(ft)" of its own. Data field labels get very little width - keep it
+        short.
+    -->
+    <string id="AppName">depth</string>
+
+    <string id="WaterTypeTitle">Tipo de agua</string>
+    <string id="WaterTypePrompt">El agua salada es más densa, así que la misma profundidad da más presión. Salada usa el convenio 1 msw = 10000 Pa, el de los ordenadores de buceo.</string>
+    <string id="WaterFresh">Dulce</string>
+    <string id="WaterSalt">Salada</string>
+
+    <string id="UnitsTitle">Unidades</string>
+    <string id="UnitsPrompt">En qué unidad se muestra la profundidad.</string>
+    <string id="UnitsAuto">Seguir al reloj</string>
+    <string id="UnitsMetric">Metros</string>
+    <string id="UnitsStatute">Pies</string>
+
+    <string id="RezeroTitle">Poner a cero</string>
+    <string id="RezeroPrompt">Descarta la presión de referencia en superficie y el máximo, y vuelve a empezar a medir. Se desactiva solo. Úsalo si la actividad empezó con el reloj ya dentro del agua.</string>
+
+    <string id="FieldLabel">Profundidad</string>
+</strings>
