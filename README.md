@@ -114,11 +114,12 @@ It is drawn **two ways**, because a data field can be handed anything from the w
 
 | Field | Shape |
 | --- | --- |
-| Full-screen, top half | An **arc concentric with the display**, running right along the bezel like the built-in gauges |
-| Bottom half, and other roughly square fields | A **semicircle fitted into the field** |
-| Three- and four-field layouts, quarter fields | A **bar** along the bottom, reading above it |
+| Full screen, top half, bottom half | An **arc concentric with the display**, running right along the bezel like the built-in gauges |
+| Everything else | A **bar** along the bottom, reading above it |
 
-The split matters. A semicircle is limited by the field's *height*, so in a four-field band 65 rows tall it would span about a third of the width and squeeze the reading into what was left — backwards, since the reading is the point and the gauge is context around it. The bar uses the whole width instead and leaves the reading a real font size. An arc is only used when it can manage at least 75% of the field's width and a radius that can hold a legible number inside it.
+The arc is only ever concentric with the display, never fitted into the field: an arc on the lens's own centre is on the lens at every point, however large. Where the field stops short of the lens's diameter — a two-field top half is 129 rows tall on a 260-row screen — the **sweep** is trimmed by a couple of degrees rather than the radius, so the arc stays on the bezel. That is worth 254 px of a 260 px field, against about 156 for a fitted semicircle.
+
+The bar takes everything else. A semicircle is limited by the field's *height*, so in a four-field band 65 rows tall it would span about a third of the width and squeeze the reading into what was left — backwards, since the reading is the point and the gauge is context around it. The bar uses the whole width and leaves the reading a real font size.
 
 The zones come from the same numbers `depthColor()` colours by, so the gauge and the reading cannot disagree about what colour a depth is. The current depth is a bright **arrowhead** riding on the band; the session maximum is an orange **tick straight across** it, with `MAX` and the depth under the reading when there is room. Two different shapes on purpose — a second arrowhead would read as a second current reading, and a short arc in another colour would read as one more zone.
 

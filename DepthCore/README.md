@@ -25,7 +25,7 @@ and declares the dependency in its `manifest.xml`:
 
 ```xml
 <iq:barrels>
-  <iq:depends name="DepthCore" version="2.2.0"/>
+  <iq:depends name="DepthCore" version="2.2.1"/>
 </iq:barrels>
 ```
 
@@ -50,7 +50,7 @@ Source files then use `import DepthCore;`.
 
 A `SimpleDataField` hands the system a string and the system finds room for it. A full `DataField` gets a rectangle and an `onUpdate(dc)`, and is on its own — including about the fact that on a round watch a good part of that rectangle is not on the lens. A field along the top edge has both its top corners cut away, and its topmost row is one pixel wide. Every device in the product lists is round, so this is the case that matters, not the exception.
 
-Connect IQ gives a field two clues about its place on the screen and no more: the size of its rectangle, and `getObscurityFlags()`, which says which screen edges that rectangle touches. That is enough, because the system tiles the fields — one touching neither the left nor the right edge is centred between them — so the flags plus the size give the field's origin, and from there the lens is a circle.
+Connect IQ gives a field two clues about its place on the screen and no more: the size of its rectangle, and `getObscurityFlags()`, which says which screen edges that rectangle touches. Between them those pin down the origin for most fields — and from the origin the lens is a circle. Not for all of them, though; see [What the flags cannot tell you](#what-the-flags-cannot-tell-you).
 
 `DepthFieldLayout` turns that into two things drawing code can use:
 
@@ -67,7 +67,15 @@ Connect IQ gives a field two clues about its place on the screen and no more: th
 
 On a screen that is not round the geometry switches off: every row is usable and the span is the full width less a small margin.
 
-**The circle is exposed as well as the rows because not everything drawn is a rectangle.** Depth Gauge draws an arc, and an arc concentric with the lens is on the lens at every point, however large — so on a full-screen or top-half field it runs right along the bezel like the watch's own zone gauges. Fitting that arc into a rectangle inside the lens instead shrinks it to about half the screen it could have used. Anything that genuinely needs a rectangle uses the rows.
+**The circle is exposed as well as the rows because not everything drawn is a rectangle.** Depth Gauge draws an arc, and an arc concentric with the lens is on the lens at every point, however large — so it runs right along the bezel like the watch's own zone gauges. Fitting that arc into a rectangle inside the lens instead shrinks it to about half the screen it could have used. Anything that genuinely needs a rectangle uses the rows.
+
+### What the flags cannot tell you
+
+The origin is inferred from the size and the flags: a field touching the low edge of an axis starts at 0, one touching the high edge ends at the screen edge, one touching both spans it. Connect IQ exposes no way to ask a field where it is, so that inference is all there is.
+
+**A field touching neither edge on an axis cannot be placed.** `measure()` assumes it is centred. Checked against the layout rectangles the SDK ships per device, that is exact for the 1-, 2- and 3-field layouts, and wrong for the stacked middle bands of the denser ones — the system stacks those rather than centring them, by up to 2.8× the field's height across 430 of the 963 field rectangles shipped for the devices in the product lists.
+
+The consequence is bounded and one-directional: such a field believes the lens is wider than it is, so its outermost pixels can land under the bezel. It never draws into another field. Depth Gauge's arc is unaffected — every layout that takes the arc touches the top or the bottom, so its position is exact — and it costs the bar and the chart their extreme corners on 4-field-and-denser middle bands only.
 
 There is deliberately **no shared "draw the heading" helper**. The two fields head themselves differently — the chart puts its label and reading on one row above the plot, the gauge centres the reading inside the arc — and a single function covering both would take more arguments than the twenty lines it saved. What is genuinely common is the geometry and the font fitting, and that is what is here.
 
@@ -131,6 +139,6 @@ model.updateAt(info, 1000);   // 1 s after the previous sample
 
 ## Versioning
 
-The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.2.0`. Bump them together.
+The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.2.1`. Bump them together.
 
 It is deliberately the same number as the apps carry in the store rather than a version of its own: the barrel is not published anywhere and has exactly five consumers, all in this repository and all released together, so a separate lineage for it would be two numbers to keep straight in exchange for nothing. The apps' own version is set when uploading to the store — Connect IQ app manifests have no version field.
