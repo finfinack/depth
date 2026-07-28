@@ -50,6 +50,32 @@ module DepthCore {
     }
 
     (:test)
+    function testProfileBandsMatchTheColours(logger as Logger) as Boolean {
+        // The gauge draws its zones from these while depthColor() colours by
+        // them, so the two drifting apart is the failure this guards against.
+        var profiles = [PROFILE_SNORKEL, PROFILE_FREEDIVE, PROFILE_DEEP] as Array<Number>;
+        for (var i = 0; i < profiles.size(); i += 1) {
+            var profile = profiles[i];
+            var bands = profileBands(profile);
+            Test.assertEqual(bands.size(), 3);
+            Test.assertEqual(depthColor(bands[0], profile), Graphics.COLOR_GREEN);
+            Test.assertEqual(depthColor(bands[1], profile), Graphics.COLOR_YELLOW);
+            Test.assertEqual(depthColor(bands[2], profile), Graphics.COLOR_RED);
+        }
+        return true;
+    }
+
+    (:test)
+    function testProfileBandsAreOrdered(logger as Logger) as Boolean {
+        // The gauge divides its bar by these, so out of order would draw a
+        // zone of negative width.
+        var bands = profileBands(PROFILE_DEEP);
+        Test.assertMessage(bands[0] < bands[1], "first band edge below the second");
+        Test.assertMessage(bands[1] < bands[2], "second band edge below the third");
+        return true;
+    }
+
+    (:test)
     function testUnknownProfileFallsBackToSnorkel(logger as Logger) as Boolean {
         // A stored setting from a future version, or a hand-edited one. It has
         // to land on a scale rather than on no scale at all.

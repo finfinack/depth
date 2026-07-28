@@ -4,10 +4,35 @@ import Toybox.Lang;
 module DepthCore {
 
     //! Values of the colorProfile setting, and so of DepthModel.color_profile.
-    //! The bands each one uses are in depthColor() below.
     (:glance) const PROFILE_SNORKEL = 0;
     (:glance) const PROFILE_FREEDIVE = 1;
     (:glance) const PROFILE_DEEP = 2;
+
+    // The depths each profile changes colour at, in meters, shallow to deep.
+    //
+    // Module constants rather than literals inside depthColor(), because the
+    // graph field's gauge has to draw the same boundaries it colours by and two
+    // copies of these numbers would drift apart. They are allocated once at
+    // load and shared, so profileBands() below hands out a reference rather
+    // than building an array — depthColor() runs once per pixel column of the
+    // graph, and an allocation per call there would be real churn.
+    (:glance) const SNORKEL_BANDS = [2.0, 5.0, 10.0] as Array<Float>;
+    (:glance) const FREEDIVE_BANDS = [10.0, 20.0, 30.0] as Array<Float>;
+    (:glance) const DEEP_BANDS = [20.0, 40.0, 60.0] as Array<Float>;
+
+    //! The three depths, in meters, where the given profile changes colour:
+    //! blue below the first, then green, then yellow, and red at or past the
+    //! third. An unknown profile gets the snorkelling bands.
+    (:glance)
+    function profileBands(profile as Number) as Array<Float> {
+        if (profile == PROFILE_FREEDIVE) {
+            return FREEDIVE_BANDS;
+        }
+        if (profile == PROFILE_DEEP) {
+            return DEEP_BANDS;
+        }
+        return SNORKEL_BANDS;
+    }
 
     //! Colour scale for a depth read-out, shared by the widget and the glance.
     //!
@@ -26,30 +51,14 @@ module DepthCore {
             return Graphics.COLOR_LT_GRAY;
         }
 
-        // Band boundaries in meters, shallow to deep. Written out per profile
-        // rather than held in an array: three floats on the stack cost less
-        // than three arrays in a module, and glance scope is the tightest
-        // memory budget in the project.
-        var green = 2.0;
-        var yellow = 5.0;
-        var red = 10.0;
-        if (profile == PROFILE_FREEDIVE) {
-            green = 10.0;
-            yellow = 20.0;
-            red = 30.0;
-        } else if (profile == PROFILE_DEEP) {
-            green = 20.0;
-            yellow = 40.0;
-            red = 60.0;
-        }
-
-        if (meters < green) {
+        var bands = profileBands(profile);
+        if (meters < bands[0]) {
             return Graphics.COLOR_BLUE;
         }
-        if (meters < yellow) {
+        if (meters < bands[1]) {
             return Graphics.COLOR_GREEN;
         }
-        if (meters < red) {
+        if (meters < bands[2]) {
             return Graphics.COLOR_YELLOW;
         }
         return Graphics.COLOR_RED;
