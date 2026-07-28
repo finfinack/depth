@@ -2,6 +2,8 @@
 
 Barometric depth for Garmin watches (Fenix, Epix, Tactix) — a widget, two data fields, and the model they share.
 
+Find them on the [Garmin ConnectIQ store](https://apps.garmin.com/developer/1e45545b-eec0-40b0-886d-61739dd6f510/apps) for free to install them.
+
 Previously three separate repositories. They are one now because all three carried an identical copy of the depth model, and keeping three copies in step by hand was the main source of drift.
 
 | Project | Type | What it is |
@@ -13,9 +15,11 @@ Previously three separate repositories. They are one now because all three carri
 
 The three apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
 
-## This is not a dive computer
+## This is **not** a dive computer
 
-⚠️ **Do not rely on any of these for safety.** They are a curiosity for snorkelling and casual swimming, not dive instruments. There is no decompression calculation, no no-decompression limit, no ascent rate warning, and no alarm of any kind. Nothing here has ever been checked against a reference depth gauge, and it fails silently — if the surface pressure baseline is wrong, the depth is wrong, and nothing on screen says so.
+⚠️ **Do not rely on any of these for safety.**
+
+They are a curiosity for snorkelling and casual swimming, not dive instruments. There is no decompression calculation, no no-decompression limit, no ascent rate warning, and no alarm of any kind. Nothing here has ever been checked against a reference depth gauge, and it fails silently — if the surface pressure baseline is wrong, the depth is wrong, and nothing on screen says so.
 
 Each project's README has the full detail. Use a real dive computer for anything where the number matters.
 
