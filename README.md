@@ -132,12 +132,11 @@ The shipped translations have been compiled but not seen on a watch: the on-scre
 - Select `Run > Run Without Debugging` (`Command + F5` on Mac, `Ctrl + F5` elsewhere).
 - Pick a product from the list you are prompted with.
 
-A freshly started emulator reports no pressure at all, so every app shows `n/a`
-until it is given some. `Simulation > Activity Data` is where that comes from,
-either as generated data or as a FIT file — see [testdata/](testdata/) for a
-dive profile to load and for what the emulator has and has not been seen to do
-with it. The emulator remains the wrong place to judge whether the depth
-readings themselves are right; only a watch in the water settles that.
+> ℹ Note: The emulator cannot dive. It reports no pressure at all until
+> `Simulation > Activity Data` is set to `Data Simulation`, and what that
+> generates sits at a fixed altitude and never enters the water. Playing a FIT
+> file does not help: the emulator does not carry the recorded pressure into
+> `Activity.Info`.
 
 ### Side loading onto a watch
 
