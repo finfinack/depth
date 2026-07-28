@@ -12,7 +12,8 @@ class depthView extends WatchUi.SimpleDataField {
     //! unique within the app, since the FIT file scopes them by developer id.
     enum FieldId {
         FIELD_DEPTH = 0,
-        FIELD_MAX_DEPTH = 1
+        FIELD_MAX_DEPTH = 1,
+        FIELD_PRESSURE = 2
     }
 
     private var _model as DepthModel;
@@ -21,6 +22,12 @@ class depthView extends WatchUi.SimpleDataField {
     // and the deepest reading of the session as a single summary value.
     private var _depthField as FitContributor.Field;
     private var _maxDepthField as FitContributor.Field;
+
+    // The sensor reading the depth was derived from, before anything is done to
+    // it. Depth is only as good as the surface baseline the app had to guess
+    // at, and a guess cannot be checked against its own output — so the input
+    // is recorded alongside it.
+    private var _pressureField as FitContributor.Field;
 
     function initialize() {
         SimpleDataField.initialize();
@@ -36,10 +43,16 @@ class depthView extends WatchUi.SimpleDataField {
         _maxDepthField = createField("max_depth", FIELD_MAX_DEPTH, FitContributor.DATA_TYPE_UINT16,
             { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "cm" });
 
-        // Both fields need a value before the first compute(), or an activity
+        // Whole pascal in a UINT32. Ambient pressure is around 100000 Pa, which
+        // does not fit a UINT16 at any useful resolution.
+        _pressureField = createField("pressure", FIELD_PRESSURE, FitContributor.DATA_TYPE_UINT32,
+            { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "Pa" });
+
+        // Every field needs a value before the first compute(), or an activity
         // that is saved without ever getting a pressure reading records nothing.
         _depthField.setData(0);
         _maxDepthField.setData(0);
+        _pressureField.setData(0);
     }
 
     //! A SimpleDataField has no room for a unit suffix on the value, so the unit
@@ -63,6 +76,7 @@ class depthView extends WatchUi.SimpleDataField {
 
         _depthField.setData(DepthCore.depthCentimeters(_model.depth));
         _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
+        _pressureField.setData(DepthCore.pressurePascals(_model.pressure));
 
         return _model.formatDepth(_model.depth);
     }

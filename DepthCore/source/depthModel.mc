@@ -5,6 +5,13 @@ import Toybox.System;
 
 module DepthCore {
 
+    //! Values of DepthModel.trend. Module scope rather than class constants,
+    //! because a class constant in Monkey C is only reachable through an
+    //! instance and these are part of what the barrel exposes.
+    (:glance) const TREND_LEVEL = 0;
+    (:glance) const TREND_DESCENDING = 1;
+    (:glance) const TREND_ASCENDING = 2;
+
     //! Depth derived from barometric pressure, relative to a tracked surface
     //! pressure baseline.
     //!
@@ -63,11 +70,6 @@ module DepthCore {
         // Fastest descent treated as a real one. Anything quicker is a sensor
         // glitch, and must not be allowed to reach the maximum.
         const max_descent_rate = 3.0; // m/s
-
-        // Values of trend below.
-        const TREND_LEVEL = 0;
-        const TREND_DESCENDING = 1;
-        const TREND_ASCENDING = 2;
 
         // How fast the depth has to be changing before the trend commits to a
         // direction, and how slow before it goes back to level. Two thresholds

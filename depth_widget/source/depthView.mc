@@ -94,9 +94,10 @@ class depthView extends WatchUi.View {
     //! of telling the two apart.
     private function drawSummary(dc as Dc, width as Number, height as Number) as Void {
         drawReading(dc, width, height * 28 / 100, height * 40 / 100,
-            "DEPTH", Graphics.COLOR_BLUE, _model.depth);
+            "DEPTH", Graphics.COLOR_BLUE, _model.depth, true);
+        // A maximum only ever goes one way, so a trend on it would say nothing.
         drawReading(dc, width, height * 57 / 100, height * 69 / 100,
-            "MAX", Graphics.COLOR_ORANGE, _model.max_depth);
+            "MAX", Graphics.COLOR_ORANGE, _model.max_depth, false);
     }
 
     //! A single reading filling the page, with an accent rule under the label.
@@ -117,25 +118,27 @@ class depthView extends WatchUi.View {
         dc.drawLine(width * 35 / 100, ruleY, width * 65 / 100, ruleY);
 
         drawValue(dc, width / 2, height / 2, value,
-            Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_LARGE);
+            Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_LARGE, !isMax);
     }
 
     //! A small label with its reading underneath, for the summary page.
     private function drawReading(dc as Dc, width as Number, labelY as Number, valueY as Number,
-                                 label as String, accent as Graphics.ColorType, value as Float?) as Void {
+                                 label as String, accent as Graphics.ColorType, value as Float?,
+                                 withTrend as Boolean) as Void {
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
         dc.drawText(width / 2, labelY, Graphics.FONT_XTINY, label,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         drawValue(dc, width / 2, valueY, value,
-            Graphics.FONT_NUMBER_MILD, Graphics.FONT_XTINY, Graphics.FONT_MEDIUM);
+            Graphics.FONT_NUMBER_MILD, Graphics.FONT_XTINY, Graphics.FONT_MEDIUM, withTrend);
     }
 
-    //! Draw the reading centred on (x, y): the number in a numeric font coloured
-    //! by depth, followed by the unit in a smaller, muted font.
+    //! Draw the reading centred on (x, y): the trend indicator, then the number
+    //! in a numeric font coloured by depth, then the unit in a smaller, muted
+    //! font.
     private function drawValue(dc as Dc, x as Number, y as Number, value as Float?,
                                numberFont as Graphics.FontType, unitFont as Graphics.FontType,
-                               fallbackFont as Graphics.FontType) as Void {
+                               fallbackFont as Graphics.FontType, withTrend as Boolean) as Void {
         var text = _model.formatDepth(value);
 
         if (value == null) {
@@ -149,8 +152,20 @@ class depthView extends WatchUi.View {
         var unitText = " " + _model.unitLabel();
         var valueWidth = dc.getTextWidthInPixels(text, numberFont);
         var unitWidth = dc.getTextWidthInPixels(unitText, unitFont);
-        var valueX = x - (valueWidth + unitWidth) / 2;
 
+        // The indicator's slot is reserved whether or not a triangle goes in
+        // it, so the reading does not shift sideways every time the trend
+        // changes — a number that jitters is harder to read than one that does
+        // not, and the trend changes far more often than the layout should.
+        var trendSize = withTrend ? dc.getFontHeight(unitFont) / 2 : 0;
+        var trendGap = trendSize / 2;
+
+        var left = x - (trendSize + trendGap + valueWidth + unitWidth) / 2;
+        if (withTrend) {
+            drawTrend(dc, left + trendSize / 2, y, trendSize);
+        }
+
+        var valueX = left + trendSize + trendGap;
         dc.setColor(DepthCore.depthColor(value), Graphics.COLOR_TRANSPARENT);
         dc.drawText(valueX, y, numberFont, text,
             Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
@@ -158,6 +173,30 @@ class depthView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
         dc.drawText(valueX + valueWidth, y, unitFont, unitText,
             Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+    }
+
+    //! A triangle centred on (x, y) pointing the way the depth is going: red and
+    //! down while descending, blue and up while ascending, nothing at all while
+    //! level.
+    //!
+    //! Red for deeper and blue for shallower matches the depth colour scale,
+    //! which already runs blue at the surface to red at the bottom. Drawn as a
+    //! polygon rather than an arrow character because the built-in fonts have
+    //! patchy glyph coverage and would show empty boxes on some devices.
+    private function drawTrend(dc as Dc, x as Number, y as Number, size as Number) as Void {
+        var trend = _model.trend;
+        if (trend == DepthCore.TREND_LEVEL) {
+            return;
+        }
+
+        var half = size / 2;
+        if (trend == DepthCore.TREND_DESCENDING) {
+            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+            dc.fillPolygon([[x - half, y - half], [x + half, y - half], [x, y + half]] as Array<Graphics.Point2D>);
+        } else {
+            dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+            dc.fillPolygon([[x - half, y + half], [x + half, y + half], [x, y - half]] as Array<Graphics.Point2D>);
+        }
     }
 
     //! One dot per page, the current one highlighted in the page accent colour.

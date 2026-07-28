@@ -1,73 +1,27 @@
-# Depth
+# Depth (data field)
 
-This is a data field for Garmin watches (Fenix, Epix, Tactix) displaying the current water depth.
+A data field showing the current water depth during an activity, inferred from the barometric pressure sensor.
 
-The unit is shown in the field label (`Depth (m)` / `Depth (ft)`), because a simple data field has no room for a suffix on the value itself. Settings (water type, units, re-zero) are in Garmin Connect under the app's settings.
+> ⚠️ **This is not a dive computer.** Do not rely on it for safety. See the [repository README](../README.md#this-is-not-a-dive-computer) for what that means, and [how it works](../README.md#how-it-works-and-what-that-costs) for why the number can be wrong.
+
+The unit is shown in the field label (`Depth (m)` / `Depth (ft)`), because a simple data field has no room for a suffix on the value itself.
 
 ## What it records
 
-The field writes two developer fields into the activity's FIT file, so the depth is kept rather than just displayed:
+The field writes three developer fields into the activity's FIT file, so the dive is kept rather than just displayed:
 
-| Field | Scope | Meaning |
-| --- | --- | --- |
-| `depth` | every record | The depth at that moment, which Garmin Connect draws as a graph |
-| `max_depth` | session | The deepest reading of the whole activity |
+| Field | Scope | Unit | Meaning |
+| --- | --- | --- | --- |
+| `depth` | every record | cm | The depth at that moment, which Garmin Connect draws as a graph |
+| `pressure` | every record | Pa | The raw sensor reading the depth was derived from |
+| `max_depth` | session | cm | The deepest reading of the whole activity |
 
-Both are in **centimetres**, whatever the display unit is set to. The unit setting can be changed part way through an activity, and a recorded field whose meaning changed halfway would be worse than useless. Centimetres are also exactly the resolution the field displays, so nothing is lost.
+Depth is always in **centimetres**, whatever the display unit is set to. The unit setting can be changed part way through an activity, and a recorded field whose meaning changed halfway would be worse than useless. Centimetres are also exactly the resolution the field displays, so nothing is lost. Values are clamped to 655.35 m: the model puts no ceiling on depth, and without the clamp a wild reading would wrap around into a small number that looked entirely plausible.
 
-The value is clamped to 655.35 m. The model puts no ceiling on depth, and without the clamp a wild pressure reading would wrap around into a small number that looked entirely plausible.
+**`pressure` is the one to look at when the depth seems wrong.** Depth is only as good as the [guessed surface baseline](../README.md#how-it-works-and-what-that-costs), and a guess cannot be checked against its own output. The pressure is the unprocessed input, so it lets you recompute depth afterwards against any surface pressure and water density you like — and it shows sensor saturation directly, as a trace that climbs and then flattens into a hard ceiling no matter how much deeper you go.
 
-If you also run the **Max Depth** field in the same activity, it contributes only its own session maximum — the per-record graph is not written twice.
+Note that the displayed depth is *not* smoothed — it is the raw pressure against the tracked baseline. The only place any smoothing exists is the widget's trend indicator, which needs it because a one-sample difference is smaller than the sensor's noise.
 
-## This is not a dive computer
+If you also run the **Max Depth** field in the same activity, it contributes only its own session maximum — the per-record series is not written twice.
 
-**Do not rely on this app for safety.** It is a curiosity for snorkelling and casual swimming, not a dive instrument.
-
-- It does no decompression calculation, tracks no no-decompression limit, and has no ascent rate warning, gas management, or alarm of any kind.
-- It has never been checked against a reference depth gauge. There is no calibration procedure and no accuracy figure.
-- It fails silently. If the surface pressure baseline is wrong, the depth is wrong, and nothing on screen tells you that.
-- The sensor it reads was not built to go underwater, and the reading may stop meaning anything after the first metre or so — see below.
-
-Use a real dive computer for anything where the number matters.
-
-## How it works, and what that costs
-
-Connect IQ exposes **no depth API**. Checked against the 9.2.0 API surface, the only depth-related symbol in the entire SDK is `LAP_TRIGGER_DEPTH` — a reason a lap was triggered, not a way to read depth. So depth here is inferred from the barometric pressure sensor, which is there for altitude and weather:
-
-```
-depth = (pressure - surface pressure) / pressure per metre of water
-```
-
-Three consequences fall out of that.
-
-**The surface pressure has to be guessed.** There is no "you are now at the surface" signal, so the app tracks the lowest pressure seen over a trailing window of the last few minutes and treats that as the surface. The window is frozen while the watch looks submerged, so a long dive cannot drag the baseline down after it. This copes with weather drift and with walking down to the water, and recovers on its own from a bad sample — but if it ever gets the baseline wrong, every reading is offset until it recovers.
-
-Starting the activity while already in the water is the case it cannot detect: the first pressure it sees becomes the surface. Use the **Re-zero depth** setting to start over. It needs the phone, so it is not reachable mid-activity.
-
-**Water density is a setting, not a measurement.** Fresh water is 9806.65 Pa per metre (ρ=1000). Salt is 10000 Pa per metre, the EN13319 `1 msw` convention that dive computers use. Leaving it set to Fresh in the sea over-reports depth by about 2.5% — half a metre at 20 m.
-
-**The sensor may saturate very shallow, and this is untested.** Fenix-class barometers are typically specified to somewhere around 1100 hPa, which is only about a metre of water above sea level pressure. If that limit is real, readings past a metre or two are meaningless, and they will keep looking perfectly plausible while being nothing of the kind. This has not been verified on a real device.
-
-The recorded `depth` series is the way to check that: a trace that climbs and then flattens into a hard ceiling regardless of how much deeper you go is the sensor saturating, not the water.
-
-See https://developer.garmin.com/connect-iq/connect-iq-basics/ for some information around how to set up the Garmin SDK, compile and run the app. The following is mostly a copy of one of the [examples on the Garmin Connect IQ developer page](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#yourfirstconnectiqapp).
-
-## Running the Program
-
-You should be able to run the app from Visual Studio Code in an Emulator:
-
-- Before running the program, make sure you have one of your source files (in the `source` folder with the `.mc` extension) open and selected in the editor.
-- Select `Run > Run Without Debugging` (`Command + F5` on Mac, `Ctrl + F5` on other platforms)
-- You will be prompted with the list of products your application supports. Select one from the list.
-
-## Side Loading an App
-
-The Monkey C extension provides a wizard to help developers side load an application. The wizard will create an executable (PRG) of the selected project. Here’s how to use it:
-
-- Plug your device into your computer
-- Use `Ctrl + Shift + P` (`Command + Shift + P` on the Mac) to summon the command palette
-- In the command palette type “Build for Device” and select `Monkey C: Build for Device`
-- Select the product you wish to build for. If you are unable to choose a device for which to build (the menu appears empty), it means that there are no valid devices configured for your project.
-- Choose a directory for the output and click `Select Folder`
-- In your file manager, go to the directory selected in step 4
-- Copy the generated `PRG` files to your device’s `GARMIN/APPS` directory
+[Settings](../README.md#settings) are in Garmin Connect under the app's settings.
