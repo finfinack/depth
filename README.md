@@ -127,12 +127,17 @@ The shipped translations have been compiled but not seen on a watch: the on-scre
 
 ### Running in the emulator
 
-> ℹ Note: The emulator is fairly limited for this specific purpose because you won't be able to inject sensor readings in order to validate the actual functions. You will need to run it on an actual watch in order to do so.
-
 - Open the project directory you want to run — the four are separate Connect IQ projects, so VS Code needs the one, not the repository root.
 - Make sure one of its source files (in `source`, with the `.mc` extension) is open and selected in the editor.
 - Select `Run > Run Without Debugging` (`Command + F5` on Mac, `Ctrl + F5` elsewhere).
 - Pick a product from the list you are prompted with.
+
+A freshly started emulator reports no pressure at all, so every app shows `n/a`
+until it is given some. `Simulation > Activity Data` is where that comes from,
+either as generated data or as a FIT file — see [testdata/](testdata/) for a
+dive profile to load and for what the emulator has and has not been seen to do
+with it. The emulator remains the wrong place to judge whether the depth
+readings themselves are right; only a watch in the water settles that.
 
 ### Side loading onto a watch
 
