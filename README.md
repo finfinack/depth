@@ -44,8 +44,6 @@ Starting while already in the water is the case it cannot detect: the first pres
 
 **Water density is a setting, not a measurement.** Fresh water is 9806.65 Pa per metre (ρ=1000). Salt is 10000 Pa per metre, the EN13319 `1 msw` convention that dive computers use. Leaving it set to Fresh in the sea over-reports depth by about 2.5% — half a metre at 20 m.
 
-**The sensor may saturate very shallow, and this is untested.** Fenix-class barometers are typically specified to somewhere around 1100 hPa, which is only about a metre of water above sea level pressure. If that limit is real, readings past a metre or two are meaningless, and they will keep looking perfectly plausible while being nothing of the kind. This has not been verified on a real device.
-
 The [Depth data field](depth_field/) records the raw pressure into the activity precisely so this can be checked: a trace that climbs and then flattens into a hard ceiling regardless of how much deeper you go is the sensor saturating, not the water.
 
 ## Settings

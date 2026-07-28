@@ -72,9 +72,21 @@ monkeydo /tmp/depthcore_test.prg fenix7 -t   # the simulator has to be running
 Two things about the test build are not obvious:
 
 - **Every `(:test)` function becomes a test case**, whatever it is named or how it is written. Helpers must not carry the annotation — an annotated helper is run as a test of its own, and one taking arguments errors out.
-- **`test/resources/settings/properties.xml` exists because `DepthModel` reads the app settings in its constructor**, and `Properties.getValue()` on a key that was never declared throws. A barrel ships no properties of its own, so the test build declares its own copy. Keep it in step with each app's `resources/settings/properties.xml`.
+- **`test/resources/settings/properties.xml` exists because `DepthModel` reads the app settings in its constructor.** A barrel ships no properties of its own, so the test build declares the ones the model reads. Anything left out of it exercises the fallback described under [Settings it reads](#settings-it-reads) instead.
 
-What is *not* covered is anything that depends on time passing: `update()` reads `System.getTimer()` itself, so two calls in a row are microseconds apart — exactly the case the trend and the maximum both refuse to act on. The baseline window, the submerged watchdog and the trend thresholds therefore still need the simulator.
+### Making time pass
+
+`update()` reads `System.getTimer()` itself, so two calls in a row are microseconds apart — exactly the case the trend and the maximum both refuse to act on. Everything with real risk in this model is about elapsed time: the baseline window rotating, the submerged watchdog, the trend's commit/release hysteresis, the two-sample maximum.
+
+So `update(info)` is a one-liner over **`updateAt(info, now)`**, and the tests drive `updateAt` with a synthetic millisecond clock. That is the whole seam — no injected clock object, no test-only branch in the model, and `update()` remains what every app calls.
+
+The model still reads the pressure sensor through `Activity.Info`, which a test constructs directly:
+
+```monkey-c
+var info = new Activity.Info();
+info.rawAmbientPressure = 110000.0;
+model.updateAt(info, 1000);   // 1 s after the previous sample
+```
 
 ## Versioning
 

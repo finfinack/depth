@@ -152,6 +152,19 @@ module DepthCore {
         //! Read the pressure out of the given activity info and update the current
         //! and the maximum depth.
         function update(info as Activity.Info) as Void {
+            updateAt(info, System.getTimer());
+        }
+
+        //! update() with the clock supplied, which is the only way the tests can
+        //! make time pass: every interval this class cares about is minutes
+        //! long, and two update() calls in a row are microseconds apart — which
+        //! is exactly the case the trend and the maximum both refuse to act on.
+        //! The baseline window, the submerged watchdog and the trend hysteresis
+        //! carry most of the risk here and are untestable without this seam.
+        //!
+        //! `now` is a millisecond counter that may wrap, as System.getTimer()
+        //! does; going backwards is handled wherever it is compared.
+        function updateAt(info as Activity.Info, now as Number) as Void {
             // See Activity.Info in the documentation for available information.
             // - ambientPressure as Lang.Float or Null
             //   The ambient pressure in Pascals (Pa).
@@ -174,7 +187,6 @@ module DepthCore {
                 return;
             }
 
-            var now = System.getTimer();
             var baseline = _baseline;
             if (baseline == null) {
                 rebaseline(pressure, now);
