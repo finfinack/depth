@@ -28,7 +28,7 @@ They are a curiosity for snorkelling and casual swimming, not dive instruments.
 
 Use a real dive computer for anything where the number matters.
 
-## How it works, and what that costs
+## How it works and drawbacks
 
 Connect IQ exposes **no depth API**. Checked against the 9.2.0 API surface, the only depth-related symbol in the entire SDK is `LAP_TRIGGER_DEPTH` — a reason a lap was triggered, not a way to read depth. So depth here is inferred from the barometric pressure sensor, which is there for altitude and weather:
 
@@ -78,6 +78,8 @@ The shared model has unit tests, run against the barrel on its own — see [Dept
 See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-basics/) for setting up the SDK in the first place.
 
 ### Running in the emulator
+
+> ℹ Note: The emulator is fairly limited for this specific purpose because you won't be able to inject sensor readings in order to validate the actual functions. You will need to run it on an actual watch in order to do so.
 
 - Open the project directory you want to run — the three are separate Connect IQ projects, so VS Code needs the one, not the repository root.
 - Make sure one of its source files (in `source`, with the `.mc` extension) is open and selected in the editor.
