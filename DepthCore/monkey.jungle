@@ -1,2 +1,7 @@
 project.manifest = manifest.xml
 project.typecheck = 3
+
+# Only source/ ships. The default source path sweeps in every subfolder, which
+# would compile test/ into all three consuming apps — barrel code is built into
+# each app, so anything reachable from here costs memory on the watch.
+base.sourcePath = source

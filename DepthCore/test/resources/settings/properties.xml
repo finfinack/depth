@@ -1,0 +1,15 @@
+<!--
+    The settings DepthModel.loadSettings() reads. A barrel ships no properties
+    of its own - these belong to the consuming app - but the constructor reads
+    them, and Properties.getValue() on a key that was never declared throws.
+    This copy exists so the test build has them, and is reached only through
+    test.jungle. Keep it in step with each app's resources/settings/properties.xml.
+-->
+<properties>
+    <!-- 0 = fresh, 1 = salt. See DepthModel.WATER_* -->
+    <property id="waterType" type="number">0</property>
+    <!-- 0 = follow the watch, 1 = meters, 2 = feet. See DepthModel.UNITS_* -->
+    <property id="unitOverride" type="number">0</property>
+    <!-- A trigger, not a state: the app acts on it and switches it back off. -->
+    <property id="rezero" type="boolean">false</property>
+</properties>

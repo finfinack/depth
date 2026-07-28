@@ -1,0 +1,10 @@
+# The barrel plus its unit tests, for barreltest. No app references this file,
+# so nothing here reaches a watch.
+project.manifest = manifest.xml
+project.typecheck = 3
+
+base.sourcePath = source;test
+
+# DepthModel reads the app's settings in its constructor, so the test build has
+# to declare them somewhere. See test/resources/settings/properties.xml.
+base.resourcePath = test/resources

@@ -45,6 +45,25 @@ The annotation being ignored is the correct outcome — a data field includes th
 
 `depthFit.mc` is deliberately *not* annotated: the glance displays a reading, it never records one, and glance scope is the tightest memory budget in the project.
 
+## Tests
+
+`test/` holds unit tests for the barrel. They are built by `test.jungle` rather than `monkey.jungle`, so nothing there reaches a watch: `monkey.jungle` sets `base.sourcePath = source`, because barrel code is compiled into every consuming app and anything reachable from it costs memory on the device.
+
+Barrels do not produce a runnable `PRG`, so the SDK's `barreltest` builds the barrel and its tests into one, and the simulator runs it:
+
+```sh
+cd DepthCore
+barreltest -f test.jungle -d fenix7 -o /tmp/depthcore_test.prg -y /path/to/developer_key -w -l 3
+monkeydo /tmp/depthcore_test.prg fenix7 -t   # the simulator has to be running
+```
+
+Two things about the test build are not obvious:
+
+- **Every `(:test)` function becomes a test case**, whatever it is named or how it is written. Helpers must not carry the annotation — an annotated helper is run as a test of its own, and one taking arguments errors out.
+- **`test/resources/settings/properties.xml` exists because `DepthModel` reads the app settings in its constructor**, and `Properties.getValue()` on a key that was never declared throws. A barrel ships no properties of its own, so the test build declares its own copy. Keep it in step with each app's `resources/settings/properties.xml`.
+
+What is *not* covered is anything that depends on time passing: `update()` reads `System.getTimer()` itself, so two calls in a row are microseconds apart — exactly the case the trend and the maximum both refuse to act on. The baseline window, the submerged watchdog and the trend thresholds therefore still need the simulator.
+
 ## Versioning
 
 The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `1.0.0`. Bump them together.

@@ -71,6 +71,8 @@ monkeyc -f monkey.jungle -o depth_field.prg -y /path/to/developer_key -d fenix7
 
 Building either data field prints two `(:glance) annotation will be ignored` warnings from the barrel. They are expected and harmless — see [DepthCore/README.md](DepthCore/README.md#two-things-worth-knowing).
 
+The shared model has unit tests, run against the barrel on its own — see [DepthCore/README.md](DepthCore/README.md#tests).
+
 **Keep the developer key outside this repository.** `.gitignore` covers the usual names, but the safest place is a directory that is not the working tree at all.
 
 See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-basics/) for setting up the SDK in the first place.
