@@ -49,14 +49,24 @@ Source files then use `import DepthCore;`.
 
 **`(:glance)` has to stay on the barrel code.** It is a build exclusion applied by the consuming app rather than a barrel annotation, so it needs no `<iq:annotations>` entry and works on barrel code as-is. Removing it fails the widget build with `Value 'DepthModel' not available in all function scopes`.
 
-The cost is that the two data fields have no glance, so each one emits a harmless warning per annotated declaration at build time:
+The cost is that the data fields have no glance, so each one emits a harmless warning per annotated declaration at build time:
 
 ```
 WARNING: Glance applications are not supported for app type 'datafield' ...
          The (:glance) annotation will be ignored.
 ```
 
-The annotation being ignored is the correct outcome — a data field includes the code either way. Three copies of the model was the alternative, and two warnings is the better trade.
+The annotation being ignored is the correct outcome — a data field includes the code either way. Three copies of the model was the alternative, and a few warnings is the better trade.
+
+There is a second cost, and it only shows up in the editor. VS Code reports errors the compiler does not:
+
+```
+epix2: Value 'depthView' not available in all function scopes.
+epix2: Value 'initialize' not available in all function scopes.
+epix2: Value 'onSettingsChanged' not available in all function scopes.
+```
+
+The editor's type checker builds a glance scope for a data field even though the compiler has just said data fields have none, and then cannot find the app's own view class in it. Every device in every product list builds clean from the command line, so the errors are the editor's alone — but they do not go away on their own, and an editor full of red is its own kind of bug. Each data field's `AppBase` subclass therefore carries `(:typecheck(disableGlanceCheck))` on the class, which is where it has to go: the view is named in a member variable as well as in two methods.
 
 `depthFit.mc` is deliberately *not* annotated: the glance displays a reading, it never records one, and glance scope is the tightest memory budget in the project.
 
