@@ -1,0 +1,24 @@
+# Monkey C & Connect IQ build output
+bin/
+IQ/
+*.prg
+*.prg.debug.xml
+*.iq
+*.barrel
+
+# Signing keys must never be committed
+*.der
+*.pem
+*.key
+developer_key
+
+# macOS
+.DS_Store
+._*
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
