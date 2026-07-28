@@ -28,6 +28,18 @@ and declares the dependency in its `manifest.xml`:
 
 Source files then use `import DepthCore;`.
 
+## Settings it reads
+
+`DepthModel.loadSettings()` reads these property keys, so a consuming app declares the ones it wants the user to control in its own `resources/settings/properties.xml`:
+
+| Key | Type | Default |
+| --- | --- | --- |
+| `waterType` | number | `0` (fresh) |
+| `unitOverride` | number | `0` (follow the watch) |
+| `rezero` | boolean | `false` |
+
+**A key the app does not declare falls back to the default above.** `Properties.getValue()` throws on an undeclared key, and `DepthModel` is constructed by every app that embeds the barrel — so the exception is caught and treated as "not configured", which is the same situation as a setting left at its default. Without that, adding a setting here would crash every app that had not yet declared it.
+
 ## Two things worth knowing
 
 **Classes resolve unqualified, bare functions do not.** With `import DepthCore;` in scope, `new DepthModel()` compiles. `depthColor(x)` does not — Monkey C resolves an unqualified call against `self` first, and the build fails with `Cannot find symbol ':depthColor' on type 'self'`. Free functions from the barrel have to be called as `DepthCore.depthColor(x)` and `DepthCore.depthCentimeters(x)`.

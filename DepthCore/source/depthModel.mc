@@ -255,9 +255,29 @@ module DepthCore {
             return (unit == System.UNIT_METRIC) ? "m" : "ft";
         }
 
+        //! Read a setting, or null if the app never declared it.
+        //!
+        //! Properties.getValue() throws on a key that is not in the app's
+        //! properties.xml, and this class is constructed by every app that
+        //! embeds the barrel. Taking the host app down over a missing settings
+        //! key would be the wrong trade: a key the app does not declare is a key
+        //! the user cannot set, which is the same situation as one left at its
+        //! default. So the exception is turned into the default, and the app
+        //! keeps running with the barrel's own idea of the setting.
+        //!
+        //! It also means a setting added here does not have to be declared by
+        //! every consuming app at once.
+        private function rawSetting(key as String) as Object? {
+            try {
+                return Properties.getValue(key);
+            } catch (e) {
+                return null;
+            }
+        }
+
         //! Read a numeric setting, falling back if it is missing or the wrong type.
         private function numberSetting(key as String, fallback as Number) as Number {
-            var value = Properties.getValue(key);
+            var value = rawSetting(key);
             if (value instanceof Lang.Number) {
                 return value;
             }
@@ -266,7 +286,7 @@ module DepthCore {
 
         //! Read a boolean setting, falling back if it is missing or the wrong type.
         private function booleanSetting(key as String, fallback as Boolean) as Boolean {
-            var value = Properties.getValue(key);
+            var value = rawSetting(key);
             if (value instanceof Lang.Boolean) {
                 return value;
             }
