@@ -1,0 +1,38 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <!--
+        English. The settings are the data field wording (an activity starts,
+        rather than measuring starting) and the colour range wording from the
+        widget, since this field's zones are the same colour bands.
+
+        FieldLabel and LabelMax are drawn by the field itself, not by the
+        system, and both are dropped when the field is too small to hold them -
+        keep them short.
+    -->
+    <string id="AppName">Depth Gauge</string>
+
+    <string id="FieldLabel">Depth</string>
+
+    <!-- Goes with the orange tick across the arc at the session maximum, so it
+         cannot be read as a second reading. The depth is drawn after it. -->
+    <string id="LabelMax">MAX</string>
+
+    <string id="WaterTypeTitle">Water type</string>
+    <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>
+    <string id="WaterFresh">Fresh</string>
+    <string id="WaterSalt">Salt</string>
+
+    <string id="UnitsTitle">Units</string>
+    <string id="UnitsPrompt">Which units to show the depth in.</string>
+    <string id="UnitsAuto">Follow watch</string>
+    <string id="UnitsMetric">Meters</string>
+    <string id="UnitsStatute">Feet</string>
+
+    <string id="ColorProfileTitle">Colour range</string>
+    <string id="ColorProfilePrompt">Which depths the gauge spans, and the colour of the reading with it. Blue, then green, yellow and red. Each range is a fixed depth whichever unit is displayed; the feet are the same depths rounded.</string>
+    <string id="ProfileSnorkel">Snorkel (2/5/10 m, 7/16/33 ft)</string>
+    <string id="ProfileFreedive">Freedive (10/20/30 m, 33/66/98 ft)</string>
+    <string id="ProfileDeep">Deep (20/40/60 m, 66/131/197 ft)</string>
+
+    <string id="RezeroTitle">Re-zero depth</string>
+    <string id="RezeroPrompt">Discards the surface pressure baseline and the maximum, and starts measuring again. Switches itself back off. Use it if the activity started while the watch was already in the water.</string>
+</strings>

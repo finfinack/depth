@@ -2,7 +2,7 @@
 
 A widget showing the current water depth, inferred from the barometric pressure sensor.
 
-> ⚠️ **This is not a dive computer.** Do not rely on it for safety. See the [repository README](../README.md#this-is-not-a-dive-computer) for what that means, and [how it works](../README.md#how-it-works-and-what-that-costs) for why the number can be wrong.
+> ⚠️ **This is not a dive computer.** Do not rely on it for safety. See the [repository README](../README.md#this-is-not-a-dive-computer) for what that means, and [how it works](../README.md#how-it-works-and-drawbacks) for why the number can be wrong.
 
 ## Pages
 

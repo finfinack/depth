@@ -1,0 +1,11 @@
+<properties>
+    <!-- 0 = fresh, 1 = salt. See DepthModel.WATER_* -->
+    <property id="waterType" type="number">0</property>
+    <!-- 0 = follow the watch, 1 = meters, 2 = feet. See DepthModel.UNITS_* -->
+    <property id="unitOverride" type="number">0</property>
+    <!-- A trigger, not a state: the app acts on it and switches it back off. -->
+    <property id="rezero" type="boolean">false</property>
+    <!-- 0 = snorkel, 1 = freedive, 2 = deep. See DepthCore.PROFILE_*. The gauge
+         splits its bar at these boundaries, so it declares it too. -->
+    <property id="colorProfile" type="number">0</property>
+</properties>

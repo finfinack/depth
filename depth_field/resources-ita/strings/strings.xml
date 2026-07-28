@@ -7,7 +7,7 @@
         or "(ft)" of its own. Data field labels get very little width - keep it
         short.
     -->
-    <string id="AppName">depth</string>
+    <string id="AppName">Depth</string>
 
     <string id="WaterTypeTitle">Tipo di acqua</string>
     <string id="WaterTypePrompt">L'acqua salata è più densa, quindi la stessa profondità produce più pressione. Salata usa la convenzione 1 msw = 10000 Pa, la stessa dei computer subacquei.</string>

@@ -4,6 +4,15 @@
     Launcher icon: a disc of water seen from the side, split by the wave of the
     surface, with an arrow marking the descent into the deep.
 
+    This is the master copy. Four of the five apps ship it byte for byte - the
+    widget, Depth, Depth Chart and Depth Gauge - so they read as one product in
+    the launcher, in the data field picker and in the store. Max Depth is the
+    one exception and ships depth_icon_max.svg, the same disc with the arrow
+    stopped on a floor line, because "deepest reached" is a different thing from
+    "how deep now" and the two sit next to each other in the picker. Copy this
+    file over each app's resources/drawables/launcher_icon.svg rather than
+    editing those in place; they are expected to be identical to it.
+
     The icon is rasterised down to 40-65 pixels depending on the device and has
     to survive the 64-colour MIP displays, so it is built from flat fills and
     bold shapes only: no gradients, strokes, opacity or fine detail, all of

@@ -7,7 +7,7 @@
         or "(ft)" of its own. Data field labels get very little width - keep it
         short.
     -->
-    <string id="AppName">max_depth</string>
+    <string id="AppName">Max Depth</string>
 
     <string id="WaterTypeTitle">Tipo de agua</string>
     <string id="WaterTypePrompt">El agua salada es más densa, así que la misma profundidad da más presión. Salada usa el convenio 1 msw = 10000 Pa, el de los ordenadores de buceo.</string>

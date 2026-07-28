@@ -9,10 +9,21 @@
     the 64-colour MIP displays. The white band of the surface is the gap between
     two copies of the same wave, offset vertically, rather than a stroke.
 
-    This is the master copy. The resources-icon-NN folders hold the same file
-    declared at each launcher size the targets ask for, so the resource compiler
-    never rescales the bitmap; they differ from this one only in the width and
-    height attributes below and must be kept in step with it.
+    This is the master copy, and Max Depth is the only app that ships it. The
+    other four take depth_icon.svg, which is this same disc with the arrow
+    running on into the deep instead of stopping. Everything but the arrow is
+    shared between the two on purpose: the family has to be recognisable at a
+    glance in the data field picker, where Depth and Max Depth sit next to each
+    other, while still being told apart.
+
+    Copy this file over max_depth_field/resources/drawables/launcher_icon.svg
+    rather than editing that one in place; it is expected to be identical to it.
+
+    width/height deliberately match the viewBox. Leaving the size at "100%"
+    makes the resource compiler assume 400x400 and downscale 10:1, which softens
+    the edge enough that the icon reads as smaller and off-centre next to a
+    native one; declaring a size that disagrees with the viewBox leaves the
+    scale up to the rasteriser instead. See depth_icon.svg for the long version.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" version="1.1">
     <defs>

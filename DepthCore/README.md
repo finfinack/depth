@@ -1,6 +1,6 @@
 # DepthCore
 
-The depth model shared by the widget and both data fields, packaged as a [Monkey Barrel](https://developer.garmin.com/connect-iq/core-topics/shareable-libraries/).
+The depth model shared by the widget and the four data fields, packaged as a [Monkey Barrel](https://developer.garmin.com/connect-iq/core-topics/shareable-libraries/).
 
 Before this existed, `depthModel.mc` was copied byte-for-byte into all three projects and `depthColors.mc` into two of them, so every fix to the baseline tracking had to be made three times and kept in step by hand.
 
@@ -9,6 +9,9 @@ Before this existed, `depthModel.mc` was copied byte-for-byte into all three pro
 | `source/depthModel.mc` | `DepthModel` — pressure to depth, the trailing surface-pressure baseline, the maximum, and the unit/water-type settings |
 | `source/depthColors.mc` | `depthColor()` — the blue/green/yellow/red scale used by the widget and its glance, in three selectable depth ranges |
 | `source/depthFit.mc` | `depthCentimeters()` — depth to the clamped centimetres the data fields write into the FIT file |
+| `source/depthLayout.mc` | `DepthFieldLayout` — where a full `DataField` may draw on a round screen, and the font fitting that goes with it |
+
+`depthLayout.mc` is here for the same reason the model is: Depth Chart and Depth Gauge are two apps with one problem, and a second copy of the lens geometry would drift from the first. See [Drawing on a round screen](#drawing-on-a-round-screen).
 
 ## Using it
 
@@ -22,7 +25,7 @@ and declares the dependency in its `manifest.xml`:
 
 ```xml
 <iq:barrels>
-  <iq:depends name="DepthCore" version="2.1.0"/>
+  <iq:depends name="DepthCore" version="2.2.0"/>
 </iq:barrels>
 ```
 
@@ -39,9 +42,34 @@ Source files then use `import DepthCore;`.
 | `rezero` | boolean | `false` |
 | `colorProfile` | number | `0` (snorkel) |
 
-`colorProfile` is declared by the widget only — the two data fields colour nothing, so they leave it out and get the default from the fallback below.
+`colorProfile` is declared by the widget, Depth Chart and Depth Gauge — the three that colour something. Depth and Max Depth are `SimpleDataField`s, which hand the system a string and let it draw, so they leave it out and get the default from the fallback below.
 
 **A key the app does not declare falls back to the default above.** `Properties.getValue()` throws on an undeclared key, and `DepthModel` is constructed by every app that embeds the barrel — so the exception is caught and treated as "not configured", which is the same situation as a setting left at its default. Without that, adding a setting here would crash every app that had not yet declared it.
+
+## Drawing on a round screen
+
+A `SimpleDataField` hands the system a string and the system finds room for it. A full `DataField` gets a rectangle and an `onUpdate(dc)`, and is on its own — including about the fact that on a round watch a good part of that rectangle is not on the lens. A field along the top edge has both its top corners cut away, and its topmost row is one pixel wide. Every device in the product lists is round, so this is the case that matters, not the exception.
+
+Connect IQ gives a field two clues about its place on the screen and no more: the size of its rectangle, and `getObscurityFlags()`, which says which screen edges that rectangle touches. That is enough, because the system tiles the fields — one touching neither the left nor the right edge is centred between them — so the flags plus the size give the field's origin, and from there the lens is a circle.
+
+`DepthFieldLayout` turns that into two things drawing code can use:
+
+| | |
+| --- | --- |
+| `top()`, `bottom()` | the rows worth drawing into at all. Rows narrower than 60% of the field are trimmed off either end, up to a third of the field's height — they are the pinched ends of the lens, where a heading would be clipped to two characters. Without this, a heading drawn at row 0 of a top field disappears completely. |
+| `left(from, to)`, `right(from, to)` | the horizontal span inside the lens for **every** row of a band. A band low in the field is wider than one at its top edge, so the heading and the drawing below it each ask about their own rows rather than sharing one inset. |
+| `rowLeft(row)`, `rowRight(row)` | the span of a single row, and `columnTop(column)`/`columnBottom(column)` the same turned ninety degrees. For drawing that follows the lens rather than squaring itself off inside it: the chart fills a column of water at a time, and fitting that to a rectangle would throw away most of a corner field. |
+| `contains(x, y)` | the same question for one point, without the square root — the chart asks it once per pixel column. |
+| `lensCenterX()`, `lensCenterY()`, `lensRadius()` | the lens circle itself, in the field's coordinates. |
+| `fontFitting(dc, text, width, height)` | the largest text font that renders `text` inside a box. Both dimensions, because either alone picks a font that does not fit. |
+
+`update(dc, obscurity)` must be called first thing in `onUpdate()` — that is the only place `getObscurityFlags()` is valid. It recomputes only when the field's size or flags change, which in practice is once, since the user cannot move a field mid-activity.
+
+On a screen that is not round the geometry switches off: every row is usable and the span is the full width less a small margin.
+
+**The circle is exposed as well as the rows because not everything drawn is a rectangle.** Depth Gauge draws an arc, and an arc concentric with the lens is on the lens at every point, however large — so on a full-screen or top-half field it runs right along the bezel like the watch's own zone gauges. Fitting that arc into a rectangle inside the lens instead shrinks it to about half the screen it could have used. Anything that genuinely needs a rectangle uses the rows.
+
+There is deliberately **no shared "draw the heading" helper**. The two fields head themselves differently — the chart puts its label and reading on one row above the plot, the gauge centres the reading inside the arc — and a single function covering both would take more arguments than the twenty lines it saved. What is genuinely common is the geometry and the font fitting, and that is what is here.
 
 ## Two things worth knowing
 
@@ -103,6 +131,6 @@ model.updateAt(info, 1000);   // 1 s after the previous sample
 
 ## Versioning
 
-The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.1.0`. Bump them together.
+The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.2.0`. Bump them together.
 
-It is deliberately the same number as the apps carry in the store rather than a version of its own: the barrel is not published anywhere and has exactly three consumers, all in this repository and all released together, so a separate lineage for it would be two numbers to keep straight in exchange for nothing. The apps' own version is set when uploading to the store — Connect IQ app manifests have no version field.
+It is deliberately the same number as the apps carry in the store rather than a version of its own: the barrel is not published anywhere and has exactly five consumers, all in this repository and all released together, so a separate lineage for it would be two numbers to keep straight in exchange for nothing. The apps' own version is set when uploading to the store — Connect IQ app manifests have no version field.

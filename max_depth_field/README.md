@@ -2,7 +2,7 @@
 
 A data field showing the deepest water depth reached since the activity started, inferred from the barometric pressure sensor.
 
-> ⚠️ **This is not a dive computer.** Do not rely on it for safety. See the [repository README](../README.md#this-is-not-a-dive-computer) for what that means, and [how it works](../README.md#how-it-works-and-what-that-costs) for why the number can be wrong.
+> ⚠️ **This is not a dive computer.** Do not rely on it for safety. See the [repository README](../README.md#this-is-not-a-dive-computer) for what that means, and [how it works](../README.md#how-it-works-and-drawbacks) for why the number can be wrong.
 
 The unit is shown in the field label (`Max Depth (m)` / `Max Depth (ft)`), because a simple data field has no room for a suffix on the value itself.
 

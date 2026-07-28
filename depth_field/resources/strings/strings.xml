@@ -1,5 +1,5 @@
 <strings>
-    <string id="AppName">depth</string>
+    <string id="AppName">Depth</string>
 
     <!-- The data field label. The unit is appended to it in code, because a
          SimpleDataField has no room for a unit next to the value itself. Data

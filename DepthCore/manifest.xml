@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
   <!--
-        The depth model and its colour scale, shared by the widget and the two
-        data fields. See DepthCore/README.md.
+        The depth model, its colour scale and the data field layout, shared by
+        the widget and the four data fields. See DepthCore/README.md.
     -->
-  <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="2.1.0" minApiLevel="5.2.0">
+  <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="2.2.0" minApiLevel="5.2.0">
     <iq:products>
         <iq:product id="epix2"/>
         <iq:product id="epix2pro42mm"/>

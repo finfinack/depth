@@ -1,0 +1,35 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <!--
+        French. AppName is deliberately left untranslated: it is the app's
+        identity in the store and in the launcher, not a label.
+
+        FieldLabel and LabelMax are drawn by the field itself, not by the
+        system, and both are dropped when the field is too small to hold
+        them - keep them short. LabelMax goes with the orange tick across the
+        arc at the session maximum and matches the widget's own MAX.
+    -->
+    <string id="AppName">Depth Gauge</string>
+
+    <string id="FieldLabel">Profondeur</string>
+    <string id="LabelMax">MAX</string>
+
+    <string id="WaterTypeTitle">Type d'eau</string>
+    <string id="WaterTypePrompt">L'eau salée est plus dense : la même profondeur donne donc plus de pression. Le réglage Salée utilise la convention 1 msw = 10000 Pa, celle des ordinateurs de plongée.</string>
+    <string id="WaterFresh">Douce</string>
+    <string id="WaterSalt">Salée</string>
+
+    <string id="UnitsTitle">Unités</string>
+    <string id="UnitsPrompt">L'unité dans laquelle la profondeur est affichée.</string>
+    <string id="UnitsAuto">Suivre la montre</string>
+    <string id="UnitsMetric">Mètres</string>
+    <string id="UnitsStatute">Pieds</string>
+
+    <string id="ColorProfileTitle">Plage de couleurs</string>
+    <string id="ColorProfilePrompt">Les profondeurs que couvre la couleur de la valeur, pour la juger sans lire le chiffre. Bleu, puis vert, jaune et rouge. Chaque plage est une profondeur fixe quelle que soit l'unité affichée ; les pieds sont les mêmes profondeurs, arrondies.</string>
+    <string id="ProfileSnorkel">Snorkeling (2/5/10 m, 7/16/33 ft)</string>
+    <string id="ProfileFreedive">Apnée (10/20/30 m, 33/66/98 ft)</string>
+    <string id="ProfileDeep">Profond (20/40/60 m, 66/131/197 ft)</string>
+
+    <string id="RezeroTitle">Remettre à zéro</string>
+    <string id="RezeroPrompt">Efface la pression de référence en surface ainsi que le maximum, et recommence la mesure. Se désactive tout seul. À utiliser si l'activité a démarré alors que la montre était déjà dans l'eau.</string>
+</strings>

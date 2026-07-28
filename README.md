@@ -1,6 +1,6 @@
 # Depth
 
-Barometric depth for Garmin watches (Fenix, Epix, Tactix) — a widget, two data fields, and the model they share.
+Barometric depth for Garmin watches (Fenix, Epix, Tactix) — a widget, four data fields, and the model they share.
 
 Find them on the [Garmin ConnectIQ store](https://apps.garmin.com/developer/1e45545b-eec0-40b0-886d-61739dd6f510/apps) for free to install them.
 
@@ -8,13 +8,24 @@ Previously three separate repositories. They are one now because all three carri
 
 | Project | Type | What it is |
 | --- | --- | --- |
-| [DepthCore](DepthCore/) | Monkey Barrel | The depth model, colour scale and FIT helpers. No UI. |
+| [DepthCore](DepthCore/) | Monkey Barrel | The depth model, colour scale, FIT helpers and the data field layout |
 | [depth_widget](depth_widget/) | Widget | Three pages plus a glance: current depth, maximum, and both together |
 | [depth_field](depth_field/) | Data field | Current depth during an activity; records the depth graph into the FIT file |
-| [depth_graph](depth_graph/) | Data field | Depth as a chart over time or as a zoned gauge, drawn by the field itself. Shows only — records nothing |
+| [depth_chart](depth_chart/) | Data field | Depth as a chart over time, drawn by the field itself. Shows only — records nothing |
+| [depth_gauge](depth_gauge/) | Data field | Depth as a zoned arc in the colour range, drawn by the field itself. Shows only — records nothing |
 | [max_depth_field](max_depth_field/) | Data field | Deepest reading of the activity; records a session maximum |
 
-The four apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
+The five apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
+
+| App | Shown as |
+| --- | --- |
+| `depth_widget` | **Depth** |
+| `depth_field` | **Depth** |
+| `max_depth_field` | **Max Depth** |
+| `depth_chart` | **Depth Chart** |
+| `depth_gauge` | **Depth Gauge** |
+
+The directory names are Connect IQ project names and stay in `snake_case`; the app names are what the user reads, in the store, in the launcher and in the data field picker, and are written out properly. The widget and the Depth field share a name on purpose — they are the same thing in two places, and a widget never appears in the same list as a data field.
 
 ## This is **not** a dive computer
 
@@ -49,15 +60,14 @@ The [Depth data field](depth_field/) records the raw pressure into the activity 
 
 ## Settings
 
-These live in Garmin Connect under the app's settings. The first three exist in all four apps:
+These live in Garmin Connect under the app's settings. The first three exist in all five apps:
 
 | Setting | What it does |
 | --- | --- |
 | Water type | Fresh or salt, which sets the pressure per metre used above |
 | Units | Metres, feet, or follow the watch's elevation unit |
 | Re-zero depth | Discards the baseline and the maximum and starts over. Switches itself back off. |
-| Colour range | Widget and the graph field — which depths the colour scale spans. See below. |
-| Style | Graph field only — Chart or Gauge. See below. |
+| Colour range | Widget, Depth Chart and Depth Gauge — which depths the colour scale spans. See below. |
 
 ### Colour range
 
@@ -78,15 +88,62 @@ Both unit systems are spelled out in the setting itself because the list is rend
 
 The Depth and Max Depth fields have no colour of their own — a `SimpleDataField` hands the system a string and the system draws it — so the setting does not appear in those two.
 
-### Style
+## The two drawn fields
 
-The graph field draws itself, so it can draw either of two things. One field, one setting, rather than two apps competing for the same slot on a data screen.
+Depth and Max Depth are `SimpleDataField`s: they hand the system a string and the system draws it. Depth Chart and Depth Gauge are full `DataField`s, which get the field area and an `onUpdate(dc)` and do everything themselves.
 
-**Chart** plots the last two minutes of depth against time, deepening downwards from a surface line at the top, in the style of the watch's own barometric pressure chart. The line takes its colour from the depth it is at, the session maximum crosses it as an orange line, and the bottom edge snaps to fixed steps — 2, 5, 10, 20, 30, 50, 100 m — so the trace holds still instead of creeping every time the maximum gains a centimetre. The value in the corner is what the bottom of the chart is worth.
+They are **two apps rather than one app with a Style setting**. A data field is picked from a list on the watch, and that list has one entry per app — so a setting could only be reached after the field was already on a data screen, and there was no way to put a chart on one screen and a gauge on another. Two entries in the picker takes two apps. Both are still one codebase: everything they share lives in the barrel.
 
-**Gauge** shows where the current depth sits in the colour range instead, the way a heart rate gauge shows a zone: a bar divided into the four colours at the profile's own boundaries, a marker at the current depth and an orange tick at the session maximum. The zones come from the same numbers `depthColor()` colours by, so the bar and the reading above it cannot disagree.
+Neither records anything. The per-record depth series and the raw pressure belong to the Depth field and the session maximum to Max Depth; writing them here as well would duplicate the whole graph in Garmin Connect for anyone running two of these at once. Pair one with the Depth field if the activity should carry the data as well as show it.
+
+### Depth Chart
+
+Laid out like the watch's own barometer field: the reading across the top, and under it the last two minutes of depth as a **solid body of water** hanging from a surface line, deepening downwards.
+
+The fill is the point. The barometer field fills the area between its axis and its trace, and the same fill means something here — depth is measured down from the surface, so the block between the surface line and the trace *is* the reading, and the chart reads as water rather than as a line. It is banded blue, green, yellow and red as it deepens, at the profile's own boundaries, so the fill carries the same colour information the reading does and the bands can be read as a scale.
+
+**The bottom of the chart is the session maximum.** The chart scales to the deepest the session has been rather than to fixed steps, so the maximum is the floor of the picture — an orange line along the bottom with `MAX` and the depth on it. There is one reference on the chart, not two, which is what the fixed steps got wrong: a line floating in the middle reads as a threshold or an average just as readily as a maximum.
+
+The cost of that is a chart that rescales as the maximum grows instead of holding still. A shallow session is floored at 0.5 m, which is already inside the band the model treats as "at the surface" — otherwise a two-centimetre maximum would stretch sensor noise across the whole field.
+
+### Depth Gauge
+
+The upper half of a zone gauge, like the watch's own heart rate one: the colour profile's four bands as a scale, with the reading in the middle of it.
+
+It is drawn **two ways**, because a data field can be handed anything from the whole screen to a band a few rows tall and one shape does not serve both:
+
+| Field | Shape |
+| --- | --- |
+| Full-screen, top half | An **arc concentric with the display**, running right along the bezel like the built-in gauges |
+| Bottom half, and other roughly square fields | A **semicircle fitted into the field** |
+| Three- and four-field layouts, quarter fields | A **bar** along the bottom, reading above it |
+
+The split matters. A semicircle is limited by the field's *height*, so in a four-field band 65 rows tall it would span about a third of the width and squeeze the reading into what was left — backwards, since the reading is the point and the gauge is context around it. The bar uses the whole width instead and leaves the reading a real font size. An arc is only used when it can manage at least 75% of the field's width and a radius that can hold a legible number inside it.
+
+The zones come from the same numbers `depthColor()` colours by, so the gauge and the reading cannot disagree about what colour a depth is. The current depth is a bright **arrowhead** riding on the band; the session maximum is an orange **tick straight across** it, with `MAX` and the depth under the reading when there is room. Two different shapes on purpose — a second arrowhead would read as a second current reading, and a short arc in another colour would read as one more zone.
 
 The gauge runs to one zone-width past the red boundary — 15 m on Snorkel, 40 m on Freedive, 80 m on Deep — because a gauge that pins the moment it turns red says nothing after that.
+
+### Round screens
+
+Every device in the product lists is round, and a data field is handed a rectangle regardless: a field along the top edge has both its top corners cut away, and its topmost row is one pixel wide. Drawing to the whole rectangle puts the label in the bezel.
+
+Both fields therefore measure where they are before drawing — from their size and `getObscurityFlags()`, which is enough because the system tiles the fields — and then work with the lens rather than against it: the chart places its heading below the rows the lens has pinched away and fills its water column by column out to the curve, and the gauge puts its arc concentric with the display so it follows the bezel exactly.
+
+That geometry is `DepthFieldLayout` in the barrel, shared by both and [documented there](DepthCore/README.md#drawing-on-a-round-screen), with unit tests — it is not something you can check by eye without a watch, and the tests already caught one off-by-one that handed back a pixel a fraction outside the lens.
+
+## Icons
+
+Two launcher icons between the five apps, both the same disc of water split by the wave of the surface:
+
+| Icon | Apps | Arrow |
+| --- | --- | --- |
+| `resources/depth_icon.svg` | Depth, Depth Chart, Depth Gauge, the widget | Runs on down into the deep |
+| `resources/depth_icon_max.svg` | Max Depth | Stops on a floor line |
+
+Everything but the arrow is shared, so the family reads as one product at 40 px while Max Depth is still tellable from Depth — which matters, because those two sit next to each other in the data field picker.
+
+`resources/` holds the masters and is **not** in the repository (`.gitignore` excludes it, along with the store artwork). Each app ships its own byte-for-byte copy at `resources/drawables/launcher_icon.svg`, and those are what actually build. Copy a master over them rather than editing in place; they are expected to be identical to it.
 
 ## Building
 
@@ -99,9 +156,9 @@ cd depth_field
 monkeyc -f monkey.jungle -o depth_field.prg -y /path/to/developer_key -d fenix7
 ```
 
-Building either data field prints two `(:glance) annotation will be ignored` warnings from the barrel. They are expected and harmless — see [DepthCore/README.md](DepthCore/README.md#two-things-worth-knowing).
+Building any of the four data fields prints a `(:glance) annotation will be ignored` warning per annotated declaration in the barrel, and a launcher icon warning about the 128 px source being scaled to the device's size. All of them are expected and harmless — see [DepthCore/README.md](DepthCore/README.md#two-things-worth-knowing) for the first and [`resources/depth_icon.svg`](resources/) for the second.
 
-The shared model has unit tests, run against the barrel on its own — see [DepthCore/README.md](DepthCore/README.md#tests).
+The shared model and the field layout have unit tests, run against the barrel on its own — see [DepthCore/README.md](DepthCore/README.md#tests).
 
 **Keep the developer key outside this repository.** `.gitignore` covers the usual names, but the safest place is a directory that is not the working tree at all.
 
@@ -109,11 +166,11 @@ See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-b
 
 ## Languages
 
-All four apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the widget and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
+All five apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the widget and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
 
 1. Copy `resources/strings/strings.xml` to `resources-<lang>/strings/strings.xml` in the project and translate the values, keeping the `id`s. Use Garmin's code for `<lang>`: `deu`, `fre`, `ita`, `spa`, `por`, `dut`, `nob`, and so on — the full list is in `bin/projectInfo.xml` in the SDK.
 2. Add the language to `<iq:languages>` in that project's `manifest.xml`. Without this the build prints `String resources will be ignored` and the folder is skipped entirely.
-3. Repeat per project — the four are separate Connect IQ apps and do not share resources.
+3. Repeat per project — the five are separate Connect IQ apps and do not share resources.
 
 Four things to know before translating:
 
@@ -127,7 +184,7 @@ The shipped translations have been compiled but not seen on a watch: the on-scre
 
 ### Running in the emulator
 
-- Open the project directory you want to run — the four are separate Connect IQ projects, so VS Code needs the one, not the repository root.
+- Open the project directory you want to run — the five are separate Connect IQ projects, so VS Code needs the one, not the repository root.
 - Make sure one of its source files (in `source`, with the `.mc` extension) is open and selected in the editor.
 - Select `Run > Run Without Debugging` (`Command + F5` on Mac, `Ctrl + F5` elsewhere).
 - Pick a product from the list you are prompted with.

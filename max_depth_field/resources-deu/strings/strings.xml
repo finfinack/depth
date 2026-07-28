@@ -7,7 +7,7 @@
         or "(ft)" of its own. Data field labels get very little width - keep it
         short.
     -->
-    <string id="AppName">max_depth</string>
+    <string id="AppName">Max Depth</string>
 
     <string id="WaterTypeTitle">Wasserart</string>
     <string id="WaterTypePrompt">Salzwasser ist dichter, dieselbe Tiefe ergibt also mehr Druck. Salzwasser verwendet die Konvention 1 msw = 10000 Pa, mit der auch Tauchcomputer rechnen.</string>
