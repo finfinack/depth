@@ -11,7 +11,7 @@ Previously three separate repositories. They are one now because all three carri
 | [DepthCore](DepthCore/) | Monkey Barrel | The depth model, colour scale and FIT helpers. No UI. |
 | [depth_widget](depth_widget/) | Widget | Three pages plus a glance: current depth, maximum, and both together |
 | [depth_field](depth_field/) | Data field | Current depth during an activity; records the depth graph into the FIT file |
-| [depth_graph](depth_graph/) | Data field | A live depth trace for the last two minutes, drawn by the field itself. Shows only — records nothing |
+| [depth_graph](depth_graph/) | Data field | Depth as a chart over time or as a zoned gauge, drawn by the field itself. Shows only — records nothing |
 | [max_depth_field](max_depth_field/) | Data field | Deepest reading of the activity; records a session maximum |
 
 The four apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
@@ -57,6 +57,7 @@ These live in Garmin Connect under the app's settings. The first three exist in 
 | Units | Metres, feet, or follow the watch's elevation unit |
 | Re-zero depth | Discards the baseline and the maximum and starts over. Switches itself back off. |
 | Colour range | Widget and the graph field — which depths the colour scale spans. See below. |
+| Style | Graph field only — Chart or Gauge. See below. |
 
 ### Colour range
 
@@ -76,6 +77,16 @@ A band edge is one depth shown two ways, not two sets of thresholds. The feet ar
 Both unit systems are spelled out in the setting itself because the list is rendered by the phone, which has no way to know what Units is set to.
 
 The Depth and Max Depth fields have no colour of their own — a `SimpleDataField` hands the system a string and the system draws it — so the setting does not appear in those two.
+
+### Style
+
+The graph field draws itself, so it can draw either of two things. One field, one setting, rather than two apps competing for the same slot on a data screen.
+
+**Chart** plots the last two minutes of depth against time, deepening downwards from a surface line at the top, in the style of the watch's own barometric pressure chart. The line takes its colour from the depth it is at, the session maximum crosses it as an orange line, and the bottom edge snaps to fixed steps — 2, 5, 10, 20, 30, 50, 100 m — so the trace holds still instead of creeping every time the maximum gains a centimetre. The value in the corner is what the bottom of the chart is worth.
+
+**Gauge** shows where the current depth sits in the colour range instead, the way a heart rate gauge shows a zone: a bar divided into the four colours at the profile's own boundaries, a marker at the current depth and an orange tick at the session maximum. The zones come from the same numbers `depthColor()` colours by, so the bar and the reading above it cannot disagree.
+
+The gauge runs to one zone-width past the red boundary — 15 m on Snorkel, 40 m on Freedive, 80 m on Deep — because a gauge that pins the moment it turns red says nothing after that.
 
 ## Building
 

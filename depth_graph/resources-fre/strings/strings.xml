@@ -7,7 +7,12 @@
         FieldLabel is drawn by the field itself, not by the system, and is
         dropped entirely when the field is too small for it - keep it short.
     -->
-    <string id="AppName">depth_graph</string>
+    <string id="AppName">Depth Graph</string>
+
+    <string id="FieldStyleTitle">Style</string>
+    <string id="FieldStylePrompt">Graphique trace les deux dernières minutes de profondeur dans le temps. Jauge montre où se situe la profondeur actuelle dans la plage de couleurs, comme une jauge de fréquence cardiaque montre une zone.</string>
+    <string id="StyleChart">Graphique</string>
+    <string id="StyleGauge">Jauge</string>
 
     <string id="WaterTypeTitle">Type d'eau</string>
     <string id="WaterTypePrompt">L'eau salée est plus dense : la même profondeur donne donc plus de pression. Le réglage Salée utilise la convention 1 msw = 10000 Pa, celle des ordinateurs de plongée.</string>

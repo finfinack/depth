@@ -8,4 +8,8 @@
     <!-- 0 = snorkel, 1 = freedive, 2 = deep. See DepthCore.PROFILE_*. The graph field
          colours both the reading and the trace, so it declares it too. -->
     <property id="colorProfile" type="number">0</property>
+    <!-- 0 = chart, 1 = gauge. See depth_graphView.STYLE_*. This one is the
+         graph field's alone: how it draws itself is no business of the depth
+         model the other apps share. -->
+    <property id="fieldStyle" type="number">0</property>
 </properties>

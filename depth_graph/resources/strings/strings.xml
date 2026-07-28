@@ -7,7 +7,12 @@
         FieldLabel is drawn by the field itself, not by the system, and is
         dropped entirely when the field is too small for it - keep it short.
     -->
-    <string id="AppName">depth_graph</string>
+    <string id="AppName">Depth Graph</string>
+
+    <string id="FieldStyleTitle">Style</string>
+    <string id="FieldStylePrompt">Chart draws the last two minutes of depth over time. Gauge shows where the current depth sits in the colour range, the way a heart rate gauge shows a zone.</string>
+    <string id="StyleChart">Chart</string>
+    <string id="StyleGauge">Gauge</string>
 
     <string id="WaterTypeTitle">Water type</string>
     <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>

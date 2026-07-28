@@ -1,4 +1,10 @@
 <settings>
+    <setting propertyKey="@Properties.fieldStyle" title="@Strings.FieldStyleTitle" prompt="@Strings.FieldStylePrompt">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.StyleChart</listEntry>
+            <listEntry value="1">@Strings.StyleGauge</listEntry>
+        </settingConfig>
+    </setting>
     <setting propertyKey="@Properties.waterType" title="@Strings.WaterTypeTitle" prompt="@Strings.WaterTypePrompt">
         <settingConfig type="list">
             <listEntry value="0">@Strings.WaterFresh</listEntry>

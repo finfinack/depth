@@ -7,7 +7,12 @@
         FieldLabel is drawn by the field itself, not by the system, and is
         dropped entirely when the field is too small for it - keep it short.
     -->
-    <string id="AppName">depth_graph</string>
+    <string id="AppName">Depth Graph</string>
+
+    <string id="FieldStyleTitle">Estilo</string>
+    <string id="FieldStylePrompt">Gráfico traza los últimos dos minutos de profundidad en el tiempo. Indicador muestra dónde queda la profundidad actual dentro del rango de color, como un indicador de frecuencia cardiaca muestra la zona.</string>
+    <string id="StyleChart">Gráfico</string>
+    <string id="StyleGauge">Indicador</string>
 
     <string id="WaterTypeTitle">Tipo de agua</string>
     <string id="WaterTypePrompt">El agua salada es más densa, así que la misma profundidad da más presión. Salada usa el convenio 1 msw = 10000 Pa, el de los ordenadores de buceo.</string>
