@@ -1,0 +1,33 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <!--
+        Spanish. The settings are the data field wording (an activity starts,
+        rather than measuring starting) and the colour range wording from the
+        widget, since this field colours its trace the same way.
+
+        FieldLabel is drawn by the field itself, not by the system, and is
+        dropped entirely when the field is too small for it - keep it short.
+    -->
+    <string id="AppName">depth_graph</string>
+
+    <string id="WaterTypeTitle">Tipo de agua</string>
+    <string id="WaterTypePrompt">El agua salada es más densa, así que la misma profundidad da más presión. Salada usa el convenio 1 msw = 10000 Pa, el de los ordenadores de buceo.</string>
+    <string id="WaterFresh">Dulce</string>
+    <string id="WaterSalt">Salada</string>
+
+    <string id="UnitsTitle">Unidades</string>
+    <string id="UnitsPrompt">En qué unidad se muestra la profundidad.</string>
+    <string id="UnitsAuto">Seguir al reloj</string>
+    <string id="UnitsMetric">Metros</string>
+    <string id="UnitsStatute">Pies</string>
+
+    <string id="ColorProfileTitle">Rango de color</string>
+    <string id="ColorProfilePrompt">Qué profundidades abarca el color del valor, para poder juzgarlo sin leer el número. Azul, luego verde, amarillo y rojo. Cada rango es una profundidad fija sea cual sea la unidad mostrada; los pies son esas mismas profundidades, redondeadas.</string>
+    <string id="ProfileSnorkel">Snorkel (2/5/10 m, 7/16/33 ft)</string>
+    <string id="ProfileFreedive">Apnea (10/20/30 m, 33/66/98 ft)</string>
+    <string id="ProfileDeep">Profundo (20/40/60 m, 66/131/197 ft)</string>
+
+    <string id="RezeroTitle">Poner a cero</string>
+    <string id="RezeroPrompt">Descarta la presión de referencia en superficie y el máximo, y vuelve a empezar a medir. Se desactiva solo. Úsalo si la actividad empezó con el reloj ya dentro del agua.</string>
+
+    <string id="FieldLabel">Profundidad</string>
+</strings>

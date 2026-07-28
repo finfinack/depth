@@ -11,9 +11,10 @@ Previously three separate repositories. They are one now because all three carri
 | [DepthCore](DepthCore/) | Monkey Barrel | The depth model, colour scale and FIT helpers. No UI. |
 | [depth_widget](depth_widget/) | Widget | Three pages plus a glance: current depth, maximum, and both together |
 | [depth_field](depth_field/) | Data field | Current depth during an activity; records the depth graph into the FIT file |
+| [depth_graph](depth_graph/) | Data field | A live depth trace for the last two minutes, drawn by the field itself. Shows only — records nothing |
 | [max_depth_field](max_depth_field/) | Data field | Deepest reading of the activity; records a session maximum |
 
-The three apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
+The four apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
 
 ## This is **not** a dive computer
 
@@ -48,14 +49,14 @@ The [Depth data field](depth_field/) records the raw pressure into the activity 
 
 ## Settings
 
-These live in Garmin Connect under the app's settings. The first three exist in all three apps:
+These live in Garmin Connect under the app's settings. The first three exist in all four apps:
 
 | Setting | What it does |
 | --- | --- |
 | Water type | Fresh or salt, which sets the pressure per metre used above |
 | Units | Metres, feet, or follow the watch's elevation unit |
 | Re-zero depth | Discards the baseline and the maximum and starts over. Switches itself back off. |
-| Colour range | Widget only — which depths the colour scale spans. See below. |
+| Colour range | Widget and the graph field — which depths the colour scale spans. See below. |
 
 ### Colour range
 
@@ -74,7 +75,7 @@ A band edge is one depth shown two ways, not two sets of thresholds. The feet ar
 
 Both unit systems are spelled out in the setting itself because the list is rendered by the phone, which has no way to know what Units is set to.
 
-The two data fields have no colour — a `SimpleDataField` draws its own value — so the setting does not appear in them.
+The Depth and Max Depth fields have no colour of their own — a `SimpleDataField` hands the system a string and the system draws it — so the setting does not appear in those two.
 
 ## Building
 
@@ -97,11 +98,11 @@ See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-b
 
 ## Languages
 
-All three apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the widget and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
+All four apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the widget and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
 
 1. Copy `resources/strings/strings.xml` to `resources-<lang>/strings/strings.xml` in the project and translate the values, keeping the `id`s. Use Garmin's code for `<lang>`: `deu`, `fre`, `ita`, `spa`, `por`, `dut`, `nob`, and so on — the full list is in `bin/projectInfo.xml` in the SDK.
 2. Add the language to `<iq:languages>` in that project's `manifest.xml`. Without this the build prints `String resources will be ignored` and the folder is skipped entirely.
-3. Repeat per project — the three are separate Connect IQ apps and do not share resources.
+3. Repeat per project — the four are separate Connect IQ apps and do not share resources.
 
 Four things to know before translating:
 
@@ -117,7 +118,7 @@ The shipped translations have been compiled but not seen on a watch: the on-scre
 
 > ℹ Note: The emulator is fairly limited for this specific purpose because you won't be able to inject sensor readings in order to validate the actual functions. You will need to run it on an actual watch in order to do so.
 
-- Open the project directory you want to run — the three are separate Connect IQ projects, so VS Code needs the one, not the repository root.
+- Open the project directory you want to run — the four are separate Connect IQ projects, so VS Code needs the one, not the repository root.
 - Make sure one of its source files (in `source`, with the `.mc` extension) is open and selected in the editor.
 - Select `Run > Run Without Debugging` (`Command + F5` on Mac, `Ctrl + F5` elsewhere).
 - Pick a product from the list you are prompted with.

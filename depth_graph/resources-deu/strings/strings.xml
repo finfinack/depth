@@ -1,0 +1,33 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <!--
+        German. The settings are the data field wording (an activity starts,
+        rather than measuring starting) and the colour range wording from the
+        widget, since this field colours its trace the same way.
+
+        FieldLabel is drawn by the field itself, not by the system, and is
+        dropped entirely when the field is too small for it - keep it short.
+    -->
+    <string id="AppName">depth_graph</string>
+
+    <string id="WaterTypeTitle">Wasserart</string>
+    <string id="WaterTypePrompt">Salzwasser ist dichter, dieselbe Tiefe ergibt also mehr Druck. Salzwasser verwendet die Konvention 1 msw = 10000 Pa, mit der auch Tauchcomputer rechnen.</string>
+    <string id="WaterFresh">Süsswasser</string>
+    <string id="WaterSalt">Salzwasser</string>
+
+    <string id="UnitsTitle">Einheiten</string>
+    <string id="UnitsPrompt">In welcher Einheit die Tiefe angezeigt wird.</string>
+    <string id="UnitsAuto">Uhr folgen</string>
+    <string id="UnitsMetric">Meter</string>
+    <string id="UnitsStatute">Fuss</string>
+
+    <string id="ColorProfileTitle">Farbbereich</string>
+    <string id="ColorProfilePrompt">Welche Tiefen die Farbe des Werts abdeckt, damit er sich ohne Lesen der Zahl einschätzen lässt. Blau, dann grün, gelb und rot. Jeder Bereich ist eine feste Tiefe, unabhängig von der angezeigten Einheit; die Fuss-Angaben sind dieselben Tiefen, gerundet.</string>
+    <string id="ProfileSnorkel">Schnorcheln (2/5/10 m, 7/16/33 ft)</string>
+    <string id="ProfileFreedive">Apnoe (10/20/30 m, 33/66/98 ft)</string>
+    <string id="ProfileDeep">Tief (20/40/60 m, 66/131/197 ft)</string>
+
+    <string id="RezeroTitle">Tiefe zurücksetzen</string>
+    <string id="RezeroPrompt">Verwirft den Referenzdruck der Oberfläche und das Maximum und misst von vorn. Schaltet sich selbst wieder aus. Nutze das, wenn die Aktivität begann, während die Uhr schon im Wasser war.</string>
+
+    <string id="FieldLabel">Tiefe</string>
+</strings>
