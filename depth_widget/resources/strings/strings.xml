@@ -1,6 +1,28 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName">Depth</string>
 
+    <!--
+        On-screen labels. All of these are drawn centred into a fixed slot on a
+        round display, so a translation that is much longer than the English
+        will be clipped rather than wrapped: LabelDepth and LabelMax sit side by
+        side on the summary page and are already abbreviated for that reason.
+        Keep them short.
+    -->
+    <string id="LabelDepth">DEPTH</string>
+    <string id="LabelMax">MAX</string>
+    <string id="LabelMaxDepth">MAX DEPTH</string>
+
+    <!--
+        Glance labels. scope="glance" is required, not tidiness: without it Rez
+        is not visible from glance code at all and the build fails with "Value
+        'Rez' not available in all function scopes". These two are measured at
+        run time to align the values after them, so their length is free.
+    -->
+    <string id="GlanceDepth" scope="glance">Depth</string>
+    <string id="GlanceMaxDepth" scope="glance">Max Depth</string>
+
+    <string id="RezeroConfirm">Re-zero depth?</string>
+
     <string id="WaterTypeTitle">Water type</string>
     <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>
     <string id="WaterFresh">Fresh</string>

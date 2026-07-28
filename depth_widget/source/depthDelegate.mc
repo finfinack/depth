@@ -33,7 +33,7 @@ class depthDelegate extends WatchUi.BehaviorDelegate {
     //! recovered.
     function onSelect() as Boolean {
         WatchUi.pushView(
-            new WatchUi.Confirmation("Re-zero depth?"),
+            new WatchUi.Confirmation(WatchUi.loadResource(Rez.Strings.RezeroConfirm) as String),
             new rezeroDelegate(_model),
             WatchUi.SLIDE_UP);
         return true;

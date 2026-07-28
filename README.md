@@ -75,6 +75,20 @@ The shared model has unit tests, run against the barrel on its own — see [Dept
 
 See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-basics/) for setting up the SDK in the first place.
 
+### Adding a language
+
+Every string the user sees now comes from `resources/strings/strings.xml` — the settings, the widget labels, the glance labels, the re-zero confirmation and the data field labels. Nothing user-facing is a literal in the source any more, so adding a language is a resource-only change:
+
+1. Copy `resources/strings/strings.xml` to `resources-<lang>/strings/strings.xml` in the project and translate the values, keeping the `id`s.
+2. Add the language to `<iq:languages>` in that project's `manifest.xml`.
+3. Repeat per project — the three are separate Connect IQ apps and do not share resources.
+
+Three things to know before translating:
+
+- **The widget labels are drawn into fixed slots on a round screen.** `LabelDepth`, `LabelMax` and `LabelMaxDepth` are centred at a set size and will be clipped, not wrapped, if a translation runs long. The English is already abbreviated for the summary page for exactly this reason. The glance labels are measured at run time and can be any length.
+- **The glance strings carry `scope="glance"`.** Without it the resource is not visible from glance code and the build fails with `Value 'Rez' not available in all function scopes`. Keep the attribute when copying.
+- **Units are not translated.** `m` and `ft` are appended in code rather than baked into the labels, so a translation is one word and cannot get the symbols wrong. The `n/a` shown when there is no reading comes from the barrel, which ships no resources of its own, and stays as it is.
+
 ### Running in the emulator
 
 > ℹ Note: The emulator is fairly limited for this specific purpose because you won't be able to inject sensor readings in order to validate the actual functions. You will need to run it on an actual watch in order to do so.

@@ -1,6 +1,11 @@
 <strings>
     <string id="AppName">depth</string>
 
+    <!-- The data field label. The unit is appended to it in code, because a
+         SimpleDataField has no room for a unit next to the value itself. Data
+         field labels get very little width, so keep this short. -->
+    <string id="FieldLabel">Depth</string>
+
     <string id="WaterTypeTitle">Water type</string>
     <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>
     <string id="WaterFresh">Fresh</string>

@@ -26,11 +26,20 @@ class depthView extends WatchUi.View {
     private var _page as Number;
     private var _dataTimer as Timer.Timer?;
 
+    // Loaded once rather than in onUpdate(), which runs every second.
+    private var _depthLabel as String;
+    private var _maxLabel as String;
+    private var _maxDepthLabel as String;
+
     function initialize(model as DepthModel, page as Number) {
         View.initialize();
 
         _model = model;
         _page = page;
+
+        _depthLabel = WatchUi.loadResource(Rez.Strings.LabelDepth) as String;
+        _maxLabel = WatchUi.loadResource(Rez.Strings.LabelMax) as String;
+        _maxDepthLabel = WatchUi.loadResource(Rez.Strings.LabelMaxDepth) as String;
     }
 
     // Called when this View is brought to the foreground. Restore
@@ -94,10 +103,10 @@ class depthView extends WatchUi.View {
     //! of telling the two apart.
     private function drawSummary(dc as Dc, width as Number, height as Number) as Void {
         drawReading(dc, width, height * 28 / 100, height * 40 / 100,
-            "DEPTH", Graphics.COLOR_BLUE, _model.depth, true);
+            _depthLabel, Graphics.COLOR_BLUE, _model.depth, true);
         // A maximum only ever goes one way, so a trend on it would say nothing.
         drawReading(dc, width, height * 57 / 100, height * 69 / 100,
-            "MAX", Graphics.COLOR_ORANGE, _model.max_depth, false);
+            _maxLabel, Graphics.COLOR_ORANGE, _model.max_depth, false);
     }
 
     //! A single reading filling the page, with an accent rule under the label.
@@ -109,7 +118,7 @@ class depthView extends WatchUi.View {
         }
 
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(width / 2, height * 3 / 10, Graphics.FONT_SMALL, isMax ? "MAX DEPTH" : "DEPTH",
+        dc.drawText(width / 2, height * 3 / 10, Graphics.FONT_SMALL, isMax ? _maxDepthLabel : _depthLabel,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Accent rule between the label and the value.

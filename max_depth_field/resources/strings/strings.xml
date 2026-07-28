@@ -1,6 +1,11 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName">max_depth</string>
 
+    <!-- The data field label. The unit is appended to it in code, because a
+         SimpleDataField has no room for a unit next to the value itself. Data
+         field labels get very little width, so keep this short. -->
+    <string id="FieldLabel">Max Depth</string>
+
     <string id="WaterTypeTitle">Water type</string>
     <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>
     <string id="WaterFresh">Fresh</string>

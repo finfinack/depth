@@ -9,10 +9,16 @@ class depthGlanceView extends WatchUi.GlanceView
 {
     private var _model as DepthModel;
 
+    // Loaded once rather than in onUpdate(), which runs on every redraw.
+    private var _depthLabel as String;
+    private var _maxDepthLabel as String;
+
     function initialize() {
         GlanceView.initialize();
 
         _model = new DepthModel();
+        _depthLabel = WatchUi.loadResource(Rez.Strings.GlanceDepth) as String;
+        _maxDepthLabel = WatchUi.loadResource(Rez.Strings.GlanceMaxDepth) as String;
     }
 
     function onUpdate(dc as Dc) as Void {
@@ -24,7 +30,7 @@ class depthGlanceView extends WatchUi.GlanceView
         // Both values start at the same x so the two lines line up. The column
         // clears the wider of the two labels with a single space of air.
         var labelX = 0;
-        var valueX = dc.getTextWidthInPixels("Max Depth ", font);
+        var valueX = dc.getTextWidthInPixels(_maxDepthLabel + " ", font);
 
         // Set the two rows one line apart and centre the pair. Putting them on
         // the quarter points instead spreads them to the edges of the glance and
@@ -35,8 +41,8 @@ class depthGlanceView extends WatchUi.GlanceView
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
 
-        drawRow(dc, font, labelX, valueX, centerY - lineHeight / 2, "Depth", Graphics.COLOR_BLUE, _model.depth);
-        drawRow(dc, font, labelX, valueX, centerY + lineHeight / 2, "Max Depth", Graphics.COLOR_ORANGE, _model.max_depth);
+        drawRow(dc, font, labelX, valueX, centerY - lineHeight / 2, _depthLabel, Graphics.COLOR_BLUE, _model.depth);
+        drawRow(dc, font, labelX, valueX, centerY + lineHeight / 2, _maxDepthLabel, Graphics.COLOR_ORANGE, _model.max_depth);
     }
 
     function onStop() as Void {

@@ -57,8 +57,13 @@ class depthView extends WatchUi.SimpleDataField {
 
     //! A SimpleDataField has no room for a unit suffix on the value, so the unit
     //! goes in the label — which means the label has to follow the unit setting.
+    //!
+    //! The unit is appended rather than being part of the translated string, so
+    //! a translation is one short word and cannot get the symbols wrong; "m"
+    //! and "ft" are the same in every language this could ship in.
     function updateLabel() as Void {
-        label = (_model.unit == System.UNIT_METRIC) ? "Depth (m)" : "Depth (ft)";
+        var text = WatchUi.loadResource(Rez.Strings.FieldLabel) as String;
+        label = text + " (" + _model.unitLabel() + ")";
     }
 
     //! Called by the app when the user changes a setting.
