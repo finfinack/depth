@@ -7,7 +7,7 @@ Before this existed, `depthModel.mc` was copied byte-for-byte into all three pro
 | File | What is in it |
 | --- | --- |
 | `source/depthModel.mc` | `DepthModel` — pressure to depth, the trailing surface-pressure baseline, the maximum, and the unit/water-type settings |
-| `source/depthColors.mc` | `depthColor()` — the blue/green/yellow/red scale used by the widget and its glance |
+| `source/depthColors.mc` | `depthColor()` — the blue/green/yellow/red scale used by the widget and its glance, in three selectable depth ranges |
 | `source/depthFit.mc` | `depthCentimeters()` — depth to the clamped centimetres the data fields write into the FIT file |
 
 ## Using it
@@ -37,6 +37,9 @@ Source files then use `import DepthCore;`.
 | `waterType` | number | `0` (fresh) |
 | `unitOverride` | number | `0` (follow the watch) |
 | `rezero` | boolean | `false` |
+| `colorProfile` | number | `0` (snorkel) |
+
+`colorProfile` is declared by the widget only — the two data fields colour nothing, so they leave it out and get the default from the fallback below.
 
 **A key the app does not declare falls back to the default above.** `Properties.getValue()` throws on an undeclared key, and `DepthModel` is constructed by every app that embeds the barrel — so the exception is caught and treated as "not configured", which is the same situation as a setting left at its default. Without that, adding a setting here would crash every app that had not yet declared it.
 
@@ -72,7 +75,7 @@ monkeydo /tmp/depthcore_test.prg fenix7 -t   # the simulator has to be running
 Two things about the test build are not obvious:
 
 - **Every `(:test)` function becomes a test case**, whatever it is named or how it is written. Helpers must not carry the annotation — an annotated helper is run as a test of its own, and one taking arguments errors out.
-- **`test/resources/settings/properties.xml` exists because `DepthModel` reads the app settings in its constructor.** A barrel ships no properties of its own, so the test build declares the ones the model reads. Anything left out of it exercises the fallback described under [Settings it reads](#settings-it-reads) instead.
+- **`test/resources/settings/properties.xml` exists because `DepthModel` reads the app settings in its constructor.** A barrel ships no properties of its own, so the test build declares the ones the model reads. Anything left out of it exercises the fallback described under [Settings it reads](#settings-it-reads) instead, which is why `colorProfile` is deliberately missing from it.
 
 ### Making time pass
 

@@ -48,13 +48,28 @@ The [Depth data field](depth_field/) records the raw pressure into the activity 
 
 ## Settings
 
-The same three settings exist in all three apps, in Garmin Connect under the app's settings:
+These live in Garmin Connect under the app's settings. The first three exist in all three apps:
 
 | Setting | What it does |
 | --- | --- |
 | Water type | Fresh or salt, which sets the pressure per metre used above |
 | Units | Metres, feet, or follow the watch's elevation unit |
 | Re-zero depth | Discards the baseline and the maximum and starts over. Switches itself back off. |
+| Colour range | Widget only — which depths the colour scale spans. See below. |
+
+### Colour range
+
+The widget and its glance colour the reading blue, then green, yellow and red as it gets deeper, so a glance at it says roughly how deep you are without reading the number. That only works if the bands cover the range you actually swim: at a freediver's scale a snorkeller never leaves the first band and the colour tells them nothing at all.
+
+| Profile | Blue | Green | Yellow | Red |
+| --- | --- | --- | --- | --- |
+| **Snorkel** (default) | < 2 m | 2–5 m | 5–10 m | ≥ 10 m |
+| Freedive | < 10 m | 10–20 m | 20–30 m | ≥ 30 m |
+| Deep | < 20 m | 20–40 m | 40–60 m | ≥ 60 m |
+
+The boundaries are in metres whichever unit is displayed, because they describe a physical depth rather than a number on the screen. Each one belongs to the deeper band: at exactly 2 m the snorkel profile is already green.
+
+The two data fields have no colour — a `SimpleDataField` draws its own value — so the setting does not appear in them.
 
 ## Building
 

@@ -199,6 +199,17 @@ module DepthCore {
         return true;
     }
 
+    (:test)
+    function testUndeclaredSettingFallsBackToItsDefault(logger as Logger) as Boolean {
+        // test/resources/settings/properties.xml deliberately leaves
+        // colorProfile out, the way the two data fields do. Properties.getValue()
+        // throws on a key the app never declared, so constructing the model at
+        // all is half of what this asserts; landing on the default is the rest.
+        var model = new DepthModel();
+        Test.assertEqual(model.color_profile, PROFILE_SNORKEL);
+        return true;
+    }
+
     //
     // The maximum. It is confirmed by two consecutive samples, so that a single
     // noisy spike cannot latch into a value that then never goes away.

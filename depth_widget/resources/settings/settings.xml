@@ -12,6 +12,13 @@
             <listEntry value="2">@Strings.UnitsStatute</listEntry>
         </settingConfig>
     </setting>
+    <setting propertyKey="@Properties.colorProfile" title="@Strings.ColorProfileTitle" prompt="@Strings.ColorProfilePrompt">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ProfileSnorkel</listEntry>
+            <listEntry value="1">@Strings.ProfileFreedive</listEntry>
+            <listEntry value="2">@Strings.ProfileDeep</listEntry>
+        </settingConfig>
+    </setting>
     <setting propertyKey="@Properties.rezero" title="@Strings.RezeroTitle" prompt="@Strings.RezeroPrompt">
         <settingConfig type="boolean" />
     </setting>

@@ -98,6 +98,12 @@ module DepthCore {
         var unit as System.UnitsSystem = System.UNIT_METRIC; // or System.UNIT_STATUTE
         var water_pressure as Float = fresh_water_pressure;
 
+        //! Which set of colour bands depthColor() should use: one of the
+        //! PROFILE_ values. Read here because this is where the settings are
+        //! read; nothing in the model itself uses it, and the data fields never
+        //! colour anything.
+        var color_profile as Number = PROFILE_SNORKEL;
+
         private var _baseline as Float?;
 
         // The two halves of the trailing window, each holding its lowest pressure.
@@ -128,6 +134,10 @@ module DepthCore {
             water_pressure = (numberSetting("waterType", WATER_FRESH) == WATER_SALT)
                 ? salt_water_pressure
                 : fresh_water_pressure;
+
+            // An app that never declares this key — both data fields, which
+            // colour nothing — gets the default without having to.
+            color_profile = numberSetting("colorProfile", PROFILE_SNORKEL);
 
             var units = numberSetting("unitOverride", UNITS_AUTO);
             if (units == UNITS_METRIC) {

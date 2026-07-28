@@ -61,7 +61,7 @@ class depthGlanceView extends WatchUi.GlanceView
         if (value != null) {
             text += _model.unitLabel();
         }
-        dc.setColor(DepthCore.depthColor(value), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(DepthCore.depthColor(value, _model.color_profile), Graphics.COLOR_TRANSPARENT);
         dc.drawText(valueX, y, font, text, justify);
     }
 }

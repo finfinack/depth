@@ -4,6 +4,10 @@
     them, and Properties.getValue() on a key that was never declared throws.
     This copy exists so the test build has them, and is reached only through
     test.jungle. Keep it in step with each app's resources/settings/properties.xml.
+
+    colorProfile is left out on purpose, the way the two data fields leave it
+    out: testUndeclaredSettingFallsBackToItsDefault covers what the model does
+    with a key nobody declared.
 -->
 <properties>
     <!-- 0 = fresh, 1 = salt. See DepthModel.WATER_* -->

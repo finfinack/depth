@@ -152,7 +152,7 @@ class depthView extends WatchUi.View {
 
         if (value == null) {
             // The numeric fonts only contain digits, so "n/a" needs a text font.
-            dc.setColor(DepthCore.depthColor(value), Graphics.COLOR_TRANSPARENT);
+            dc.setColor(DepthCore.depthColor(value, _model.color_profile), Graphics.COLOR_TRANSPARENT);
             dc.drawText(x, y, fallbackFont, text,
                 Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             return;
@@ -175,7 +175,7 @@ class depthView extends WatchUi.View {
         }
 
         var valueX = left + trendSize + trendGap;
-        dc.setColor(DepthCore.depthColor(value), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(DepthCore.depthColor(value, _model.color_profile), Graphics.COLOR_TRANSPARENT);
         dc.drawText(valueX, y, numberFont, text,
             Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
 
