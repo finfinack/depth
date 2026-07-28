@@ -64,10 +64,34 @@ module DepthCore {
         // glitch, and must not be allowed to reach the maximum.
         const max_descent_rate = 3.0; // m/s
 
+        // Values of trend below.
+        const TREND_LEVEL = 0;
+        const TREND_DESCENDING = 1;
+        const TREND_ASCENDING = 2;
+
+        // How fast the depth has to be changing before the trend commits to a
+        // direction, and how slow before it goes back to level. Two thresholds
+        // rather than one because a single one makes the trend chatter every
+        // time the rate grazes it, which on screen is a flickering indicator.
+        const trend_commit = 0.15; // m/s
+        const trend_release = 0.08; // m/s
+
+        // Weight of the newest sample in the rolling rate below. Roughly a
+        // three second time constant at the 1 Hz this is fed at: long enough to
+        // ride out sensor noise, short enough to still feel immediate. A single
+        // sample difference is almost entirely noise at this sample rate, so
+        // the rate has to be smoothed even though the depth itself is not.
+        const trend_smoothing = 0.3;
+
         //! Current depth in meters, or null while no pressure reading is available.
         var depth as Float?;
         //! Deepest reading in meters so far, or null before the first reading.
         var max_depth as Float?;
+        //! Which way the depth is going: one of the TREND_ values above.
+        var trend as Number = TREND_LEVEL;
+        //! The pressure the current depth was derived from, in pascal, exactly as
+        //! the sensor reported it. Null while no reading is available.
+        var pressure as Float?;
 
         var unit as System.UnitsSystem = System.UNIT_METRIC; // or System.UNIT_STATUTE
         var water_pressure as Float = fresh_water_pressure;
@@ -87,6 +111,9 @@ module DepthCore {
         private var _previous_depth as Float?;
         private var _previous_time as Number = 0;
         private var _previous_pressure as Float?;
+
+        // Smoothed rate of change in m/s, positive going deeper, behind trend.
+        private var _rate as Float = 0.0;
 
         function initialize() {
             loadSettings();
@@ -136,8 +163,12 @@ module DepthCore {
             if (pressure == null) {
                 pressure = info.ambientPressure;
             }
+            self.pressure = pressure;
             if (pressure == null) {
                 depth = null;
+                // Whatever the depth was doing, it is not doing it any more.
+                trend = TREND_LEVEL;
+                _rate = 0.0;
                 return;
             }
 
@@ -182,6 +213,9 @@ module DepthCore {
                 value = 0.0;
             }
             depth = value;
+            // Must come before updateMaximum(), which overwrites the previous
+            // sample this reads.
+            updateTrend(value, now);
             updateMaximum(value, now);
         }
 
@@ -195,8 +229,11 @@ module DepthCore {
             _submerged_since = null;
             _previous_depth = null;
             _previous_pressure = null;
+            _rate = 0.0;
             depth = null;
             max_depth = null;
+            trend = TREND_LEVEL;
+            pressure = null;
         }
 
         //! Format a depth in meters as a bare number in the user's unit, without a
@@ -275,6 +312,44 @@ module DepthCore {
                 minimum = previous;
             }
             return minimum;
+        }
+
+        //! Track which way the depth is going, for the trend indicator.
+        //!
+        //! Must be called before updateMaximum(), which overwrites the previous
+        //! sample this reads.
+        //!
+        //! The depth itself is never smoothed — it is the raw pressure against
+        //! the tracked baseline. Its *rate of change* has to be, because one
+        //! sample of difference at 1 Hz is far smaller than the sensor's own
+        //! noise, and an indicator driven off that would just flicker.
+        private function updateTrend(value as Float, now as Number) as Void {
+            var previous = _previous_depth;
+            if (previous == null) {
+                return; // A rate needs two samples.
+            }
+
+            var seconds = (now - _previous_time) / 1000.0;
+            if (seconds <= 0.0) {
+                return; // No time passed, or the millisecond counter wrapped.
+            }
+
+            var instant = (value - previous) / seconds;
+            if (instant > max_descent_rate || instant < -max_descent_rate) {
+                return; // Quicker than any real movement, so it is a glitch.
+            }
+
+            _rate += trend_smoothing * (instant - _rate);
+
+            // Commit at the higher threshold and release at the lower one,
+            // holding the current direction in between.
+            if (_rate >= trend_commit) {
+                trend = TREND_DESCENDING;
+            } else if (_rate <= -trend_commit) {
+                trend = TREND_ASCENDING;
+            } else if (_rate > -trend_release && _rate < trend_release) {
+                trend = TREND_LEVEL;
+            }
         }
 
         //! Track the deepest reading, guarded against noise.

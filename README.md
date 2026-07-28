@@ -15,7 +15,7 @@ The three apps stay separate Connect IQ projects with their own manifests, app I
 
 ## This is not a dive computer
 
-**Do not rely on any of these for safety.** They are a curiosity for snorkelling and casual swimming, not dive instruments. There is no decompression calculation, no no-decompression limit, no ascent rate warning, and no alarm of any kind. Nothing here has ever been checked against a reference depth gauge, and it fails silently — if the surface pressure baseline is wrong, the depth is wrong, and nothing on screen says so.
+⚠️ **Do not rely on any of these for safety.** They are a curiosity for snorkelling and casual swimming, not dive instruments. There is no decompression calculation, no no-decompression limit, no ascent rate warning, and no alarm of any kind. Nothing here has ever been checked against a reference depth gauge, and it fails silently — if the surface pressure baseline is wrong, the depth is wrong, and nothing on screen says so.
 
 Each project's README has the full detail. Use a real dive computer for anything where the number matters.
 
