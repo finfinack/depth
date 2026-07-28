@@ -18,10 +18,10 @@ module DepthCore {
     //!
     //! Connect IQ gives a field two clues about its place on the screen and no
     //! more: the size of its rectangle, and getObscurityFlags(), which says
-    //! which screen edges that rectangle touches. That is enough to locate it,
-    //! because the system tiles the fields — one that touches neither the left
-    //! nor the right edge is centred between them — and from the field's
-    //! position the lens is plain geometry.
+    //! which screen edges that rectangle touches. Between them those pin the
+    //! origin down for most fields, and from the origin the lens is plain
+    //! geometry. Not for all of them — see edgeOrigin() for the case they
+    //! cannot settle and what that costs.
     //!
     //! Two things come out of that geometry, and drawing code needs both:
     //!
@@ -267,7 +267,7 @@ module DepthCore {
         //! inside an arc, and a font chosen on line height alone runs off the
         //! side of both. Pass an empty string to fit on height only.
         //!
-        //! Text fonts rather than the numeric ones the widget uses: those hold
+        //! Text fonts rather than the numeric ones the app uses: those hold
         //! digits only, so they cannot render "n/a" or the unit, and a data
         //! field is too small for the size they buy to be worth two draws.
         function fontFitting(dc as Graphics.Dc, text as String,
@@ -292,10 +292,23 @@ module DepthCore {
         }
 
         //! Where the field starts along one axis, from the screen edges it
-        //! touches. The system tiles data fields, so a field touching the low
-        //! edge starts at 0, one touching the high edge ends at the screen edge,
-        //! and one touching neither is centred between them. Touching both is a
-        //! field the full width or height of the screen, which also starts at 0.
+        //! touches. A field touching the low edge starts at 0, one touching the
+        //! high edge ends at the screen edge, and touching both is a field the
+        //! full width or height of the screen, which also starts at 0.
+        //!
+        //! A field touching *neither* cannot be placed: it is somewhere in the
+        //! middle and nothing here says where. Connect IQ exposes no way to ask
+        //! a field its position, so this assumes centred, which is what a
+        //! three-field layout does. Denser layouts stack their middle bands
+        //! instead — checked against the layout rectangles the SDK ships per
+        //! device, by as much as 2.8x the field's height.
+        //!
+        //! The error is bounded and one-directional: such a field believes the
+        //! lens is wider than it is, so its outermost pixels can land under the
+        //! bezel. It can never draw into another field, and it costs the chart
+        //! and the gauge's bar their extreme corners on four-field-and-denser
+        //! middle bands only. The gauge's arc is unaffected, since every layout
+        //! that takes the arc touches the top or the bottom.
         private function edgeOrigin(low as Number, high as Number,
                                     screen as Number, size as Number) as Number {
             if ((_obscurity & low) != 0) {

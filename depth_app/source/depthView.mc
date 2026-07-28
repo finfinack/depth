@@ -6,8 +6,8 @@ import Toybox.Timer;
 import Toybox.WatchUi;
 import DepthCore;
 
-//! The widget pages, in the order they are reached by paging down. The summary
-//! comes first so opening the widget answers both questions at once, with the
+//! The app's pages, in the order they are reached by paging down. The summary
+//! comes first so opening it answers both questions at once, with the
 //! single-value pages behind it for a bigger read-out.
 enum {
     PAGE_SUMMARY = 0,
@@ -16,7 +16,7 @@ enum {
 }
 const PAGE_COUNT = 3;
 
-//! One page of the widget: both readings, the current depth, or the maximum.
+//! One page of the app: both readings, the current depth, or the maximum.
 //!
 //! All pages share a DepthModel, so the maximum keeps being tracked whichever
 //! page is on screen.
@@ -56,7 +56,7 @@ class depthView extends WatchUi.View {
             _dataTimer.start(method(:updateDepth), 1000, true);
         }
 
-        // Request a redraw when the widget is shown
+        // Request a redraw when the app is shown
         WatchUi.requestUpdate();
     }
 

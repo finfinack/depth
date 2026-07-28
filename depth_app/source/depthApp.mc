@@ -23,7 +23,7 @@ class depthApp extends Application.AppBase {
 
     // Return the initial view of your application here.
     // depthView is not built into the glance scope, so the type checker cannot
-    // see it when checking this function for the glance. Only the widget scope
+    // see it when checking this function for the glance. Only the app scope
     // ever calls getInitialView(), so suppressing the glance check is correct.
     (:typecheck(disableGlanceCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
@@ -33,7 +33,7 @@ class depthApp extends Application.AppBase {
         return [ new depthView(model, PAGE_SUMMARY), new depthDelegate(model, PAGE_SUMMARY) ];
     }
 
-    //! Settings can change while the widget is open, so apply them straight
+    //! Settings can change while the app is open, so apply them straight
     //! away rather than waiting for it to be reopened.
     function onSettingsChanged() as Void {
         var model = _model;

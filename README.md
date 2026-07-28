@@ -1,6 +1,6 @@
 # Depth
 
-Barometric depth for Garmin watches (Fenix, Epix, Tactix) — a widget, four data fields, and the model they share.
+Barometric depth for Garmin watches (Fenix, Epix, Tactix) — an app, four data fields, and the model they share.
 
 Find them on the [Garmin ConnectIQ store](https://apps.garmin.com/developer/1e45545b-eec0-40b0-886d-61739dd6f510/apps) for free to install them.
 
@@ -9,7 +9,7 @@ Previously three separate repositories. They are one now because all three carri
 | Project | Type | What it is |
 | --- | --- | --- |
 | [DepthCore](DepthCore/) | Monkey Barrel | The depth model, colour scale, FIT helpers and the data field layout |
-| [depth_widget](depth_widget/) | Widget | Three pages plus a glance: current depth, maximum, and both together |
+| [depth_app](depth_app/) | App | Three pages plus a glance: current depth, maximum, and both together |
 | [depth_field](depth_field/) | Data field | Current depth during an activity; records the depth graph into the FIT file |
 | [depth_chart](depth_chart/) | Data field | Depth as a chart over time, drawn by the field itself. Shows only — records nothing |
 | [depth_gauge](depth_gauge/) | Data field | Depth as a zoned arc in the colour range, drawn by the field itself. Shows only — records nothing |
@@ -19,13 +19,13 @@ The five apps stay separate Connect IQ projects with their own manifests, app ID
 
 | App | Shown as |
 | --- | --- |
-| `depth_widget` | **Depth** |
+| `depth_app` | **Depth** |
 | `depth_field` | **Depth** |
 | `max_depth_field` | **Max Depth** |
 | `depth_chart` | **Depth Chart** |
 | `depth_gauge` | **Depth Gauge** |
 
-The directory names are Connect IQ project names and stay in `snake_case`; the app names are what the user reads, in the store, in the launcher and in the data field picker, and are written out properly. The widget and the Depth field share a name on purpose — they are the same thing in two places, and a widget never appears in the same list as a data field.
+The directory names are Connect IQ project names and stay in `snake_case`; the app names are what the user reads, in the store, in the launcher and in the data field picker, and are written out properly. The app and the Depth field share a name on purpose — they are the same thing in two places, and an app never appears in the same list as a data field.
 
 ## This is **not** a dive computer
 
@@ -52,7 +52,7 @@ Three consequences fall out of that.
 
 **The surface pressure has to be guessed.** There is no "you are now at the surface" signal, so the app tracks the lowest pressure seen over a trailing window of the last few minutes and treats that as the surface. The window is frozen while the watch looks submerged, so a long dive cannot drag the baseline down after it. This copes with weather drift and with walking down to the water, and recovers on its own from a bad sample — but if it ever gets the baseline wrong, every reading is offset until it recovers or you re-zero.
 
-Starting while already in the water is the case it cannot detect: the first pressure it sees becomes the surface. The widget re-zeroes with the Start button; the data fields have no input of their own, so they use the **Re-zero depth** setting, which needs the phone and is therefore not reachable mid-activity.
+Starting while already in the water is the case it cannot detect: the first pressure it sees becomes the surface. The app re-zeroes with the Start button; the data fields have no input of their own, so they use the **Re-zero depth** setting, which needs the phone and is therefore not reachable mid-activity.
 
 **Water density is a setting, not a measurement.** Fresh water is 9806.65 Pa per metre (ρ=1000). Salt is 10000 Pa per metre, the EN13319 `1 msw` convention that dive computers use. Leaving it set to Fresh in the sea over-reports depth by about 2.5% — half a metre at 20 m.
 
@@ -67,11 +67,11 @@ These live in Garmin Connect under the app's settings. The first three exist in 
 | Water type | Fresh or salt, which sets the pressure per metre used above |
 | Units | Metres, feet, or follow the watch's elevation unit |
 | Re-zero depth | Discards the baseline and the maximum and starts over. Switches itself back off. |
-| Colour range | Widget, Depth Chart and Depth Gauge — which depths the colour scale spans. See below. |
+| Colour range | The app, Depth Chart and Depth Gauge — which depths the colour scale spans. See below. |
 
 ### Colour range
 
-The widget and its glance colour the reading blue, then green, yellow and red as it gets deeper, so a glance at it says roughly how deep you are without reading the number. That only works if the bands cover the range you actually swim: at a freediver's scale a snorkeller never leaves the first band and the colour tells them nothing at all.
+The app and its glance colour the reading blue, then green, yellow and red as it gets deeper, so a glance at it says roughly how deep you are without reading the number. That only works if the bands cover the range you actually swim: at a freediver's scale a snorkeller never leaves the first band and the colour tells them nothing at all.
 
 | Profile | Blue | Green | Yellow | Red |
 | --- | --- | --- | --- | --- |
@@ -133,13 +133,25 @@ Both fields therefore measure where they are before drawing — from their size 
 
 That geometry is `DepthFieldLayout` in the barrel, shared by both and [documented there](DepthCore/README.md#drawing-on-a-round-screen), with unit tests — it is not something you can check by eye without a watch, and the tests already caught one off-by-one that handed back a pixel a fraction outside the lens.
 
+## App, not widget
+
+`depth_app` is a **`watch-app`**, not a `widget`. Connect IQ still accepts `type="widget"`, but none of the 25 devices in the product lists has a widget app type at all — System 5 merged widgets into apps, and the watch was already running it as one. The manifest now says what it is.
+
+Of the 166 devices the 9.2.0 SDK knows about, 89 still declare a `widget` type and 77 do not; every device this ships to is in the second group.
+
+Nothing in the source changed. `AppBase`, `getInitialView()`, the `BehaviorDelegate` paging and the `(:glance)` view all work identically, and an app with a glance still appears in the glance carousel — so it looks the same on the watch. The budget is the only visible difference: `watchApp` gets 786 KB on a fenix 7 against the glance's 65 KB.
+
+The directory was `depth_widget` until this change. Renaming it is safe — a Connect IQ project's directory name is local, and the app ID, the manifest and the store listing do not depend on it — so it now matches the other four.
+
+> ⚠️ **The store listing is the part that is not just a manifest edit.** An app's type is fixed when the listing is created, so publishing this as an app is likely to need a new listing and a new app ID, with existing installs staying on the old one. Check that in the developer portal before uploading.
+
 ## Icons
 
 Two launcher icons between the five apps, both the same disc of water split by the wave of the surface:
 
 | Icon | Apps | Arrow |
 | --- | --- | --- |
-| `resources/depth_icon.svg` | Depth, Depth Chart, Depth Gauge, the widget | Runs on down into the deep |
+| `resources/depth_icon.svg` | Depth, Depth Chart, Depth Gauge, the app | Runs on down into the deep |
 | `resources/depth_icon_max.svg` | Max Depth | Stops on a floor line |
 
 Everything but the arrow is shared, so the family reads as one product at 40 px while Max Depth is still tellable from Depth — which matters, because those two sit next to each other in the data field picker.
@@ -167,7 +179,7 @@ See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-b
 
 ## Languages
 
-All five apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the widget and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
+All five apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the app and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
 
 1. Copy `resources/strings/strings.xml` to `resources-<lang>/strings/strings.xml` in the project and translate the values, keeping the `id`s. Use Garmin's code for `<lang>`: `deu`, `fre`, `ita`, `spa`, `por`, `dut`, `nob`, and so on — the full list is in `bin/projectInfo.xml` in the SDK.
 2. Add the language to `<iq:languages>` in that project's `manifest.xml`. Without this the build prints `String resources will be ignored` and the folder is skipped entirely.
@@ -177,7 +189,7 @@ Four things to know before translating:
 
 - **Declare every id, including `AppName`.** A missing string does not silently fall back to English: the build warns `String id 'AppName' undefined for language 'deu'` and the app has no name in that language. `AppName` is repeated verbatim rather than translated, on purpose — it is the app's identity in the store and in the launcher, not a label.
 
-- **The widget labels are drawn into fixed slots on a round screen.** `LabelDepth`, `LabelMax` and `LabelMaxDepth` are centred at a set size and will be clipped, not wrapped, if a translation runs long. The English is already abbreviated for the summary page for exactly this reason. The glance labels are measured at run time and can be any length.
+- **The app's on-screen labels are drawn into fixed slots on a round screen.** `LabelDepth`, `LabelMax` and `LabelMaxDepth` are centred at a set size and will be clipped, not wrapped, if a translation runs long. The English is already abbreviated for the summary page for exactly this reason. The glance labels are measured at run time and can be any length.
 - **The glance strings carry `scope="glance"`.** Without it the resource is not visible from glance code and the build fails with `Value 'Rez' not available in all function scopes`. Keep the attribute when copying.
 - **Units are not translated.** `m` and `ft` are appended in code rather than baked into the labels, so a translation is one word and cannot get the symbols wrong. The band edges in the colour range list are numerals in both systems and stay as they are. The `n/a` shown when there is no reading comes from the barrel, which ships no resources of its own, and also stays as it is.
 

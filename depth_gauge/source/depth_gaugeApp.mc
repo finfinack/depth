@@ -2,7 +2,7 @@ import Toybox.Application;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-//! The barrel annotates DepthModel and depthColor() (:glance) for the widget's
+//! The barrel annotates DepthModel and depthColor() (:glance) for the app's
 //! sake. A data field has no glance — the compiler says so itself, with "Glance
 //! applications are not supported for app type 'datafield'", and ignores the
 //! annotation — but the editor's type checker builds a glance scope anyway and

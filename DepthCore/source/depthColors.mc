@@ -34,7 +34,7 @@ module DepthCore {
         return SNORKEL_BANDS;
     }
 
-    //! Colour scale for a depth read-out, shared by the widget and the glance.
+    //! Colour scale for a depth read-out, shared by the app and the glance.
     //!
     //! Shallow water reads blue and the colour warms up as it gets deeper, so
     //! the reading can be judged without actually reading the number. That only

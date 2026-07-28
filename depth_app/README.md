@@ -1,18 +1,20 @@
-# Depth (widget)
+# Depth (app)
 
-A widget showing the current water depth, inferred from the barometric pressure sensor.
+An app showing the current water depth, inferred from the barometric pressure sensor.
+
+A `watch-app` with a glance, not a `widget` — see [App, not widget](../README.md#app-not-widget) for why.
 
 > ⚠️ **This is not a dive computer.** Do not rely on it for safety. See the [repository README](../README.md#this-is-not-a-dive-computer) for what that means, and [how it works](../README.md#how-it-works-and-drawbacks) for why the number can be wrong.
 
 ## Pages
 
-Three pages, switched with swipe/press up and down like the built-in widgets:
+Three pages, switched with swipe/press up and down like the built-in ones:
 
-- **Summary** – both readings at once, shown first when the widget is opened
+- **Summary** – both readings at once, shown first when the app is opened
 - **Depth** – the current water depth, full size
-- **Max Depth** – the deepest reading since the widget was opened, full size
+- **Max Depth** – the deepest reading since the app was opened, full size
 
-Press Start on any page to re-zero, which drops the baseline and the maximum. That is what to use if the widget was opened while already in the water.
+Press Start on any page to re-zero, which drops the baseline and the maximum. That is what to use if the app was opened while already in the water.
 
 The glance shows both values on one screen.
 

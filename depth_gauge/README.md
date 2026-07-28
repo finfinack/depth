@@ -10,7 +10,7 @@ Laid out like the upper half of the watch's own heart rate zone gauge.
 
 The colour profile's four bands as a scale, with the field's label, the current reading and the session maximum in the middle of it.
 
-The zones come from the same numbers `depthColor()` colours by, so the gauge and the reading cannot disagree about what colour a depth is. The reading takes the colour of the zone it is in, exactly as the widget's does.
+The zones come from the same numbers `depthColor()` colours by, so the gauge and the reading cannot disagree about what colour a depth is. The reading takes the colour of the zone it is in, exactly as the app's does.
 
 The gauge runs to **one zone-width past the red boundary** — 15 m on Snorkel, 40 m on Freedive, 80 m on Deep — rather than ending where red begins. Ending it at the boundary would leave the last zone infinitely thin, and a gauge that pins the moment it turns red says nothing after that. Past full scale the marker stays at the deep end rather than wrapping round to the shallow one.
 

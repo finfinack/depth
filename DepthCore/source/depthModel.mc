@@ -128,7 +128,7 @@ module DepthCore {
         }
 
         //! Read the app settings. Called once at startup and again whenever the app
-        //! is told they changed, so the long-lived widget and glance pick a change
+        //! is told they changed, so the long-lived app and glance pick a change
         //! up without being restarted.
         function loadSettings() as Void {
             water_pressure = (numberSetting("waterType", WATER_FRESH) == WATER_SALT)

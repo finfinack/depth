@@ -8,7 +8,7 @@ Laid out like the watch's own barometer field.
 
 ## What it draws
 
-The heading is the field's label and the current reading, coloured by the [colour range](../README.md#colour-range) — the same colour the widget gives that depth.
+The heading is the field's label and the current reading, coloured by the [colour range](../README.md#colour-range) — the same colour the app gives that depth.
 
 Below it, depth deepens **downwards** from a surface line at the top. Time runs left to right with the newest sample at the right edge, and the axis stays two minutes wide however much history there is, so a field that has just started fills in from the right rather than stretching ten seconds across the whole chart. Gaps where there was no reading are left as gaps.
 

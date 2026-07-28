@@ -1,13 +1,13 @@
 # DepthCore
 
-The depth model shared by the widget and the four data fields, packaged as a [Monkey Barrel](https://developer.garmin.com/connect-iq/core-topics/shareable-libraries/).
+The depth model shared by the app and the four data fields, packaged as a [Monkey Barrel](https://developer.garmin.com/connect-iq/core-topics/shareable-libraries/).
 
 Before this existed, `depthModel.mc` was copied byte-for-byte into all three projects and `depthColors.mc` into two of them, so every fix to the baseline tracking had to be made three times and kept in step by hand.
 
 | File | What is in it |
 | --- | --- |
 | `source/depthModel.mc` | `DepthModel` — pressure to depth, the trailing surface-pressure baseline, the maximum, and the unit/water-type settings |
-| `source/depthColors.mc` | `depthColor()` — the blue/green/yellow/red scale used by the widget and its glance, in three selectable depth ranges |
+| `source/depthColors.mc` | `depthColor()` — the blue/green/yellow/red scale used by the app and its glance, in three selectable depth ranges |
 | `source/depthFit.mc` | `depthCentimeters()` — depth to the clamped centimetres the data fields write into the FIT file |
 | `source/depthLayout.mc` | `DepthFieldLayout` — where a full `DataField` may draw on a round screen, and the font fitting that goes with it |
 
@@ -25,7 +25,7 @@ and declares the dependency in its `manifest.xml`:
 
 ```xml
 <iq:barrels>
-  <iq:depends name="DepthCore" version="2.2.1"/>
+  <iq:depends name="DepthCore" version="2.2.2"/>
 </iq:barrels>
 ```
 
@@ -42,7 +42,7 @@ Source files then use `import DepthCore;`.
 | `rezero` | boolean | `false` |
 | `colorProfile` | number | `0` (snorkel) |
 
-`colorProfile` is declared by the widget, Depth Chart and Depth Gauge — the three that colour something. Depth and Max Depth are `SimpleDataField`s, which hand the system a string and let it draw, so they leave it out and get the default from the fallback below.
+`colorProfile` is declared by the app, Depth Chart and Depth Gauge — the three that colour something. Depth and Max Depth are `SimpleDataField`s, which hand the system a string and let it draw, so they leave it out and get the default from the fallback below.
 
 **A key the app does not declare falls back to the default above.** `Properties.getValue()` throws on an undeclared key, and `DepthModel` is constructed by every app that embeds the barrel — so the exception is caught and treated as "not configured", which is the same situation as a setting left at its default. Without that, adding a setting here would crash every app that had not yet declared it.
 
@@ -83,7 +83,7 @@ There is deliberately **no shared "draw the heading" helper**. The two fields he
 
 **Classes resolve unqualified, bare functions do not.** With `import DepthCore;` in scope, `new DepthModel()` compiles. `depthColor(x)` does not — Monkey C resolves an unqualified call against `self` first, and the build fails with `Cannot find symbol ':depthColor' on type 'self'`. Free functions from the barrel have to be called as `DepthCore.depthColor(x)` and `DepthCore.depthCentimeters(x)`.
 
-**`(:glance)` has to stay on the barrel code.** It is a build exclusion applied by the consuming app rather than a barrel annotation, so it needs no `<iq:annotations>` entry and works on barrel code as-is. Removing it fails the widget build with `Value 'DepthModel' not available in all function scopes`.
+**`(:glance)` has to stay on the barrel code.** It is a build exclusion applied by the consuming app rather than a barrel annotation, so it needs no `<iq:annotations>` entry and works on barrel code as-is. Removing it fails the app's build with `Value 'DepthModel' not available in all function scopes`.
 
 The cost is that the data fields have no glance, so each one emits a harmless warning per annotated declaration at build time:
 
@@ -139,6 +139,6 @@ model.updateAt(info, 1000);   // 1 s after the previous sample
 
 ## Versioning
 
-The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.2.1`. Bump them together.
+The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.2.2`. Bump them together.
 
 It is deliberately the same number as the apps carry in the store rather than a version of its own: the barrel is not published anywhere and has exactly five consumers, all in this repository and all released together, so a separate lineage for it would be two numbers to keep straight in exchange for nothing. The apps' own version is set when uploading to the store — Connect IQ app manifests have no version field.

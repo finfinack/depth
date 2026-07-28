@@ -2,8 +2,8 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 import DepthCore;
 
-//! Pages through the widget with swipe/press up and down, the way the built-in
-//! widgets do. The pages wrap around, so either direction toggles between the
+//! Pages through the app with swipe/press up and down, the way the built-in
+//! ones do. The pages wrap around, so either direction toggles between the
 //! current and the maximum depth.
 class depthDelegate extends WatchUi.BehaviorDelegate {
 
@@ -27,7 +27,7 @@ class depthDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
 
-    //! Offer to re-zero, which is needed when the widget was opened while
+    //! Offer to re-zero, which is needed when the app was opened while
     //! already in the water or at a different altitude. It is behind a
     //! confirmation because it also drops the maximum, which cannot be
     //! recovered.
