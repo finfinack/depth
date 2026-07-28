@@ -64,10 +64,15 @@ The widget and its glance colour the reading blue, then green, yellow and red as
 | Profile | Blue | Green | Yellow | Red |
 | --- | --- | --- | --- | --- |
 | **Snorkel** (default) | < 2 m | 2–5 m | 5–10 m | ≥ 10 m |
+| | < 7 ft | 7–16 ft | 16–33 ft | ≥ 33 ft |
 | Freedive | < 10 m | 10–20 m | 20–30 m | ≥ 30 m |
+| | < 33 ft | 33–66 ft | 66–98 ft | ≥ 98 ft |
 | Deep | < 20 m | 20–40 m | 40–60 m | ≥ 60 m |
+| | < 66 ft | 66–131 ft | 131–197 ft | ≥ 197 ft |
 
-The boundaries are in metres whichever unit is displayed, because they describe a physical depth rather than a number on the screen. Each one belongs to the deeper band: at exactly 2 m the snorkel profile is already green.
+A band edge is one depth shown two ways, not two sets of thresholds. The feet are the metres rounded, and the profile means the same physical depth whichever unit you display — a colour scale that moved when you switched units would be a different scale, not the same one in other words. Each edge belongs to the deeper band: at exactly 2 m the snorkel profile is already green.
+
+Both unit systems are spelled out in the setting itself because the list is rendered by the phone, which has no way to know what Units is set to.
 
 The two data fields have no colour — a `SimpleDataField` draws its own value — so the setting does not appear in them.
 

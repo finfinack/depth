@@ -34,11 +34,17 @@
     <string id="UnitsMetric">Meters</string>
     <string id="UnitsStatute">Feet</string>
 
+    <!--
+        The band edges are given in both units because this list is rendered by
+        the phone, which cannot know what the Units setting is set to. They are
+        one depth shown two ways, not two sets of thresholds: the feet figures
+        are the metres rounded to whole feet.
+    -->
     <string id="ColorProfileTitle">Colour range</string>
-    <string id="ColorProfilePrompt">Which depths the colour of the reading spans, so it can be judged without reading the number. Blue, green, yellow then red. The ranges are in meters whichever unit is shown.</string>
-    <string id="ProfileSnorkel">Snorkel (2 / 5 / 10 m)</string>
-    <string id="ProfileFreedive">Freedive (10 / 20 / 30 m)</string>
-    <string id="ProfileDeep">Deep (20 / 40 / 60 m)</string>
+    <string id="ColorProfilePrompt">Which depths the colour of the reading spans, so it can be judged without reading the number. Blue, then green, yellow and red. Each range is a fixed depth whichever unit is displayed; the feet are the same depths rounded.</string>
+    <string id="ProfileSnorkel">Snorkel (2/5/10 m, 7/16/33 ft)</string>
+    <string id="ProfileFreedive">Freedive (10/20/30 m, 33/66/98 ft)</string>
+    <string id="ProfileDeep">Deep (20/40/60 m, 66/131/197 ft)</string>
 
     <string id="RezeroTitle">Re-zero depth</string>
     <string id="RezeroPrompt">Discards the surface pressure baseline and the maximum, and starts measuring again. Switches itself back off. Use it if measuring started while the watch was already in the water.</string>
