@@ -4,6 +4,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Timer;
 import Toybox.WatchUi;
+import DepthCore;
 
 //! The widget pages, in the order they are reached by paging down. The summary
 //! comes first so opening the widget answers both questions at once, with the
@@ -139,7 +140,7 @@ class depthView extends WatchUi.View {
 
         if (value == null) {
             // The numeric fonts only contain digits, so "n/a" needs a text font.
-            dc.setColor(depthColor(value), Graphics.COLOR_TRANSPARENT);
+            dc.setColor(DepthCore.depthColor(value), Graphics.COLOR_TRANSPARENT);
             dc.drawText(x, y, fallbackFont, text,
                 Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             return;
@@ -150,7 +151,7 @@ class depthView extends WatchUi.View {
         var unitWidth = dc.getTextWidthInPixels(unitText, unitFont);
         var valueX = x - (valueWidth + unitWidth) / 2;
 
-        dc.setColor(depthColor(value), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(DepthCore.depthColor(value), Graphics.COLOR_TRANSPARENT);
         dc.drawText(valueX, y, numberFont, text,
             Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
 

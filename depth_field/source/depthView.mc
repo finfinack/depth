@@ -3,6 +3,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 import Toybox.WatchUi;
+import DepthCore;
 
 class depthView extends WatchUi.SimpleDataField {
 

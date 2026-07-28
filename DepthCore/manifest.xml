@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+  <!--
+        The depth model and its colour scale, shared by the widget and the two
+        data fields. See DepthCore/README.md.
+    -->
+  <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="1.0.0" minApiLevel="5.2.0">
+    <iq:products>
+        <iq:product id="epix2"/>
+        <iq:product id="epix2pro42mm"/>
+        <iq:product id="epix2pro47mm"/>
+        <iq:product id="epix2pro51mm"/>
+        <iq:product id="fenix7"/>
+        <iq:product id="fenix7pro"/>
+        <iq:product id="fenix7pronowifi"/>
+        <iq:product id="fenix7s"/>
+        <iq:product id="fenix7spro"/>
+        <iq:product id="fenix7x"/>
+        <iq:product id="fenix7xpro"/>
+        <iq:product id="fenix7xpronowifi"/>
+        <iq:product id="fenix843mm"/>
+        <iq:product id="fenix847mm"/>
+        <iq:product id="fenix8pro47mm"/>
+        <iq:product id="fenix8solar47mm"/>
+        <iq:product id="fenix8solar51mm"/>
+        <iq:product id="instinct3amoled45mm"/>
+        <iq:product id="instinct3amoled50mm"/>
+        <iq:product id="instinct3solar45mm"/>
+        <iq:product id="instinctcrossoveramoled"/>
+        <iq:product id="instincte40mm"/>
+        <iq:product id="instincte45mm"/>
+        <iq:product id="marq2"/>
+        <iq:product id="marq2aviator"/>
+      </iq:products>
+    <iq:permissions>
+      <iq:uses-permission id="Sensor"/>
+    </iq:permissions>
+    <iq:languages>
+      <iq:language>eng</iq:language>
+    </iq:languages>
+    <iq:barrels/>
+    <!--
+            No annotations are declared here on purpose. (:glance) is a build
+            exclusion applied by the consuming app, not a barrel annotation, so
+            it needs no declaration - it is honoured on barrel code as it is.
+
+            The widget's glance does not compile without it: dropping it fails
+            the build with "Value 'DepthModel' not available in all function
+            scopes". The two data fields have no glance, so they each emit a
+            harmless "(:glance) annotation will be ignored" warning at build
+            time. That is the price of one shared copy, and it is the right
+            trade - the alternative is three copies again.
+        -->
+    <iq:annotations/>
+  </iq:barrel>
+</iq:manifest>

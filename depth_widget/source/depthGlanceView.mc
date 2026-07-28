@@ -2,6 +2,7 @@ import Toybox.Activity;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
+import DepthCore;
 
 (:glance)
 class depthGlanceView extends WatchUi.GlanceView
@@ -54,7 +55,7 @@ class depthGlanceView extends WatchUi.GlanceView
         if (value != null) {
             text += _model.unitLabel();
         }
-        dc.setColor(depthColor(value), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(DepthCore.depthColor(value), Graphics.COLOR_TRANSPARENT);
         dc.drawText(valueX, y, font, text, justify);
     }
 }

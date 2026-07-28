@@ -1,5 +1,6 @@
 import Toybox.Lang;
 import Toybox.WatchUi;
+import DepthCore;
 
 //! Pages through the widget with swipe/press up and down, the way the built-in
 //! widgets do. The pages wrap around, so either direction toggles between the

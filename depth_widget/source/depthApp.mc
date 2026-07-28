@@ -1,6 +1,7 @@
 import Toybox.Application;
 import Toybox.Lang;
 import Toybox.WatchUi;
+import DepthCore;
 
 class depthApp extends Application.AppBase {
 

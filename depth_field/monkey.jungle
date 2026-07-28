@@ -1,2 +1,6 @@
 project.manifest = manifest.xml
 project.typecheck = 3
+
+# The depth model and colour scale live in the DepthCore barrel so the
+# widget and both data fields share one copy.
+base.barrelPath = ../DepthCore/monkey.jungle
