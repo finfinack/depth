@@ -4,6 +4,18 @@ This is a data field for Garmin watches (Fenix, Epix, Tactix) displaying the max
 
 The unit is shown in the field label (`Max Depth (m)` / `Max Depth (ft)`), because a simple data field has no room for a suffix on the value itself. A new maximum has to be supported by two consecutive readings before it counts, so a single noisy sample cannot latch into it permanently. Settings (water type, units, re-zero) are in Garmin Connect under the app's settings.
 
+## What it records
+
+The field writes one developer field into the activity's FIT file, so the maximum is kept rather than just displayed:
+
+| Field | Scope | Meaning |
+| --- | --- | --- |
+| `max_depth` | session | The deepest reading of the whole activity |
+
+It is in **centimetres**, whatever the display unit is set to, and clamped to 655.35 m. See the [Depth field README](../depth_field/README.md#what-it-records) for why.
+
+This field deliberately records no per-record series. The **Depth** field already contributes one, and writing it from both would duplicate the entire graph for anyone running the two together.
+
 ## This is not a dive computer
 
 **Do not rely on this app for safety.** It is a curiosity for snorkelling and casual swimming, not a dive instrument.

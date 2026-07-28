@@ -4,6 +4,21 @@ This is a data field for Garmin watches (Fenix, Epix, Tactix) displaying the cur
 
 The unit is shown in the field label (`Depth (m)` / `Depth (ft)`), because a simple data field has no room for a suffix on the value itself. Settings (water type, units, re-zero) are in Garmin Connect under the app's settings.
 
+## What it records
+
+The field writes two developer fields into the activity's FIT file, so the depth is kept rather than just displayed:
+
+| Field | Scope | Meaning |
+| --- | --- | --- |
+| `depth` | every record | The depth at that moment, which Garmin Connect draws as a graph |
+| `max_depth` | session | The deepest reading of the whole activity |
+
+Both are in **centimetres**, whatever the display unit is set to. The unit setting can be changed part way through an activity, and a recorded field whose meaning changed halfway would be worse than useless. Centimetres are also exactly the resolution the field displays, so nothing is lost.
+
+The value is clamped to 655.35 m. The model puts no ceiling on depth, and without the clamp a wild pressure reading would wrap around into a small number that looked entirely plausible.
+
+If you also run the **Max Depth** field in the same activity, it contributes only its own session maximum — the per-record graph is not written twice.
+
 ## This is not a dive computer
 
 **Do not rely on this app for safety.** It is a curiosity for snorkelling and casual swimming, not a dive instrument.
@@ -32,6 +47,8 @@ Starting the activity while already in the water is the case it cannot detect: t
 **Water density is a setting, not a measurement.** Fresh water is 9806.65 Pa per metre (ρ=1000). Salt is 10000 Pa per metre, the EN13319 `1 msw` convention that dive computers use. Leaving it set to Fresh in the sea over-reports depth by about 2.5% — half a metre at 20 m.
 
 **The sensor may saturate very shallow, and this is untested.** Fenix-class barometers are typically specified to somewhere around 1100 hPa, which is only about a metre of water above sea level pressure. If that limit is real, readings past a metre or two are meaningless, and they will keep looking perfectly plausible while being nothing of the kind. This has not been verified on a real device.
+
+The recorded `depth` series is the way to check that: a trace that climbs and then flattens into a hard ceiling regardless of how much deeper you go is the sensor saturating, not the water.
 
 See https://developer.garmin.com/connect-iq/connect-iq-basics/ for some information around how to set up the Garmin SDK, compile and run the app. The following is mostly a copy of one of the [examples on the Garmin Connect IQ developer page](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/#yourfirstconnectiqapp).
 
