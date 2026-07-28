@@ -1,4 +1,5 @@
 import Toybox.Activity;
+import Toybox.FitContributor;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
@@ -7,13 +8,34 @@ import DepthCore;
 
 class max_depthView extends WatchUi.SimpleDataField {
 
+    //! Field numbers for this app's FIT contributions. They only have to be
+    //! unique within the app, since the FIT file scopes them by developer id.
+    enum FieldId {
+        FIELD_MAX_DEPTH = 0
+    }
+
     private var _model as DepthModel;
+
+    // Only the session summary. The per-record depth series belongs to the
+    // Depth field; recording it here as well would duplicate the whole graph
+    // for anyone running both fields in the same activity.
+    private var _maxDepthField as FitContributor.Field;
 
     function initialize() {
         SimpleDataField.initialize();
 
         _model = new DepthModel();
         updateLabel();
+
+        // Always recorded in centimeters, whatever the display unit is set to.
+        // The unit setting can be changed part way through an activity, and a
+        // field whose meaning changed halfway would be worse than useless.
+        _maxDepthField = createField("max_depth", FIELD_MAX_DEPTH, FitContributor.DATA_TYPE_UINT16,
+            { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "cm" });
+
+        // The field needs a value before the first compute(), or an activity
+        // saved without ever getting a pressure reading records nothing at all.
+        _maxDepthField.setData(0);
     }
 
     //! A SimpleDataField has no room for a unit suffix on the value, so the unit
@@ -34,6 +56,9 @@ class max_depthView extends WatchUi.SimpleDataField {
     // guarantee that compute() will be called before onUpdate().
     function compute(info as Activity.Info) as Numeric or Duration or String or Null {
         _model.update(info);
+
+        _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
+
         return _model.formatDepth(_model.max_depth);
     }
 }
