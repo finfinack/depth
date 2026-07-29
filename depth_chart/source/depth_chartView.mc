@@ -33,6 +33,17 @@ class depth_chartView extends WatchUi.DataField {
     // "No reading", which is not the same as 0 cm — that is the surface.
     const no_reading = -1;
 
+    // How often the surface line carries a time mark, in samples — half a
+    // minute at the rate above, so a two minute axis takes three of them and a
+    // breath-hold dive can be read off against them without counting.
+    const tick_samples = 30;
+
+    // How wide one of those marks is, and the closest together they are worth
+    // drawing at all. Below that the axis is too narrow to hold them and they
+    // become texture rather than a scale.
+    const tick_width = 2;
+    const min_tick_spacing = 10;
+
     // The shallowest the chart will ever scale to, in centimeters. The bottom
     // edge is the session maximum, and a maximum of two centimeters would
     // otherwise stretch the sensor's own noise across the whole field. Half a
@@ -199,12 +210,6 @@ class depth_chartView extends WatchUi.DataField {
 
         var scale = chartScale();
 
-        // The surface, which is the line every reading is measured from and the
-        // only part of the chart that means something on its own.
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(1);
-        dc.drawLine(_layout.rowLeft(top), top, _layout.rowRight(top), top);
-
         // The rows the colour changes at, worked out once rather than per
         // column. A band deeper than the chart goes lands past lastRow and the
         // clamping below drops it.
@@ -220,6 +225,8 @@ class depth_chartView extends WatchUi.DataField {
             Graphics.COLOR_YELLOW,
             Graphics.COLOR_RED,
         ] as Array<Graphics.ColorType>;
+
+        drawScale(dc, top, lastRow, width, bandRows, foreground);
 
         // Time runs left to right with the newest sample at the right edge, and
         // the axis is fixed at history_samples wide however much history there
@@ -269,6 +276,62 @@ class depth_chartView extends WatchUi.DataField {
         }
 
         drawMaximum(dc, top, span, scale, lastRow);
+    }
+
+    //! The frame the water is drawn over: the surface line, the depths the
+    //! colour changes at, and the time marks.
+    //!
+    //! All of it goes down before the fill, so the water covers it. That is the
+    //! whole point of the band lines — they are the same depths the fill already
+    //! changes colour at, so where there is water the colour change is the
+    //! scale and a line as well would be ink for nothing. Where there is none
+    //! they show through, which is most of the chart while the diver is at the
+    //! surface between dives, and is exactly where the boundaries had no other
+    //! way of being seen.
+    private function drawScale(dc as Dc, top as Number, lastRow as Number, width as Number,
+                               bandRows as Array<Number>,
+                               foreground as Graphics.ColorType) as Void {
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+
+        // The surface, which is the line every reading is measured from and the
+        // only part of the chart that means something on its own.
+        var left = _layout.rowLeft(top);
+        var right = _layout.rowRight(top);
+        dc.drawLine(left, top, right, top);
+
+        for (var i = 0; i < bandRows.size(); i += 1) {
+            var row = bandRows[i];
+            // A boundary shallow enough to land on the surface line would be
+            // drawn under it, and one deeper than the chart goes is off it.
+            if (row > top + 1 && row <= lastRow) {
+                dc.drawLine(_layout.rowLeft(row), row, _layout.rowRight(row), row);
+            }
+        }
+
+        // Time, as a brighter mark on the surface line rather than a line down
+        // the chart: with the band lines already across it, a second set the
+        // other way would be a grid under a picture a quarter of a screen wide,
+        // and the fill would have to be read through it. On the line and not
+        // hanging below it, because the water starts on the next row down and
+        // would swallow anything drawn there.
+        //
+        // Measured back from the right edge, which is now — the axis is fixed
+        // at history_samples wide, so the marks stay put as it fills.
+        //
+        // Deliberately unlabelled. The axis is compute() calls, which is a
+        // second each in practice but not something the buffer can promise, and
+        // a mark reading "1:00" would be claiming it.
+        var spacing = (tick_samples * width) / history_samples;
+        if (spacing < min_tick_spacing) {
+            return;
+        }
+        dc.setColor(foreground, Graphics.COLOR_TRANSPARENT);
+        for (var x = width - 1 - spacing; x > 0; x -= spacing) {
+            if (x >= left && x + tick_width <= right) {
+                dc.fillRectangle(x, top, tick_width, 1);
+            }
+        }
     }
 
     //! One column of water, banded by the colour profile on the way down.

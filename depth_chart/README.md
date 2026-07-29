@@ -20,6 +20,14 @@ That is the barometer field's own fill, and it means something here rather than 
 
 The fill is banded blue, green, yellow and red as it deepens, at the profile's own boundaries — the same numbers `depthColor()` uses. The bands are horizontal and at fixed depths, so they double as a scale: whichever colour the waterline is sitting in is the colour the reading above it is showing. A thin bright edge marks where the water stops, so the trace still reads as a line over time as well.
 
+### The scale behind it
+
+Those same boundaries are drawn as thin grey lines across the chart, **underneath the water**, so the fill covers them. That is the point: where there is water the colour change already is the scale, and a line there as well would be ink for nothing. They only show through where there is none — which, while you are at the surface between dives, is most of the chart, and is exactly where the boundaries had no other way of being seen. A boundary deeper than the session maximum is off the bottom of the chart and simply is not drawn.
+
+The surface line carries a **brighter mark every thirty seconds**, measured back from the right edge, so a dive can be read for how long it lasted rather than only for how deep it went. They are on the line rather than hanging from it, because the water starts on the row below and would swallow them — and there are no vertical grid lines, because a grid under a picture this size would have to be read through rather than off.
+
+The marks are deliberately unlabelled. The axis is one sample per `compute()`, which is a second each in practice but not something the field can promise, so a mark reading `1:00` would be claiming more than it knows. On a field too narrow to space them out they are dropped.
+
 ### The maximum, at the bottom
 
 **The bottom edge of the chart is the session maximum.** The chart scales to the deepest the session has been rather than to fixed steps, so the maximum is the floor of the picture — an orange line along the bottom carrying `MAX` and the depth.
