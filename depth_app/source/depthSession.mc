@@ -82,10 +82,21 @@ function saveSession(model as DepthModel) as Void {
     }
 }
 
-//! Milliseconds as m:ss, or h:mm:ss once it runs past an hour.
+//! Milliseconds as a duration carrying its own units: "42s", "2m 14s", "1h 05m".
 //!
-//! Not localised: a duration written this way reads the same in all five
-//! languages this ships in, and the label above it says what it is.
+//! Units rather than the bare "2:14" a stopwatch would show. Every other value
+//! on these pages says what it is — a depth carries "m" or "ft" — and a colon
+//! alone does not: "2:14" is two minutes and fourteen seconds or two hours and
+//! fourteen minutes depending on what the reader assumes, and a session's
+//! bottom time is plausibly either. Padding to "0:02:14" would disambiguate it
+//! by shape, but costs more width than the units do and reads as a stopwatch
+//! rather than a total.
+//!
+//! Seconds are dropped past an hour: at that length they are noise, and the
+//! row has to share its width with a label.
+//!
+//! Not localised. "h", "m" and "s" are the same in all five languages this
+//! ships in, and the label beside it says which quantity they belong to.
 function formatDuration(milliseconds as Number) as String {
     var total = milliseconds / 1000;
     var hours = total / 3600;
@@ -93,7 +104,10 @@ function formatDuration(milliseconds as Number) as String {
     var seconds = total % 60;
 
     if (hours > 0) {
-        return hours.format("%d") + ":" + minutes.format("%02d") + ":" + seconds.format("%02d");
+        return hours.format("%d") + "h " + minutes.format("%02d") + "m";
     }
-    return minutes.format("%d") + ":" + seconds.format("%02d");
+    if (minutes > 0) {
+        return minutes.format("%d") + "m " + seconds.format("%02d") + "s";
+    }
+    return seconds.format("%d") + "s";
 }
