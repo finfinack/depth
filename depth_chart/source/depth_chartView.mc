@@ -323,22 +323,30 @@ class depth_chartView extends WatchUi.DataField {
 
     //! What the bottom edge of the chart is worth, in centimeters: the deepest
     //! the session has been, so the maximum sits on the floor of the picture.
+    //!
+    //! The session maximum and nothing else. This used to take the deepest
+    //! sample in the history buffer as well, because the maximum was confirmed
+    //! by agreement between consecutive samples and so lagged the trace by a
+    //! sample of descent rate. It no longer does — the model accepts a peak on
+    //! the sample it happens, given a descent leading into it — so the only
+    //! readings the buffer can now hold that the maximum will not are ones the
+    //! model has *rejected* as glitches.
+    //!
+    //! Scaling to those was worse than clipping them. It let one bad sample
+    //! squash the whole trace, and it pushed the orange maximum line up off the
+    //! floor — which is the exact failure scaling to the maximum was meant to
+    //! fix, since a line floating mid-chart reads as a threshold rather than as
+    //! a maximum. A rejected sample now clamps to the bottom row instead, in
+    //! drawChart(), which is the honest rendering of a reading nothing else
+    //! believes.
     private function chartScale() as Number {
         var deepest = min_scale;
 
-        // The maximum needs two samples to agree with each other before it
-        // moves; the trace does not, so it can hold something deeper.
         var maximum = _model.max_depth;
         if (maximum != null) {
             var centimeters = DepthCore.depthCentimeters(maximum);
             if (centimeters > deepest) {
                 deepest = centimeters;
-            }
-        }
-
-        for (var i = 0; i < _filled; i += 1) {
-            if (_history[i] > deepest) {
-                deepest = _history[i];
             }
         }
         return deepest;

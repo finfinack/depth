@@ -26,10 +26,11 @@ The fill is banded blue, green, yellow and red as it deepens, at the profile's o
 
 The point is to leave exactly one reference on the chart. A line floating somewhere in the middle reads as a threshold or an average as readily as a maximum, however it is drawn, and it also needed a second number in the corner to say what the bottom edge was worth. Putting the maximum *at* the bottom collapses both into one.
 
-Two consequences:
+Three consequences:
 
 - The chart rescales as the maximum grows, rather than holding still. That is the trade for the above.
 - A shallow session is floored at **0.5 m**, which is already inside the band the model treats as "at the surface". Without a floor a two-centimetre maximum would stretch the sensor's own noise across the whole field. When the floor is what is in force, the orange line is drawn where the maximum really is rather than at the bottom, and still labelled — the chart never claims a maximum it does not have.
+- A reading the model rejected as a glitch — too fast to be a real descent, or too deep for the descent leading into it — is **clamped to the bottom row** rather than rescaling the chart around it. It is drawn, so nothing is hidden, but one bad sample cannot squash the trace or lift the maximum line off the floor.
 
 ## Round screens
 
