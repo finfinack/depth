@@ -4,7 +4,7 @@
         The depth model, its colour scale and the data field layout, shared by
         the app and the four data fields. See DepthCore/README.md.
     -->
-  <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="2.3.0" minApiLevel="5.2.0">
+  <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="2.3.1" minApiLevel="5.2.0">
     <iq:products>
         <iq:product id="epix2"/>
         <iq:product id="epix2pro42mm"/>

@@ -5,7 +5,7 @@
         Use "Monkey C: Edit Application" from the Visual Studio Code command palette
         to update the application attributes.
     -->
-  <iq:application id="58785e91-a621-4ac5-8c76-e30a469700c0" type="datafield" name="@Strings.AppName" entry="depth_chartApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="5.2.0">
+  <iq:application id="5c1b1700-3ffd-4214-ad61-ec0388663778" type="datafield" name="@Strings.AppName" entry="depth_chartApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="5.2.0">
     <!--
             Use the following from the Visual Studio Code comand palette to edit
             the build targets:
@@ -63,7 +63,7 @@
             command palette to edit the included barrels.
         -->
     <iq:barrels>
-      <iq:depends name="DepthCore" version="2.3.0"/>
+      <iq:depends name="DepthCore" version="2.3.1"/>
     </iq:barrels>
   </iq:application>
 </iq:manifest>
