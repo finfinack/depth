@@ -436,6 +436,7 @@ class depth_gaugeView extends WatchUi.DataField {
         if (depth != null) {
             text += " " + _model.unitLabel();
         }
+        text += _model.staleMark(depth);
 
         var smallHeight = dc.getFontHeight(Graphics.FONT_XTINY);
 
@@ -452,7 +453,7 @@ class depth_gaugeView extends WatchUi.DataField {
         var maxText = (maximum == null)
             ? ""
             : _maxLabel + " " + _model.formatBounded(maximum, _model.saturation_seen)
-                + " " + _model.unitLabel();
+                + " " + _model.unitLabel() + _model.staleMark(maximum);
         var showMax = (maxText.length() > 0) && (spare >= smallHeight)
             && (dc.getTextWidthInPixels(maxText, Graphics.FONT_XTINY) <= boxWidth);
         if (showMax) {

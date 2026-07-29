@@ -125,7 +125,7 @@ Two things about the test build are not obvious:
 
 ### Making time pass
 
-`update()` reads `System.getTimer()` itself, so two calls in a row are microseconds apart — exactly the case the trend and the maximum both refuse to act on. Everything with real risk in this model is about elapsed time: the baseline window rotating, the submerged watchdog, the trend's commit/release hysteresis, the two-sample maximum.
+`update()` reads `System.getTimer()` itself, so two calls in a row are microseconds apart — exactly the case the trend and the maximum both refuse to act on. Everything with real risk in this model is about elapsed time: the baseline window rotating, the stale-baseline warning, the trend's commit/release hysteresis, the maximum's run-in test.
 
 So `update(info)` is a one-liner over **`updateAt(info, now)`**, and the tests drive `updateAt` with a synthetic millisecond clock. That is the whole seam — no injected clock object, no test-only branch in the model, and `update()` remains what every app calls.
 

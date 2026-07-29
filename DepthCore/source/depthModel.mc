@@ -23,10 +23,24 @@ module DepthCore {
     //!   affecting the reading once it ages out instead of biasing every later
     //!   reading for the rest of the session.
     //! - The window is *frozen* while the watch looks submerged, so a long dive
-    //!   cannot drag the baseline down with it. If that state lasts implausibly
-    //!   long the baseline itself is the most likely culprit, so a watchdog
-    //!   starts over from the current pressure — otherwise a bad sample that
-    //!   made the watch look permanently submerged would have no way out.
+    //!   cannot drag the baseline down with it.
+    //!
+    //! If that frozen state lasts implausibly long the baseline is probably
+    //! wrong, and the model says so — `baseline_stale` — but it does not act on
+    //! it. This used to start the baseline over from the current pressure, and
+    //! that was the wrong trade in both directions:
+    //!
+    //! - Every error it corrected ran the *safe* way. A baseline can only get
+    //!   stuck too low, because every path but rebaseline() derives it from a
+    //!   trailing minimum, and too low reads too deep.
+    //! - The correction itself ran the dangerous way: re-zeroing at depth reads
+    //!   0.00 while submerged, which is indistinguishable from a watch that is
+    //!   simply working, and silently understates every reading after it.
+    //!
+    //! Real dive computers zero at the surface and *indicate* a suspect
+    //! baseline; none of them re-zero mid-dive. A stuck baseline announces
+    //! itself anyway — a watch showing depth in air is obviously wrong — so
+    //! warning and leaving the number alone loses nothing and risks nothing.
     //!
     //! The window is two half-window buckets rather than a ring of samples: the
     //! effective window is therefore somewhere between one and two bucket
@@ -63,8 +77,9 @@ module DepthCore {
         // Half of the trailing baseline window, so the window itself is 1.5-3 min.
         const bucket_duration = 90000; // ms
 
-        // How long the watch may look submerged before the baseline is assumed to
-        // be wrong rather than the depth being real.
+        // How long the watch may look submerged before the baseline is called
+        // suspect rather than the depth being real. Only ever raises a warning
+        // — see the class comment for why it no longer corrects anything.
         const max_submerged = 600000; // ms
 
         // Fastest descent treated as a real one. Anything quicker is a sensor
@@ -136,6 +151,17 @@ module DepthCore {
         //! reached while the reading was pinned is the ceiling, not the dive.
         var saturation_seen as Boolean = false;
 
+        //! Whether the watch has looked submerged for so long that the surface
+        //! baseline is more likely wrong than the depth real. Nothing is
+        //! corrected — every reading stays exactly what the sensor supports —
+        //! but readings taken against a suspect baseline are marked, because a
+        //! baseline that is off makes the depth off by the same amount.
+        //!
+        //! Unlike saturation there is no separate flag for the maximum: this
+        //! describes the baseline, and the live depth and the maximum are both
+        //! measured from it, so it applies to both equally.
+        var baseline_stale as Boolean = false;
+
         var unit as System.UnitsSystem = System.UNIT_METRIC; // or System.UNIT_STATUTE
         var water_pressure as Float = fresh_water_pressure;
 
@@ -160,6 +186,11 @@ module DepthCore {
         private var _previous_depth as Float?;
         private var _previous_time as Number = 0;
         private var _previous_pressure as Float?;
+
+        // ...and whether that previous sample was at the surface, which is what
+        // makes it a candidate surface pressure. See where confirmed is worked
+        // out in updateAt().
+        private var _previous_at_surface as Boolean = false;
 
         // The sample before that. Two are needed rather than one because
         // updateMaximum() judges a sample against the rate leading into it,
@@ -248,6 +279,11 @@ module DepthCore {
                 // is left alone: it describes the session, not this sample.
                 saturated = false;
                 _flat_count = 0;
+                // The samples either side of a gap are not neighbours. Left in
+                // place, the first reading back gets judged for a maximum, a
+                // rate and a baseline outlier against one from before the gap,
+                // which may be minutes old and anywhere.
+                forgetNeighbours();
                 return;
             }
 
@@ -262,27 +298,44 @@ module DepthCore {
             // bad sample makes the watch look permanently submerged, which freezes
             // the window on the bad value and leaves the watchdog below as the only
             // way out — ten minutes of phantom depth.
+            //
+            // Only a previous sample that was itself at the surface counts. A
+            // submerged one is not a candidate surface pressure at all, and
+            // feeding it here anchors the baseline at depth: surfacing from a
+            // submersion longer than a full window rotates the window empty,
+            // so that stale high reading becomes the only value in it. Dive
+            // again on the next sample and the watch reads 0.00 at depth, with
+            // the baseline pinned there until it surfaces twice in a row.
             var previous_pressure = _previous_pressure;
-            var confirmed = (previous_pressure != null && previous_pressure > pressure)
+            var confirmed = (_previous_at_surface && previous_pressure != null
+                    && previous_pressure > pressure)
                 ? previous_pressure
                 : pressure;
             _previous_pressure = pressure;
 
             if (pressure - baseline <= surface_band) {
-                // At the surface: the window tracks the surface pressure.
+                // At the surface: the window tracks the surface pressure, so
+                // whatever the baseline was, it is being measured again.
                 _submerged_since = null;
+                baseline_stale = false;
+                _previous_at_surface = true;
                 feedWindow(confirmed, now);
                 baseline = windowMinimum(confirmed);
                 _baseline = baseline;
             } else {
+                _previous_at_surface = false;
                 // Submerged: the window is frozen, so the dive cannot pull the
-                // baseline down after it.
+                // baseline down after it. Long enough and the baseline is the
+                // likelier culprit — but say so rather than acting on it, since
+                // acting means re-zeroing at depth. See the class comment.
                 var since = _submerged_since;
-                if (since == null) {
+                if (since == null || now < since) {
+                    // Null is the first submerged sample; going backwards is
+                    // the millisecond counter wrapping, and an interval that
+                    // cannot be measured must not be called implausible.
                     _submerged_since = now;
-                } else if (now - since > max_submerged || now < since) {
-                    rebaseline(pressure, now);
-                    baseline = pressure;
+                } else if (now - since > max_submerged) {
+                    baseline_stale = true;
                 }
             }
 
@@ -306,12 +359,7 @@ module DepthCore {
             _min_current = null;
             _min_previous = null;
             _submerged_since = null;
-            _previous_depth = null;
-            _previous_time = 0;
-            _previous_pressure = null;
-            _previous2_depth = null;
-            _previous2_time = 0;
-            _rate = 0.0;
+            forgetNeighbours();
             _flat_count = 0;
             depth = null;
             max_depth = null;
@@ -320,6 +368,7 @@ module DepthCore {
             pressure = null;
             saturated = false;
             saturation_seen = false;
+            baseline_stale = false;
         }
 
         //! Format a depth in meters as a bare number in the user's unit, without a
@@ -345,6 +394,18 @@ module DepthCore {
         function formatBounded(meters as Float?, limited as Boolean) as String {
             var text = formatDepth(meters);
             return (limited && meters != null) ? ">=" + text : text;
+        }
+
+        //! The mark that goes on the *end* of a reading whose baseline is
+        //! suspect — after the unit, since it qualifies the whole thing.
+        //!
+        //! Deliberately not part of formatBounded(): that prefix belongs
+        //! against the number, and these two say opposite things. ">=" means
+        //! the depth is at least this much; "?" means it may be less, because
+        //! a baseline that is off puts every reading off by the same amount.
+        //! Both can be true at once, and ">=6.40 m?" is then honest.
+        function staleMark(meters as Float?) as String {
+            return (baseline_stale && meters != null) ? "?" : "";
         }
 
         //! The unit suffix matching formatDepth().
@@ -391,12 +452,32 @@ module DepthCore {
         }
 
         //! Start the baseline over from a single sample.
+        //!
+        //! Every reading is measured from the baseline, so replacing it makes
+        //! everything derived from the old one meaningless — the neighbours the
+        //! maximum and the rate are judged against most of all. Both callers
+        //! happen to have cleared those already, but the invariant belongs here
+        //! rather than in whoever calls next.
         private function rebaseline(pressure as Float, now as Number) as Void {
             _baseline = pressure;
             _min_current = pressure;
             _min_previous = null;
             _bucket_start = now;
             _submerged_since = null;
+            baseline_stale = false;
+            forgetNeighbours();
+        }
+
+        //! Drop the remembered samples, so the next reading is judged on its
+        //! own rather than against one across a discontinuity.
+        private function forgetNeighbours() as Void {
+            _previous_depth = null;
+            _previous_time = 0;
+            _previous_pressure = null;
+            _previous_at_surface = false;
+            _previous2_depth = null;
+            _previous2_time = 0;
+            _rate = 0.0;
         }
 
         //! Add a surface sample to the trailing window, rotating the buckets as

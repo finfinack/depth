@@ -577,6 +577,49 @@ module DepthCore {
     }
 
     (:test)
+    function testALoneLowSampleStaysOutOfTheWindow(logger as Logger) as Boolean {
+        // What the max-of-pairs prefilter is for. One spuriously low reading
+        // must not become the surface, or every depth after it reads deeper
+        // than it is until the sample ages out.
+        var model = saltWaterModel();
+        readingAt(model, test_surface, 0);
+        readingAt(model, test_surface, 1000);
+        readingAt(model, test_surface - 1000.0, 2000); // The outlier.
+        readingAt(model, test_surface, 3000);
+
+        // 1 m down. Against the true surface that is 1.00; had the outlier got
+        // into the window it would read 1.10.
+        diveTo(model, 1.0, 4000);
+        assertClose(model.depth, 1.0, "depth after a lone low sample");
+        return true;
+    }
+
+    (:test)
+    function testSurfacingDoesNotAnchorTheBaselineAtDepth(logger as Logger) as Boolean {
+        // The other half of that prefilter: only a previous sample that was
+        // itself at the surface may stand in for one. Surfacing from a
+        // submersion longer than a full window rotates the window empty, so a
+        // submerged previous sample would be the only value left in it — and
+        // the next descent would then read 0.00 at depth, with the baseline
+        // pinned there. Exactly the silent under-read the watchdog was removed
+        // for, arriving by another route.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        diveTo(model, 5.0, 1000);
+
+        // Five minutes down, so both halves of the window are stale.
+        diveTo(model, 5.0, 300000);
+
+        // Up for one sample, then straight back down.
+        diveTo(model, 0.0, 301000);
+        assertClose(model.depth, 0.0, "at the surface");
+
+        diveTo(model, 5.0, 302000);
+        assertClose(model.depth, 5.0, "back down after a single surface sample");
+        return true;
+    }
+
+    (:test)
     function testBaselineIsFrozenWhileSubmerged(logger as Logger) as Boolean {
         // Eight minutes at 5 m. If the window were still being fed, the dive
         // would drag the baseline down after it and the depth would decay
@@ -590,19 +633,93 @@ module DepthCore {
     }
 
     (:test)
-    function testSubmergedWatchdogStartsOver(logger as Logger) as Boolean {
+    function testLongSubmersionWarnsButDoesNotRezero(logger as Logger) as Boolean {
         // Past ten minutes the baseline is likelier to be wrong than the depth
-        // to be real, so the model starts over from the current pressure. Note
-        // what this costs: a genuine dive that long reads as the surface.
+        // real — but the reading does not move. Re-zeroing here used to make
+        // the watch read 0.00 while submerged, which is indistinguishable from
+        // a watch that is working and understates every reading after it.
         var model = saltWaterModel();
         diveTo(model, 0.0, 0);
         diveTo(model, 5.0, 1000);
 
         diveTo(model, 5.0, 601000);
-        assertClose(model.depth, 5.0, "just inside the watchdog");
+        assertClose(model.depth, 5.0, "just inside the warning");
+        Test.assertMessage(!model.baseline_stale, "not yet suspect");
 
         diveTo(model, 5.0, 601001);
-        assertClose(model.depth, 0.0, "once the watchdog has fired");
+        assertClose(model.depth, 5.0, "the depth is left alone");
+        Test.assertMessage(model.baseline_stale, "the baseline is called suspect");
+        return true;
+    }
+
+    (:test)
+    function testSurfacingClearsTheStaleBaseline(logger as Logger) as Boolean {
+        // Back inside the surface band the window is being fed again, so
+        // whatever the baseline was, it is being measured rather than guessed.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        diveTo(model, 5.0, 1000);
+        diveTo(model, 5.0, 601001);
+        Test.assertMessage(model.baseline_stale, "suspect while down");
+
+        diveTo(model, 0.0, 602000);
+        Test.assertMessage(!model.baseline_stale, "cleared on surfacing");
+        return true;
+    }
+
+    (:test)
+    function testBriefSurfacingRestartsTheClock(logger as Logger) as Boolean {
+        // The ten minutes have to be unbroken. One sample inside the surface
+        // band is enough to start them over, which is why a snorkeller whose
+        // wrist keeps breaking the surface never reaches the warning.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        diveTo(model, 5.0, 1000);
+
+        diveTo(model, 0.0, 300000);
+        diveTo(model, 5.0, 301000);
+
+        diveTo(model, 5.0, 601001); // Ten minutes after the *first* descent.
+        Test.assertMessage(!model.baseline_stale, "the clock restarted");
+        return true;
+    }
+
+    (:test)
+    function testStaleMarksBothReadings(logger as Logger) as Boolean {
+        // The baseline is what both the depth and the maximum are measured
+        // from, so a suspect one makes both suspect. No reading gets no mark.
+        var model = saltWaterModel();
+        Test.assertEqual(model.staleMark(1.0), "");
+
+        diveTo(model, 0.0, 0);
+        diveTo(model, 5.0, 1000);
+        diveTo(model, 5.0, 601001);
+        Test.assertEqual(model.staleMark(model.depth), "?");
+        Test.assertEqual(model.staleMark(model.max_depth), "?");
+        Test.assertEqual(model.staleMark(null), "");
+        return true;
+    }
+
+    (:test)
+    function testSensorGapDoesNotMakeNeighboursOfDistantSamples(logger as Logger) as Boolean {
+        // Two readings either side of a dropout are not consecutive samples,
+        // and judging the second against the first would let a maximum through
+        // on a run-in that never happened.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        diveTo(model, 1.0, 1000);
+        diveTo(model, 1.0, 2000);
+        assertClose(model.max_depth, 1.0, "maximum before the gap");
+
+        var info = new Activity.Info();
+        info.rawAmbientPressure = null;
+        info.ambientPressure = null;
+        model.updateAt(info, 3000);
+
+        // Straight back to 3 m. With the pre-gap sample still in place this
+        // would have had a run-in to justify it; on its own it does not.
+        diveTo(model, 3.0, 4000);
+        assertClose(model.max_depth, 1.0, "maximum is not judged across the gap");
         return true;
     }
 }

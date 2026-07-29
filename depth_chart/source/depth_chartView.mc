@@ -121,6 +121,7 @@ class depth_chartView extends WatchUi.DataField {
         if (depth != null) {
             text += " " + _model.unitLabel();
         }
+        text += _model.staleMark(depth);
 
         var font = _layout.fontFitting(dc, text, _layout.right(top, bottom) - _layout.left(top, bottom),
             (bottom - top) * 34 / 100);
@@ -306,7 +307,7 @@ class depth_chartView extends WatchUi.DataField {
         }
 
         var text = _maxLabel + " " + _model.formatBounded(maximum, _model.saturation_seen)
-            + " " + _model.unitLabel();
+            + " " + _model.unitLabel() + _model.staleMark(maximum);
         var textLeft = _layout.left(textTop, y);
         if (dc.getTextWidthInPixels(text, Graphics.FONT_XTINY) > _layout.right(textTop, y) - textLeft) {
             return;

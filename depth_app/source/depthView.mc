@@ -168,7 +168,10 @@ class depthView extends WatchUi.View {
         // numeric font, which holds digits only. It gets its own draw in the
         // unit's text font, the same way the unit itself does.
         var boundText = ">=";
-        var unitText = " " + _model.unitLabel();
+        // The "?" rides on the unit rather than the number, both because it
+        // qualifies the whole reading and because the numeric fonts hold
+        // digits only — the same reason ">=" is drawn separately below.
+        var unitText = " " + _model.unitLabel() + _model.staleMark(value);
         var boundWidth = limited ? dc.getTextWidthInPixels(boundText, unitFont) : 0;
         var valueWidth = dc.getTextWidthInPixels(text, numberFont);
         var unitWidth = dc.getTextWidthInPixels(unitText, unitFont);
