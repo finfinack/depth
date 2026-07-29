@@ -11,7 +11,8 @@ class max_depthView extends WatchUi.SimpleDataField {
     //! Field numbers for this app's FIT contributions. They only have to be
     //! unique within the app, since the FIT file scopes them by developer id.
     enum FieldId {
-        FIELD_MAX_DEPTH = 0
+        FIELD_MAX_DEPTH = 0,
+        FIELD_MAX_DEPTH_RAW = 1
     }
 
     private var _model as DepthModel;
@@ -20,6 +21,13 @@ class max_depthView extends WatchUi.SimpleDataField {
     // Depth field; recording it here as well would duplicate the whole graph
     // for anyone running both fields in the same activity.
     private var _maxDepthField as FitContributor.Field;
+
+    // The same maximum with no spike rejection at all, so the true deepest
+    // point of the session is bracketed between the two. It matters more here
+    // than in the Depth field: that one records the whole depth series, so a
+    // raw maximum could be recovered from it, and this one records nothing
+    // else at all.
+    private var _maxDepthRawField as FitContributor.Field;
 
     function initialize() {
         SimpleDataField.initialize();
@@ -32,10 +40,14 @@ class max_depthView extends WatchUi.SimpleDataField {
         // field whose meaning changed halfway would be worse than useless.
         _maxDepthField = createField("max_depth", FIELD_MAX_DEPTH, FitContributor.DATA_TYPE_UINT16,
             { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "cm" });
+        _maxDepthRawField = createField("max_depth_raw", FIELD_MAX_DEPTH_RAW,
+            FitContributor.DATA_TYPE_UINT16,
+            { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "cm" });
 
-        // The field needs a value before the first compute(), or an activity
+        // The fields need a value before the first compute(), or an activity
         // saved without ever getting a pressure reading records nothing at all.
         _maxDepthField.setData(0);
+        _maxDepthRawField.setData(0);
     }
 
     //! A SimpleDataField has no room for a unit suffix on the value, so the unit
@@ -63,6 +75,7 @@ class max_depthView extends WatchUi.SimpleDataField {
         _model.update(info);
 
         _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
+        _maxDepthRawField.setData(DepthCore.depthCentimeters(_model.max_depth_raw));
 
         // ">=" in front once the sensor has looked pinned at any point: a
         // maximum reached while the reading was at its ceiling is the ceiling,

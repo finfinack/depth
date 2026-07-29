@@ -13,7 +13,8 @@ class depthView extends WatchUi.SimpleDataField {
     enum FieldId {
         FIELD_DEPTH = 0,
         FIELD_MAX_DEPTH = 1,
-        FIELD_PRESSURE = 2
+        FIELD_PRESSURE = 2,
+        FIELD_MAX_DEPTH_RAW = 3
     }
 
     private var _model as DepthModel;
@@ -22,6 +23,12 @@ class depthView extends WatchUi.SimpleDataField {
     // and the deepest reading of the session as a single summary value.
     private var _depthField as FitContributor.Field;
     private var _maxDepthField as FitContributor.Field;
+
+    // The same maximum with no spike rejection at all. The confirmed one has to
+    // reject a lone deep sample, which costs it a little of a genuine peak, so
+    // the true deepest point of the session is somewhere between the two.
+    // Recorded rather than shown: it is here to check a session afterwards.
+    private var _maxDepthRawField as FitContributor.Field;
 
     // The sensor reading the depth was derived from, before anything is done to
     // it. Depth is only as good as the surface baseline the app had to guess
@@ -42,6 +49,9 @@ class depthView extends WatchUi.SimpleDataField {
             { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "cm" });
         _maxDepthField = createField("max_depth", FIELD_MAX_DEPTH, FitContributor.DATA_TYPE_UINT16,
             { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "cm" });
+        _maxDepthRawField = createField("max_depth_raw", FIELD_MAX_DEPTH_RAW,
+            FitContributor.DATA_TYPE_UINT16,
+            { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "cm" });
 
         // Whole pascal in a UINT32. Ambient pressure is around 100000 Pa, which
         // does not fit a UINT16 at any useful resolution.
@@ -52,6 +62,7 @@ class depthView extends WatchUi.SimpleDataField {
         // that is saved without ever getting a pressure reading records nothing.
         _depthField.setData(0);
         _maxDepthField.setData(0);
+        _maxDepthRawField.setData(0);
         _pressureField.setData(0);
     }
 
@@ -81,6 +92,7 @@ class depthView extends WatchUi.SimpleDataField {
 
         _depthField.setData(DepthCore.depthCentimeters(_model.depth));
         _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
+        _maxDepthRawField.setData(DepthCore.depthCentimeters(_model.max_depth_raw));
         _pressureField.setData(DepthCore.pressurePascals(_model.pressure));
 
         // ">=" in front once the sensor looks pinned: past its ceiling the

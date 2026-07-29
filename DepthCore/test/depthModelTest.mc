@@ -211,37 +211,79 @@ module DepthCore {
     }
 
     //
-    // The maximum. It is confirmed by two consecutive samples, so that a single
-    // noisy spike cannot latch into a value that then never goes away.
+    // The maximum. A sample is accepted as a new maximum when it is no deeper
+    // than the descent leading into it explains — which keeps a real peak
+    // exactly, where judging each pair on its own used to shave a full sample
+    // of descent rate off every one of them.
     //
 
     (:test)
-    function testMaximumNeedsTwoSamples(logger as Logger) as Boolean {
+    function testMaximumKeepsTheRealPeak(logger as Logger) as Boolean {
+        // The bug this rule exists for. A dive to 3 m turning round at 1 m/s
+        // has to record 3 m: keeping the shallower of each consecutive pair
+        // recorded 2.5 m, a metre-a-second under-report at every turn, and
+        // reading shallower than the diver went is the dangerous direction.
         var model = saltWaterModel();
         diveTo(model, 0.0, 0);
-        Test.assertMessage(model.max_depth == null, "maximum from a single sample");
+        diveTo(model, 0.5, 1000);
+        diveTo(model, 1.5, 2000);
+        diveTo(model, 2.5, 3000);
+        diveTo(model, 3.0, 4000); // The turn.
+        assertClose(model.max_depth, 3.0, "maximum at the peak");
 
-        // The pair (0 m, 1 m) only confirms the shallower of the two.
-        diveTo(model, 1.0, 1000);
-        assertClose(model.max_depth, 0.0, "maximum after one deep sample");
-
-        diveTo(model, 1.0, 2000);
-        assertClose(model.max_depth, 1.0, "maximum after two deep samples");
+        diveTo(model, 2.0, 5000);
+        assertClose(model.max_depth, 3.0, "maximum on the way back up");
         return true;
     }
 
     (:test)
-    function testUnconfirmedSpikeDoesNotBecomeTheMaximum(logger as Logger) as Boolean {
-        // A plausible descent rate, so the rate guard lets it through — the
-        // two-sample confirmation is the only thing standing in its way.
+    function testMaximumNeedsARunInToJudgeAgainst(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        Test.assertMessage(model.max_depth == null, "maximum from a single sample");
+
+        // A metre in the first second, with nothing behind it to say whether a
+        // descent was under way. Held back rather than trusted — which costs
+        // nothing, because a diver who is really going down goes on doing it.
+        diveTo(model, 1.0, 1000);
+        Test.assertMessage(model.max_depth == null, "maximum with no run-in");
+
+        diveTo(model, 1.0, 2000);
+        assertClose(model.max_depth, 1.0, "maximum once the descent is established");
+        return true;
+    }
+
+    (:test)
+    function testSpikeOutOfALevelSeriesIsNotTheMaximum(logger as Logger) as Boolean {
+        // 2 m in one second from a series going nowhere. It is inside
+        // max_descent_rate, so the rate guard alone lets it through — the
+        // run-in is what rejects it.
         var model = saltWaterModel();
         diveTo(model, 0.0, 0);
         diveTo(model, 1.0, 1000);
         diveTo(model, 1.0, 2000);
 
         diveTo(model, 3.0, 3000);
+        assertClose(model.max_depth, 1.0, "maximum during the spike");
+
         diveTo(model, 1.0, 4000);
-        assertClose(model.max_depth, 1.0, "maximum after an unconfirmed spike");
+        assertClose(model.max_depth, 1.0, "maximum after the spike");
+        return true;
+    }
+
+    (:test)
+    function testSpikeAtTheRateLimitIsNotTheMaximum(logger as Logger) as Boolean {
+        // Exactly max_descent_rate, which the rate guard compares with a strict
+        // greater-than and therefore does not catch. This is the case the old
+        // pair rule caught and a bare rate guard would not, so the run-in has
+        // to catch it instead.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        diveTo(model, 1.0, 1000);
+        diveTo(model, 1.0, 2000);
+
+        diveTo(model, 4.0, 3000);
+        assertClose(model.max_depth, 1.0, "maximum after a spike at the rate limit");
         return true;
     }
 
@@ -259,6 +301,58 @@ module DepthCore {
 
         diveTo(model, 1.0, 4000);
         assertClose(model.max_depth, 1.0, "maximum once the glitch has passed");
+        return true;
+    }
+
+    (:test)
+    function testFastDescentIsNotMistakenForASpike(logger as Logger) as Boolean {
+        // 2 m/s sustained is a real freedive descent, not a glitch, and the
+        // maximum has to follow it down rather than stalling at the first
+        // sample the run-in had not yet caught up with.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        diveTo(model, 2.0, 1000);
+        diveTo(model, 4.0, 2000);
+        diveTo(model, 6.0, 3000);
+        assertClose(model.max_depth, 6.0, "maximum during a fast descent");
+        return true;
+    }
+
+    //
+    // The raw maximum. It takes every sample as it came, so the true peak is
+    // bracketed between it and max_depth. Recorded into the FIT file and shown
+    // nowhere.
+    //
+
+    (:test)
+    function testRawMaximumTakesEverySample(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        assertClose(model.max_depth_raw, 0.0, "raw maximum from the first sample");
+        diveTo(model, 0.0, 1000);
+
+        // A spike out of a level series, which the confirmed maximum rejects.
+        diveTo(model, 3.0, 2000);
+        assertClose(model.max_depth_raw, 3.0, "raw maximum after a spike");
+        assertClose(model.max_depth, 0.0, "confirmed maximum ignored the spike");
+
+        // ...and an impossible descent, which it also rejects.
+        diveTo(model, 20.0, 3000);
+        assertClose(model.max_depth_raw, 20.0, "raw maximum after an impossible descent");
+        assertClose(model.max_depth, 0.0, "confirmed maximum ignored that too");
+        return true;
+    }
+
+    (:test)
+    function testRezeroForgetsBothMaximums(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        diveTo(model, 1.0, 1000);
+        diveTo(model, 1.0, 2000);
+
+        model.rezero();
+        Test.assertMessage(model.max_depth == null, "maximum after a re-zero");
+        Test.assertMessage(model.max_depth_raw == null, "raw maximum after a re-zero");
         return true;
     }
 

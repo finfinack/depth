@@ -71,6 +71,13 @@ module DepthCore {
         // glitch, and must not be allowed to reach the maximum.
         const max_descent_rate = 3.0; // m/s
 
+        // How much faster than the descent already under way a sample may be
+        // and still count as part of it — the acceleration allowance in
+        // updateMaximum(). Deliberately tight: being too tight only delays a
+        // new maximum by one sample, since a diver who is really going down
+        // keeps going down, while being too loose lets a spike in permanently.
+        const max_rate_step = 0.5; // m/s
+
         // How fast the depth has to be changing before the trend commits to a
         // direction, and how slow before it goes back to level. Two thresholds
         // rather than one because a single one makes the trend chatter every
@@ -106,6 +113,13 @@ module DepthCore {
         var depth as Float?;
         //! Deepest reading in meters so far, or null before the first reading.
         var max_depth as Float?;
+
+        //! The same, but taking every sample as it came — no spike rejection of
+        //! any kind. Recorded into the FIT file and shown nowhere: it is there
+        //! so a session can be checked afterwards, since the true peak is
+        //! somewhere between this and max_depth. A second maximum on screen
+        //! would only raise the question of which one is real.
+        var max_depth_raw as Float?;
         //! Which way the depth is going: one of the TREND_ values above.
         var trend as Number = TREND_LEVEL;
         //! The pressure the current depth was derived from, in pascal, exactly as
@@ -146,6 +160,12 @@ module DepthCore {
         private var _previous_depth as Float?;
         private var _previous_time as Number = 0;
         private var _previous_pressure as Float?;
+
+        // The sample before that. Two are needed rather than one because
+        // updateMaximum() judges a sample against the rate leading into it,
+        // and a rate needs two samples of its own.
+        private var _previous2_depth as Float?;
+        private var _previous2_time as Number = 0;
 
         // Smoothed rate of change in m/s, positive going deeper, behind trend.
         private var _rate as Float = 0.0;
@@ -287,11 +307,15 @@ module DepthCore {
             _min_previous = null;
             _submerged_since = null;
             _previous_depth = null;
+            _previous_time = 0;
             _previous_pressure = null;
+            _previous2_depth = null;
+            _previous2_time = 0;
             _rate = 0.0;
             _flat_count = 0;
             depth = null;
             max_depth = null;
+            max_depth_raw = null;
             trend = TREND_LEVEL;
             pressure = null;
             saturated = false;
@@ -498,27 +522,82 @@ module DepthCore {
         }
 
         //! Track the deepest reading, guarded against noise.
+        //!
+        //! A spike and a real peak look identical from one sample: both are a
+        //! single reading deeper than the two around it. This used to keep the
+        //! shallower of each consecutive pair, which rejects every spike — and
+        //! clips every genuine peak by a full sample of descent rate with it,
+        //! about a metre at a 1 m/s freedive turn. Reading a metre shallow than
+        //! the diver actually went is the wrong way round to be wrong.
+        //!
+        //! What tells the two apart is not the sample, it is what leads into
+        //! it. A real peak sits at the end of a descent, so it is roughly where
+        //! the rate already established predicts. A spike appears out of a
+        //! series going nowhere. So a sample is accepted as a maximum when it
+        //! is no deeper than the run-in explains, and the peak itself is kept
+        //! rather than its neighbour.
+        //!
+        //! This is strictly the stronger guard, not a relaxation: a 3 m jump in
+        //! one second sits exactly on max_descent_rate and slips past the rate
+        //! check below, but not past the run-in.
         private function updateMaximum(value as Float, now as Number) as Void {
+            // The raw maximum takes every sample, including the ones the guards
+            // below throw away. That is what makes it worth recording: the gap
+            // between the two is either a peak this lost or a spike it caught,
+            // and the pressure series says which.
+            var raw = max_depth_raw;
+            if (raw == null || value > raw) {
+                max_depth_raw = value;
+            }
+
             var previous = _previous_depth;
             var previous_time = _previous_time;
+            var older = _previous2_depth;
+            var older_time = _previous2_time;
+
+            _previous2_depth = previous;
+            _previous2_time = previous_time;
             _previous_depth = value;
             _previous_time = now;
 
             if (previous == null) {
-                return; // A maximum needs two samples to confirm it.
+                return; // Nothing to judge this against yet.
             }
 
             var seconds = (now - previous_time) / 1000.0;
-            if (seconds <= 0.0 || (value - previous) > max_descent_rate * seconds) {
+            if (seconds <= 0.0) {
+                return; // No time passed, or the millisecond counter wrapped.
+            }
+
+            var step = value - previous;
+            if (step > max_descent_rate * seconds) {
                 return; // Faster than any real descent, so treat it as a glitch.
             }
 
-            // A new maximum has to be supported by two consecutive samples, so a
-            // single noisy spike cannot latch into it permanently.
-            var confirmed = (value < previous) ? value : previous;
+            // How much deeper this sample may be before it stops looking like
+            // the continuation of a descent. The run-in carries most of it;
+            // max_rate_step is the slack on top for real acceleration.
+            //
+            // An ascending run-in contributes nothing rather than a negative
+            // allowance: turning round and going down again is ordinary, and
+            // the slack alone is enough to cover the first sample of it.
+            var allowed = max_rate_step * seconds;
+            if (older != null) {
+                var run_seconds = (previous_time - older_time) / 1000.0;
+                if (run_seconds > 0.0) {
+                    var rate = (previous - older) / run_seconds;
+                    if (rate > 0.0) {
+                        allowed += rate * seconds;
+                    }
+                }
+            }
+            if (step > allowed) {
+                return; // Deeper than the run-in explains: a spike, not a peak.
+            }
+
             var maximum = max_depth;
-            if (maximum == null || confirmed > maximum) {
-                max_depth = confirmed;
+            if (maximum == null || value > maximum) {
+                max_depth = value;
             }
         }
     }
