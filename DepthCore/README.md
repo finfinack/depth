@@ -25,7 +25,7 @@ and declares the dependency in its `manifest.xml`:
 
 ```xml
 <iq:barrels>
-  <iq:depends name="DepthCore" version="2.2.2"/>
+  <iq:depends name="DepthCore" version="2.3.0"/>
 </iq:barrels>
 ```
 
@@ -139,6 +139,6 @@ model.updateAt(info, 1000);   // 1 s after the previous sample
 
 ## Versioning
 
-The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.2.2`. Bump them together.
+The version in `manifest.xml` and the `<iq:depends>` version in each app must match. Both are `2.3.0`. Bump them together.
 
 It is deliberately the same number as the apps carry in the store rather than a version of its own: the barrel is not published anywhere and has exactly five consumers, all in this repository and all released together, so a separate lineage for it would be two numbers to keep straight in exchange for nothing. The apps' own version is set when uploading to the store — Connect IQ app manifests have no version field.
