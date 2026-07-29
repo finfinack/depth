@@ -65,6 +65,19 @@ class depth_gaugeView extends WatchUi.DataField {
     const arc_min_radius = 40;
     const arc_max_trim_degrees = 15.0;
 
+    // The sweep a field that holds the whole lens gets: 270 degrees with the
+    // gap at the bottom, the way a speedometer runs and the way the watch's own
+    // zone gauges do. 225 degrees is lower-left and -45 lower-right, and
+    // clockwise between them passes over the top — so shallow stays on the left
+    // exactly as it is on the half sweep, and the extra 90 degrees buys the
+    // same four zones half again as much angular resolution.
+    //
+    // The end runs past zero into negative degrees on purpose: degreesFor() and
+    // the marker trigonometry both need the sweep monotonic, and drawArc() gets
+    // its own wrapped copy from arcDegrees().
+    const full_sweep_start = 225.0;
+    const full_sweep_end = -45.0;
+
     // Shallow to deep. The boundaries between them are the colour profile's
     // own, so the gauge and the reading cannot disagree about a depth.
     const zone_colors = [
@@ -154,55 +167,79 @@ class depth_gaugeView extends WatchUi.DataField {
             return false;
         }
 
-        // Which half of the lens this field holds — the top of it or the bottom.
-        var downwards = (centerY * 2 < height);
-        var trim;
-        if (downwards) {
-            if (centerY + lensRadius > height) {
-                return false; // The bottom of the lens is outside the field.
-            }
-            trim = sweepTrim(-centerY, inside);
-        } else {
-            if (centerY - lensRadius < 0) {
-                return false; // The top of the lens is outside the field.
-            }
-            trim = sweepTrim(centerY - (height - 1), inside);
-        }
-        if (trim > arc_max_trim_degrees) {
-            return false; // What is left of the sweep is a smile, not a scale.
-        }
+        var startDegrees = 0.0;
+        var endDegrees = 0.0;
+        var boxTop = 0;
+        var boxBottom = 0;
+        var offset = 0;
 
-        // 180 degrees is due west and 0 due east, so the shallow end of the
-        // scale is on the left either way and the sweep runs over the top or
-        // under the bottom.
-        var startDegrees = downwards ? 180.0 + trim : 180.0 - trim;
-        var endDegrees = downwards ? 360.0 - trim : trim;
+        // A field holding the whole lens is a field the user gave the whole
+        // screen to, so it gets the whole circle rather than half of one.
+        var fullLens = (centerY - lensRadius >= 0) && (centerY + lensRadius <= height);
+
+        if (fullLens) {
+            startDegrees = full_sweep_start;
+            endDegrees = full_sweep_end;
+
+            // The reading sits at the centre of the lens, in the widest box
+            // that clears the band: half the inner radius above and below the
+            // middle, which leaves the chord at those rows about 1.7 times the
+            // radius across. Room enough for the reading, the maximum, the
+            // label and the trend without any of them crowding.
+            offset = inside / 2;
+            boxTop = centerY - offset;
+            boxBottom = centerY + offset;
+        } else {
+            // Which half of the lens this field holds — the top or the bottom.
+            var downwards = (centerY * 2 < height);
+            var trim;
+            if (downwards) {
+                if (centerY + lensRadius > height) {
+                    return false; // The bottom of the lens is outside the field.
+                }
+                trim = sweepTrim(-centerY, inside);
+            } else {
+                if (centerY - lensRadius < 0) {
+                    return false; // The top of the lens is outside the field.
+                }
+                trim = sweepTrim(centerY - (height - 1), inside);
+            }
+            if (trim > arc_max_trim_degrees) {
+                return false; // What is left of the sweep is a smile, not a scale.
+            }
+
+            // 180 degrees is due west and 0 due east, so the shallow end of the
+            // scale is on the left either way and the sweep runs over the top or
+            // under the bottom.
+            startDegrees = downwards ? 180.0 + trim : 180.0 - trim;
+            endDegrees = downwards ? 360.0 - trim : trim;
+
+            // The reading goes inside the arc, as it does on the heart rate
+            // gauge: the number is what is being read and the arc is context
+            // around it. It takes the wide part of the inside, away from the
+            // pinched apex, and is bounded by the chord at its own far edge so
+            // it cannot overrun the band.
+            if (downwards) {
+                boxTop = (centerY > 0) ? centerY : 0;
+                boxBottom = boxTop + ((centerY + inside) - boxTop) * 7 / 10;
+                offset = boxBottom - centerY;
+            } else {
+                boxBottom = (centerY < height) ? centerY : height;
+                boxTop = boxBottom - (boxBottom - (centerY - inside)) * 7 / 10;
+                offset = centerY - boxTop;
+            }
+            if (offset < 0) {
+                offset = 0;
+            }
+        }
 
         drawArcBand(dc, centerX, centerY, bandRadius, thickness,
             startDegrees, endDegrees, foreground);
 
-        // The reading goes inside the arc, as it does on the heart rate gauge:
-        // the number is what is being read and the arc is context around it. It
-        // takes the wide part of the inside, away from the pinched apex, and is
-        // bounded by the chord at its own far edge so it cannot overrun the band.
-        var boxTop;
-        var boxBottom;
-        var offset;
-        if (downwards) {
-            boxTop = (centerY > 0) ? centerY : 0;
-            boxBottom = boxTop + ((centerY + inside) - boxTop) * 7 / 10;
-            offset = boxBottom - centerY;
-        } else {
-            boxBottom = (centerY < height) ? centerY : height;
-            boxTop = boxBottom - (boxBottom - (centerY - inside)) * 7 / 10;
-            offset = centerY - boxTop;
-        }
-        if (offset < 0) {
-            offset = 0;
-        }
-
+        // Only the full sweep gets the trend: it is the one layout with rows to
+        // spare, and on the others the reading has first call on them.
         drawReading(dc, centerX, (boxTop + boxBottom) / 2,
-            2 * halfChord(inside, offset), boxBottom - boxTop, foreground);
+            2 * halfChord(inside, offset), boxBottom - boxTop, foreground, fullLens);
         return true;
     }
 
@@ -218,16 +255,22 @@ class depth_gaugeView extends WatchUi.DataField {
             ? Graphics.ARC_CLOCKWISE
             : Graphics.ARC_COUNTER_CLOCKWISE;
 
+        // Rounded to whole degrees *before* the comparison, because those are
+        // the values drawArc() is given and it treats an equal pair as a full
+        // circle — a zone thinner than a degree would paint a ring right round
+        // the display in its own colour rather than drawing nothing. Comparing
+        // the Floats let a pair that differ by a fraction through to a call
+        // where they no longer do.
         dc.setPenWidth(thickness);
         for (var i = 0; i < zone_colors.size(); i += 1) {
-            var from = degreesFor(edges[i], scale, startDegrees, endDegrees);
-            var to = degreesFor(edges[i + 1], scale, startDegrees, endDegrees);
+            var from = degreesFor(edges[i], scale, startDegrees, endDegrees).toNumber();
+            var to = degreesFor(edges[i + 1], scale, startDegrees, endDegrees).toNumber();
             if (from == to) {
-                continue; // A zone with no width, on a profile that has one.
+                continue; // A zone that rounds away to nothing.
             }
             dc.setColor(zone_colors[i], Graphics.COLOR_TRANSPARENT);
             dc.drawArc(centerX, centerY, bandRadius, direction,
-                from.toNumber(), to.toNumber());
+                arcDegrees(from), arcDegrees(to));
         }
         dc.setPenWidth(1);
 
@@ -277,6 +320,17 @@ class depth_gaugeView extends WatchUi.DataField {
         return Math.toDegrees(Math.asin(overshoot.toFloat() / radius)).toFloat();
     }
 
+    //! A sweep angle wrapped into the 0-360 drawArc() expects.
+    //!
+    //! The full sweep runs from 225 degrees down past zero to -45, because
+    //! degreesFor() interpolates along it and the marker trigonometry needs it
+    //! monotonic. drawArc() takes the direction of travel as its own argument,
+    //! so wrapping the endpoints here changes which pixels it paints not at all.
+    private function arcDegrees(degrees as Number) as Number {
+        var value = degrees % 360;
+        return (value < 0) ? value + 360 : value;
+    }
+
     //! Half the width of a circle of the given radius, `offset` rows from its
     //! centre.
     private function halfChord(radius as Number, offset as Number) as Number {
@@ -308,7 +362,8 @@ class depth_gaugeView extends WatchUi.DataField {
             // the whole field rather than sharing it with an illegible bar.
             drawReading(dc, (_layout.left(top, bottom) + _layout.right(top, bottom)) / 2,
                 (top + bottom) / 2,
-                _layout.right(top, bottom) - _layout.left(top, bottom), bottom - top, foreground);
+                _layout.right(top, bottom) - _layout.left(top, bottom), bottom - top,
+                foreground, false);
             return;
         }
 
@@ -355,7 +410,7 @@ class depth_gaugeView extends WatchUi.DataField {
         }
 
         drawReading(dc, (left + right) / 2, (top + bandTop) / 2, barWidth, bandTop - top,
-            foreground);
+            foreground, false);
     }
 
     //! The four zone boundaries in metres, shallow to deep, the last of which is
@@ -418,18 +473,19 @@ class depth_gaugeView extends WatchUi.DataField {
         ] as Array<[Numeric, Numeric]>);
     }
 
-    //! The label, the reading and the session maximum, stacked and centred in
-    //! the given box.
+    //! The label, the reading, the session maximum and — where it was asked for
+    //! — the trend, stacked and centred in the given box.
     //!
-    //! The reading has first call on the space and the other two are dropped
-    //! when what is left cannot hold them — a quarter-screen field cannot carry
-    //! all three without all three being useless, and the system has already
-    //! shown the user the field's name on the screen they picked it from.
-    //! Whether they fit is measured rather than guessed at, so a long
-    //! translation drops its line instead of running off the side.
+    //! The reading has first call on the space and the rest are dropped when
+    //! what is left cannot hold them — a quarter-screen field cannot carry them
+    //! all without all of them being useless, and the system has already shown
+    //! the user the field's name on the screen they picked it from. Whether
+    //! they fit is measured rather than guessed at, so a long translation drops
+    //! its line instead of running off the side.
     private function drawReading(dc as Dc, centerX as Number, centerY as Number,
                                  boxWidth as Number, boxHeight as Number,
-                                 foreground as Graphics.ColorType) as Void {
+                                 foreground as Graphics.ColorType,
+                                 withTrend as Boolean) as Void {
         var depth = _model.depth;
         var limited = _model.saturated;
         var text = _model.formatBounded(depth, limited);
@@ -440,9 +496,13 @@ class depth_gaugeView extends WatchUi.DataField {
 
         var smallHeight = dc.getFontHeight(Graphics.FONT_XTINY);
 
-        // Leave room for both extra lines if anything at all fits that way,
-        // and give the reading the whole box when nothing does.
-        var font = _layout.fontFitting(dc, text, boxWidth, boxHeight - 2 * smallHeight);
+        // Leave room for every extra line that could be drawn if anything at
+        // all fits that way, and give the reading the whole box when nothing
+        // does. The count has to match what the block below can actually draw:
+        // reserve two and draw three and a tall font overruns the box.
+        var extraLines = withTrend ? 3 : 2;
+        var font = _layout.fontFitting(dc, text, boxWidth,
+            boxHeight - extraLines * smallHeight);
         if (font == Graphics.FONT_XTINY) {
             font = _layout.fontFitting(dc, text, boxWidth, boxHeight);
         }
@@ -460,10 +520,22 @@ class depth_gaugeView extends WatchUi.DataField {
             spare -= smallHeight;
         }
 
+        // A level trend draws nothing, so it also reserves nothing: the arrow
+        // appears and disappears between rows that are there either way, which
+        // is fine here because the rows around it are centred as a block rather
+        // than pinned. That is the opposite of the app, where the indicator
+        // sits inline and its slot has to be held open.
+        var showTrend = withTrend && (_model.trend != DepthCore.TREND_LEVEL)
+            && (spare >= smallHeight);
+        if (showTrend) {
+            spare -= smallHeight;
+        }
+
         var showLabel = (spare >= smallHeight)
             && (dc.getTextWidthInPixels(_label, Graphics.FONT_XTINY) <= boxWidth);
 
-        var used = lineHeight + (showLabel ? smallHeight : 0) + (showMax ? smallHeight : 0);
+        var used = lineHeight + (showLabel ? smallHeight : 0) + (showMax ? smallHeight : 0)
+            + (showTrend ? smallHeight : 0);
         var y = centerY - used / 2;
 
         if (showLabel) {
@@ -477,9 +549,40 @@ class depth_gaugeView extends WatchUi.DataField {
         dc.drawText(centerX, y, font, text, Graphics.TEXT_JUSTIFY_CENTER);
         y += lineHeight;
 
+        if (showTrend) {
+            drawTrendMark(dc, centerX, y + smallHeight / 2, smallHeight * 2 / 3);
+            y += smallHeight;
+        }
+
         if (showMax) {
             dc.setColor(Graphics.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
             dc.drawText(centerX, y, Graphics.FONT_XTINY, maxText, Graphics.TEXT_JUSTIFY_CENTER);
+        }
+    }
+
+    //! A triangle centred on (x, y) pointing the way the depth is going: red
+    //! and down while descending, blue and up while ascending.
+    //!
+    //! Red for deeper and blue for shallower is the depth colour scale's own
+    //! direction, and the same shapes and colours the app draws, because a
+    //! reader should not have to learn the indicator twice. A polygon rather
+    //! than an arrow character for the reason the ">=" is ASCII: the built-in
+    //! fonts have patchy glyph coverage and would show empty boxes.
+    //!
+    //! Distinct from the arrowhead riding the band, which points outward along
+    //! a radius and says *where* the reading is rather than which way it moves.
+    private function drawTrendMark(dc as Dc, x as Number, y as Number, size as Number) as Void {
+        var half = size / 2;
+        if (_model.trend == DepthCore.TREND_DESCENDING) {
+            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+            dc.fillPolygon([
+                [x - half, y - half], [x + half, y - half], [x, y + half],
+            ] as Array<[Numeric, Numeric]>);
+        } else {
+            dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+            dc.fillPolygon([
+                [x - half, y + half], [x + half, y + half], [x, y - half],
+            ] as Array<[Numeric, Numeric]>);
         }
     }
 

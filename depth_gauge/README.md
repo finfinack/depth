@@ -20,14 +20,19 @@ The scale is drawn as an arc or as a bar depending on the field, because a data 
 
 | Field | Shape |
 | --- | --- |
-| Full screen, top half, bottom half | An arc **concentric with the display**, running along the bezel |
+| Full screen | A **270° arc** with the gap at the bottom, reading dead centre |
+| Top half, bottom half | A **180° arc** over the apex or under the nadir |
 | Everything else | A **bar** along the bottom, reading above it |
+
+**A field given the whole screen gets the whole circle.** Picking a 1-field layout is the user saying they want this and nothing else, so the sweep opens out from 180° to 270° — from lower-left, over the top, to lower-right, with a gap at the bottom the way a speedometer or the watch's own zone gauges run. Shallow stays on the left exactly as it is on the half sweep, and the same four zones get half again as much angular resolution. The reading sits at the true centre of the lens rather than in the upper third, and the lower half of the screen stops being empty.
+
+That layout is also the only one with rows to spare, so it is the only one that carries the **trend**: a red triangle pointing down while descending, blue pointing up while ascending, nothing while level — the same shapes and colours the [app](../depth_app/) uses, because an indicator should not have to be learnt twice. It is deliberately not the same shape as the arrowhead riding the band: that one points outwards along a radius and says *where* the reading is, this one says which way it is going.
 
 The arc is *only ever* concentric with the display — never fitted into the field. That is what puts it on the bezel: an arc drawn on the lens's own centre is on the lens at every point, however large, so it needs no room inside a rectangle. A semicircle fitted into a rectangle inside the lens comes out at roughly **half** the radius, which is what this used to do.
 
 **The sweep is trimmed, not the radius.** The arc's ends sit on the lens's horizontal diameter, and a field usually stops just short of it — a two-field top half is 260×**129** on a 260-row screen, one row shy of the centre at row 130. Rather than shrink the arc to fit that one row, the sweep is pulled in by the couple of degrees that keeps its ends on screen. On a fenix 7 the two-field arc spans **254 px of a 260 px field**; before this it was about 156.
 
-An arc is used when the field spans the lens horizontally, holds one half of it, has an inside big enough for a legible number, and still has a sweep worth calling a scale (trimmed by no more than 15°). Everything else takes the bar. A semicircle is limited by the field's *height*, so in a four-field band 65 rows tall it would span a third of the width and leave the reading the scraps — backwards, since the reading is what is being read and the gauge is context around it. The bar uses the whole width and leaves the reading a real font size.
+An arc is used when the field spans the lens horizontally, holds the whole lens or one half of it, has an inside big enough for a legible number, and still has a sweep worth calling a scale (trimmed by no more than 15°). The 270° form needs the field to contain the lens vertically as well, which only a 1-field layout does. Everything else takes the bar. A semicircle is limited by the field's *height*, so in a four-field band 65 rows tall it would span a third of the width and leave the reading the scraps — backwards, since the reading is what is being read and the gauge is context around it. The bar uses the whole width and leaves the reading a real font size.
 
 Checked against the layout rectangles the SDK ships for each device: on fenix 7, epix 2 and fenix 7S the 1-field, 2-field (both halves) and 3-Fields-C top layouts take the arc at full width; every other layout takes the bar, also at full width.
 
