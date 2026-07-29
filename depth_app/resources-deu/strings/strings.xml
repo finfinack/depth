@@ -25,6 +25,9 @@
     <string id="ProfileFreedive">Apnoe (10/20/30 m, 33/66/98 ft)</string>
     <string id="ProfileDeep">Tief (20/40/60 m, 66/131/197 ft)</string>
 
+    <string id="BandAlertTitle">Tiefen-Vibration</string>
+    <string id="BandAlertPrompt">Vibriert beim Abtauchen an jeder Grenze des Farbbereichs: einmal an der ersten, zweimal an der zweiten, dreimal an der dritten. Beim Schnorcheln sind das 2, 5 und 10 m. Folgt der Vibrationseinstellung der Uhr und ist ein Hinweis auf die Tiefe, kein Tauchalarm.</string>
+
     <string id="RezeroTitle">Tiefe zurücksetzen</string>
     <string id="RezeroPrompt">Verwirft den Referenzdruck der Oberfläche und das Maximum und misst von vorn. Schaltet sich selbst wieder aus. Nutze das, wenn die Messung begann, während die Uhr schon im Wasser war.</string>
 

@@ -55,6 +55,27 @@ The ring ends one zone-width past the red boundary — 15 m on Snorkel, 40 m on 
 
 **Round screens only.** The Instinct E 40 mm, Instinct E 45 mm and Instinct 3 Solar 45 mm are semi-octagons, where a ring on the screen's own radius runs off the flats — and they are the only 1-bit displays here, so the four zone colours would collapse into one anyway. Those watches keep the plain page.
 
+## The depth buzz
+
+The watch buzzes on the way down as you pass each boundary of the [colour range](../README.md#colour-range) — **once** at the first, **twice** at the second, **three times** at the third. On the default Snorkel range that is 2 m, 5 m and 10 m; on Freedive it is 10, 20 and 30.
+
+> ⚠️ **It is not a dive alarm.** It says which band you have reached and nothing else. See [what that means](../README.md#this-is-not-a-dive-computer).
+
+**The same boundaries as everything else**, rather than a set of its own. The number changes colour, the [gauge ring](#the-gauge-ring)'s arrowhead moves into the next zone and the wrist buzzes at one depth, so a diver who has learnt the colours has already learnt the buzzes — and there is one list of depths in the settings, not two that have to be kept in step.
+
+Four things about how it fires:
+
+- **Going down only.** A boundary crossed on the way up is the same depth arrived at from the other side and says nothing new; buzzing both ways would double every buzz on an ordinary dive.
+- **The pulse count is the boundary you reached, not how many you crossed.** A descent quick enough to pass two between readings buzzes twice, because two is the band you are now in.
+- **Once per crossing.** A boundary is only armed again once you come back up 0.3 m clear of it, so hovering right on 2 m with chop under you is one buzz, not one per second. Same reasoning as the [dive count](#what-counts-as-a-dive)'s two thresholds.
+- **It follows the watch.** With vibration switched off in the watch's own settings, nothing buzzes here either.
+
+Changing the colour range mid-outing does not buzz its way through the new boundaries: the depths moved, you did not, so the new range takes effect from where you already are.
+
+**Only the app buzzes, not the data fields.** A data field could — `Toybox.Attention` is available to them — but the four of them are designed to be run together, and they cannot see each other: separate Connect IQ apps, separate app IDs, no shared anything. Somebody snorkelling with [Depth](../depth_field/) on one screen and [Depth Gauge](../depth_gauge/) on another would be buzzed twice at every boundary, three times with a third field, and nothing in any of them could tell. That is the same reason [only one of them records the depth series](../README.md#the-two-drawn-fields), and it counts for more on a buzz than on a chart: a duplicated graph is untidy, a duplicated alert is misread as a different alert.
+
+Turn it off with **Depth buzz** in [the settings](../README.md#settings).
+
 ## Reading it
 
 The number is colour coded by depth — see the [colour range](../README.md#colour-range) for the bands, which depend on the profile setting. On the default Snorkel profile that is blue below 2 m, green to 5 m, yellow to 10 m and red beyond.

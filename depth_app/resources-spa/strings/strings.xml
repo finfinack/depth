@@ -25,6 +25,9 @@
     <string id="ProfileFreedive">Apnea (10/20/30 m, 33/66/98 ft)</string>
     <string id="ProfileDeep">Profundo (20/40/60 m, 66/131/197 ft)</string>
 
+    <string id="BandAlertTitle">Vibración de profundidad</string>
+    <string id="BandAlertPrompt">Vibra al bajar en cada límite del rango de color: una vez en el primero, dos en el segundo, tres en el tercero. Con Snorkel son 2, 5 y 10 m. Sigue el ajuste de vibración del reloj y es una indicación de profundidad, no una alarma de buceo.</string>
+
     <string id="RezeroTitle">Poner a cero</string>
     <string id="RezeroPrompt">Descarta la presión de referencia en superficie y el máximo, y vuelve a empezar a medir. Se desactiva solo. Úsalo si la medición empezó con el reloj ya dentro del agua.</string>
 

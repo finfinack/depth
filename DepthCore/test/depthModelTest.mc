@@ -238,6 +238,9 @@ module DepthCore {
         // all is half of what this asserts; landing on the default is the rest.
         var model = new DepthModel(REZERO_HANDLE);
         Test.assertEqual(model.color_profile, PROFILE_SNORKEL);
+        // bandAlert is left out of the test properties for the same reason,
+        // and an app that does not offer the switch gets the alerts.
+        Test.assertMessage(model.band_alerts, "band alerts default to on");
         return true;
     }
 
@@ -908,6 +911,219 @@ module DepthCore {
             "dives forgotten, got " + model.dive_count);
         Test.assertMessage(model.bottom_time == 0,
             "bottom time forgotten, got " + model.bottom_time);
+        return true;
+    }
+
+    //
+    // Colour band crossings. The boundaries are the colour range's own, so the
+    // buzz, the colour of the reading and the gauge all change at one set of
+    // depths — and they are announced going down only, with the same kind of
+    // hysteresis coming back up that the dive count uses.
+    //
+
+    //! A model on the snorkelling range, at the surface, ready to be dived.
+    //! Returns the time of the next sample.
+    function bandedModel(model as DepthModel) as Number {
+        model.color_profile = PROFILE_SNORKEL; // 2, 5 and 10 m.
+        diveTo(model, 0.0, 0);
+        return 1000;
+    }
+
+    (:test)
+    function testCrossingABoundaryIsAnnouncedOnce(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+        Test.assertEqual(model.band_crossed, 0);
+
+        diveTo(model, 2.1, now);
+        Test.assertMessage(model.band_crossed == 1,
+            "the first boundary, got " + model.band_crossed);
+
+        // Going deeper inside the same band says nothing new, and neither does
+        // sitting there.
+        diveTo(model, 3.0, now + 1000);
+        Test.assertMessage(model.band_crossed == 0,
+            "still in the same band, got " + model.band_crossed);
+        diveTo(model, 3.0, now + 2000);
+        Test.assertMessage(model.band_crossed == 0,
+            "holding, got " + model.band_crossed);
+        return true;
+    }
+
+    (:test)
+    function testEachBoundaryCarriesItsOwnCount(logger as Logger) as Boolean {
+        // The count is what tells the boundaries apart without looking, so it
+        // is the index of the edge and not a running total of anything.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 2.5, now);
+        Test.assertEqual(model.band_crossed, 1);
+        diveTo(model, 5.5, now + 1000);
+        Test.assertEqual(model.band_crossed, 2);
+        diveTo(model, 10.5, now + 2000);
+        Test.assertEqual(model.band_crossed, 3);
+
+        // There is no fourth boundary to reach.
+        diveTo(model, 30.0, now + 3000);
+        Test.assertEqual(model.band_crossed, 0);
+        return true;
+    }
+
+    (:test)
+    function testTheEdgeBelongsToTheDeeperBand(logger as Logger) as Boolean {
+        // Exactly 2.00 m is already green, the way depthColor() reads it. One
+        // set of boundaries means one answer, not two that nearly agree.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 1.99, now);
+        Test.assertEqual(model.band_crossed, 0);
+        diveTo(model, 2.0, now + 1000);
+        Test.assertEqual(model.band_crossed, 1);
+        return true;
+    }
+
+    (:test)
+    function testAFastDescentAnnouncesWhereItArrived(logger as Logger) as Boolean {
+        // Two boundaries between samples. The diver is in the third band, so
+        // that is what is announced — buzzing once for the boundary they are
+        // no longer at would name the wrong band.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 6.0, now);
+        Test.assertMessage(model.band_crossed == 2,
+            "the deeper of the two, got " + model.band_crossed);
+
+        // ...and the one it skipped is not announced afterwards either.
+        diveTo(model, 6.0, now + 1000);
+        Test.assertEqual(model.band_crossed, 0);
+        return true;
+    }
+
+    (:test)
+    function testHoveringOnABoundaryIsAnnouncedOnce(logger as Logger) as Boolean {
+        // What band_rearm is for. A diver sitting on 2 m with chop under them
+        // must not be buzzed on every sample that grazes it.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 2.1, now);
+        Test.assertEqual(model.band_crossed, 1);
+
+        for (var i = 0; i < 6; i += 1) {
+            now += 1000;
+            diveTo(model, 1.9, now);
+            Test.assertMessage(model.band_crossed == 0,
+                "grazing it from above, got " + model.band_crossed);
+            now += 1000;
+            diveTo(model, 2.1, now);
+            Test.assertMessage(model.band_crossed == 0,
+                "and back down, got " + model.band_crossed);
+        }
+        return true;
+    }
+
+    (:test)
+    function testComingWellBackUpRearmsTheBoundary(logger as Logger) as Boolean {
+        // Clear of it by more than the noise, so the next descent past it is a
+        // real crossing again.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 2.5, now);
+        Test.assertEqual(model.band_crossed, 1);
+
+        diveTo(model, 1.5, now + 1000); // Past the 1.7 m re-arm.
+        Test.assertEqual(model.band_crossed, 0);
+
+        diveTo(model, 2.5, now + 2000);
+        Test.assertMessage(model.band_crossed == 1,
+            "announced again after a real ascent, got " + model.band_crossed);
+        return true;
+    }
+
+    (:test)
+    function testAscendingAnnouncesNothing(logger as Logger) as Boolean {
+        // A boundary crossed going up is the same depth from the other side.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 11.0, now);
+        Test.assertEqual(model.band_crossed, 3);
+
+        for (var depth = 9; depth >= 0; depth -= 1) {
+            now += 1000;
+            diveTo(model, depth.toFloat(), now);
+            Test.assertMessage(model.band_crossed == 0,
+                "surfacing through " + depth + " m announced " + model.band_crossed);
+        }
+        return true;
+    }
+
+    (:test)
+    function testChangingTheColourRangeAnnouncesNothing(logger as Logger) as Boolean {
+        // The boundaries move under the diver, who has not gone anywhere. On
+        // the freediving range 6 m is inside the first band, so counting on
+        // from the snorkelling total would have to buzz its way back down.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 6.0, now);
+        Test.assertEqual(model.band_crossed, 2);
+
+        model.color_profile = PROFILE_FREEDIVE; // 10, 20 and 30 m.
+        diveTo(model, 6.0, now + 1000);
+        Test.assertMessage(model.band_crossed == 0,
+            "the range changed, got " + model.band_crossed);
+
+        // ...and the new range is announced from where the diver is.
+        diveTo(model, 10.5, now + 2000);
+        Test.assertMessage(model.band_crossed == 1,
+            "the freediving first boundary, got " + model.band_crossed);
+        return true;
+    }
+
+    (:test)
+    function testASensorGapDoesNotReannounceTheBand(logger as Logger) as Boolean {
+        // The readings stop while the diver is at 6 m and come back with them
+        // still there. Nothing was crossed, in either direction.
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 6.0, now);
+        Test.assertEqual(model.band_crossed, 2);
+
+        var info = new Activity.Info();
+        info.rawAmbientPressure = null;
+        info.ambientPressure = null;
+        model.updateAt(info, now + 1000);
+        Test.assertMessage(model.band_crossed == 0,
+            "a reading that did not arrive crossed nothing");
+
+        diveTo(model, 6.0, now + 2000);
+        Test.assertMessage(model.band_crossed == 0,
+            "and neither did the first one back, got " + model.band_crossed);
+        return true;
+    }
+
+    (:test)
+    function testRezeroForgetsTheBandsWithoutAnnouncingThem(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = bandedModel(model);
+
+        diveTo(model, 6.0, now);
+        Test.assertEqual(model.band_crossed, 2);
+
+        model.rezero();
+        Test.assertEqual(model.band_crossed, 0);
+
+        // The next sample is the new surface, whatever depth it was taken at,
+        // so it adopts its band rather than announcing its way down to it.
+        diveTo(model, 6.0, now + 1000);
+        Test.assertMessage(model.band_crossed == 0,
+            "the first sample after a re-zero, got " + model.band_crossed);
         return true;
     }
 

@@ -25,6 +25,9 @@
     <string id="ProfileFreedive">Apnée (10/20/30 m, 33/66/98 ft)</string>
     <string id="ProfileDeep">Profond (20/40/60 m, 66/131/197 ft)</string>
 
+    <string id="BandAlertTitle">Vibration de profondeur</string>
+    <string id="BandAlertPrompt">Vibre à la descente à chaque limite de la plage de couleurs : une fois à la première, deux fois à la deuxième, trois fois à la troisième. En snorkeling, cela fait 2, 5 et 10 m. Suit le réglage de vibration de la montre ; c'est une indication de profondeur, pas une alarme de plongée.</string>
+
     <string id="RezeroTitle">Remettre à zéro</string>
     <string id="RezeroPrompt">Efface la pression de référence en surface ainsi que le maximum, et recommence la mesure. Se désactive tout seul. À utiliser si la mesure a démarré alors que la montre était déjà dans l'eau.</string>
 

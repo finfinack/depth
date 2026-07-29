@@ -162,6 +162,16 @@ module DepthCore {
         // real gap is dropped rather than counted.
         const max_sample_gap = 10000; // ms
 
+        // How far back above a colour band boundary the watch has to come
+        // before that boundary can be announced again. The same reasoning as
+        // dive_release_share, in meters rather than a share: chop and sensor
+        // noise both live inside 0.30 m, and a boundary announced every time
+        // the diver's wrist grazed it would be worse than none at all. A fixed
+        // margin rather than a share because the boundaries are 2 m apart on
+        // one profile and 20 m apart on another, and the noise is the same
+        // size on both.
+        const band_rearm = 0.3; // m
+
         // Weight of the newest sample in the rolling rate below. Roughly a
         // three second time constant at the 1 Hz this is fed at: long enough to
         // ride out sensor noise, short enough to still feel immediate. A single
@@ -212,6 +222,20 @@ module DepthCore {
         //! counted, so the number never goes backwards.
         var dive_count as Number = 0;
 
+        //! The colour band boundary the sample just fed crossed on the way
+        //! down, as a 1-based index into DepthCore.profileBands() — 1 for the
+        //! blue/green edge, 3 for the yellow/red one — or 0 when this sample
+        //! crossed none. Set by one update and cleared by the next, so it is a
+        //! notification rather than a state.
+        //!
+        //! Boundaries are only announced going deeper. Coming back up re-arms
+        //! them instead, and not until the diver is clear of one by band_rearm.
+        //!
+        //! The model reports the crossing and does nothing about it: whether a
+        //! crossing is worth a buzz, and what a buzz is, belongs to the app.
+        //! The data fields never read this.
+        var band_crossed as Number = 0;
+
         //! Total time spent below the dive threshold since the last re-zero, in
         //! milliseconds. Summed a sample at a time rather than measured from the
         //! start of each dive, so a gap in the readings is not counted as time
@@ -230,6 +254,13 @@ module DepthCore {
         //! read; nothing in the model itself uses it, and the data fields never
         //! colour anything.
         var color_profile as Number = PROFILE_SNORKEL;
+
+        //! Whether the user wants to be told about the crossings above. Read
+        //! here for the same reason color_profile is — this is where the
+        //! settings are read — and acted on by whoever can raise an alert.
+        //! band_crossed is reported either way, because it is a fact about the
+        //! depth rather than a decision about it.
+        var band_alerts as Boolean = true;
 
         private var _baseline as Float?;
 
@@ -271,6 +302,16 @@ module DepthCore {
         private var _in_dive as Boolean = false;
         private var _dive_sample_time as Number = 0;
 
+        // How many colour band boundaries the watch is currently below, and
+        // which profile that was counted against. The profile is kept because
+        // changing the colour range re-scales the boundaries under the diver:
+        // counting on from the old profile's total would announce a run of the
+        // new profile's boundaries the diver never crossed. Null until the
+        // first sample, which is what makes that first sample adopt rather
+        // than announce.
+        private var _bands_passed as Number = 0;
+        private var _bands_profile as Number?;
+
         // Whether this model is the one the re-zero trigger is meant for.
         private var _handles_rezero as Boolean;
 
@@ -292,6 +333,7 @@ module DepthCore {
             // An app that never declares this key — both data fields, which
             // colour nothing — gets the default without having to.
             color_profile = numberSetting("colorProfile", PROFILE_SNORKEL);
+            band_alerts = booleanSetting("bandAlert", true);
 
             // Carried in whole centimeters so the setting stays an integer: the
             // list in settings.xml holds its values as XML text, and a decimal
@@ -382,6 +424,12 @@ module DepthCore {
                 // is left alone: it describes the session, not this sample.
                 saturated = false;
                 _flat_count = 0;
+                // Nothing was crossed by a reading that did not arrive. The
+                // boundaries already passed are left where they are: the diver
+                // is still wherever the last reading put them, and re-arming
+                // them here would announce them all over again on the first
+                // sample back.
+                band_crossed = 0;
                 // The samples either side of a gap are not neighbours. Left in
                 // place, the first reading back gets judged for a maximum, a
                 // rate and a baseline outlier against one from before the gap,
@@ -453,6 +501,63 @@ module DepthCore {
             updateTrend(value, now);
             updateMaximum(value, now);
             updateDive(value, now);
+            updateBands(value);
+        }
+
+        //! Report the colour band boundary this sample crossed on the way down,
+        //! for whoever wants to raise an alert on it.
+        //!
+        //! The boundaries are the colour range's own — see profileBands() — so
+        //! the buzz, the colour of the reading and the gauge behind it all
+        //! change at the same depths, and a diver who has learnt the colours
+        //! has learnt the buzzes. On the default snorkelling range that is 2, 5
+        //! and 10 m; a freediver on their own range gets 10, 20 and 30.
+        //!
+        //! Only downwards. A boundary crossed going up is the same depth
+        //! arrived at from the other side and says nothing new, and announcing
+        //! both would double every buzz on an ordinary dive.
+        private function updateBands(value as Float) as Void {
+            band_crossed = 0;
+
+            var bands = DepthCore.profileBands(color_profile);
+
+            // The first sample, and the first after a colour range change,
+            // adopt where the diver already is. Nothing was crossed to get
+            // there — the boundaries moved, or this is simply the first thing
+            // the model has seen.
+            if (_bands_profile == null || _bands_profile != color_profile) {
+                _bands_profile = color_profile;
+                _bands_passed = bandsBelow(value, bands);
+                return;
+            }
+
+            // Coming back up re-arms a boundary rather than announcing it, and
+            // not until the diver is clear of it by more than the noise.
+            var passed = _bands_passed;
+            while (passed > 0 && value < bands[passed - 1] - band_rearm) {
+                passed -= 1;
+            }
+
+            // Going down, the deepest boundary crossed is the one announced,
+            // not each one in turn: a descent quick enough to pass two between
+            // samples has arrived in the deeper band, and buzzing twice for it
+            // would say the shallower one is where they are.
+            var reached = bandsBelow(value, bands);
+            if (reached > passed) {
+                band_crossed = reached;
+                passed = reached;
+            }
+            _bands_passed = passed;
+        }
+
+        //! How many of the given boundaries a depth is at or past. Each edge
+        //! belongs to the deeper band, exactly as depthColor() reads them.
+        private function bandsBelow(value as Float, bands as Array<Float>) as Number {
+            var count = 0;
+            while (count < bands.size() && value >= bands[count]) {
+                count += 1;
+            }
+            return count;
         }
 
         //! Count dives and add up the time spent on them.
@@ -514,6 +619,12 @@ module DepthCore {
             bottom_time = 0;
             _in_dive = false;
             _dive_sample_time = 0;
+            band_crossed = 0;
+            _bands_passed = 0;
+            // Back to "no profile counted yet", so the first sample after this
+            // adopts the band it lands in rather than announcing its way down
+            // to it — the same start the model had before any of this ran.
+            _bands_profile = null;
         }
 
         //! Format a depth in meters as a bare number in the user's unit, without a

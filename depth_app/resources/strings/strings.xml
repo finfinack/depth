@@ -50,6 +50,14 @@
     <string id="ProfileDeep">Deep (20/40/60 m, 66/131/197 ft)</string>
 
     <!--
+        The boundaries are the colour range's own, so this prompt names that
+        setting rather than repeating its numbers - a second list of depths
+        here would be one more thing to keep in step with it.
+    -->
+    <string id="BandAlertTitle">Depth buzz</string>
+    <string id="BandAlertPrompt">Buzz on the way down at each boundary of the Colour range: once at the first, twice at the second, three times at the third. On Snorkel that is 2, 5 and 10 m. It follows the watch's own vibration setting, and it is a cue for where you are, not a dive alarm.</string>
+
+    <!--
         Both units again, and for the same reason as the colour ranges: the
         phone renders this list and cannot know what Units is set to.
 

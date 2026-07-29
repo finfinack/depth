@@ -12,7 +12,7 @@ Find them on the [Garmin ConnectIQ store](https://apps.garmin.com/developer/1e45
 
 **How to use it.** Start it at the surface — that is what sets the surface point. Set **Water type** and **Colour range** once in Garmin Connect. If the surface ever ends up wrong, press Start in the app to re-zero, or flip **Re-zero depth** in the settings for the data fields.
 
-> ⚠️ **This is not a dive computer.** No decompression, no no-stop limits, no ascent-rate warning, no alarms, and no calibration against a reference gauge. The barometer is built for weather and stops responding somewhere past the first metre or two — the reading is marked `>=` when that happens, and `?` when the surface point looks wrong. **Use a real dive computer for anything where the number matters.**
+> ⚠️ **This is not a dive computer.** No decompression, no no-stop limits, no ascent-rate warning, no alarm that means anything for safety, and no calibration against a reference gauge. The app can buzz as you pass each colour band, which says where you are and nothing more. The barometer is built for weather and stops responding somewhere past the first metre or two — the reading is marked `>=` when that happens, and `?` when the surface point looks wrong. **Use a real dive computer for anything where the number matters.**
 
 Everything below is detail. The [full warning](#this-is-not-a-dive-computer) is worth reading before you rely on any of it.
 
@@ -47,7 +47,8 @@ The directory names are Connect IQ project names and stay in `snake_case`; the a
 
 They are a curiosity for snorkelling and casual swimming, not dive instruments.
 
-- They do no decompression calculation, track no no-decompression limit, and have no ascent rate warning, gas management, or alarm of any kind.
+- They do no decompression calculation, track no no-decompression limit, and have no ascent rate warning or gas management.
+- The app's [depth buzz](depth_app/README.md#the-depth-buzz) is not a safety alarm. It fires at the colour band edges you chose and nowhere else — it does not know how long you have been down, how fast you are going, or how much deeper is too deep. And when the sensor pins, the reading stops rising, so the buzzes simply stop with it — going deeper then feels exactly like not going deeper.
 - They have never been checked against a reference depth gauge. There is no calibration procedure and no accuracy figure.
 - They fail silently. If the surface pressure baseline is wrong, the depth is wrong, and nothing on screen tells you that.
 - The sensor they read was not built to go underwater, and the reading may stop meaning anything after the first metre or so — see below.
@@ -84,13 +85,14 @@ These live in Garmin Connect under the app's settings. The first three exist in 
 | Units | Metres, feet, or follow the watch's elevation unit |
 | Re-zero depth | Discards the baseline and the maximum and starts over. Switches itself back off. |
 | Colour range | The app, Depth Chart and Depth Gauge — which depths the colour scale spans. See below. |
+| Depth buzz | The app only — buzz on the way down at each colour range boundary. See [the depth buzz](depth_app/README.md#the-depth-buzz). |
 | Dive threshold | The app, Depth and Max Depth — how deep counts as a dive. See [what counts as a dive](depth_app/README.md#what-counts-as-a-dive). |
 
 ### Colour range
 
 The app and its glance colour the reading blue, then green, yellow and red as it gets deeper, so a glance at it says roughly how deep you are without reading the number. That only works if the bands cover the range you actually swim: at a freediver's scale a snorkeller never leaves the first band and the colour tells them nothing at all.
 
-**One setting drives all of it.** The read-outs, the app's [gauge ring](depth_app/README.md#the-gauge-ring), [Depth Chart](depth_chart/)'s banded water and [Depth Gauge](depth_gauge/)'s zones are all drawn from the same three boundaries, so a gauge and the number inside it can never disagree about what colour a depth is.
+**One setting drives all of it.** The read-outs, the app's [gauge ring](depth_app/README.md#the-gauge-ring), [Depth Chart](depth_chart/)'s banded water, [Depth Gauge](depth_gauge/)'s zones and the app's [depth buzz](depth_app/README.md#the-depth-buzz) are all drawn from the same three boundaries, so a gauge and the number inside it can never disagree about what colour a depth is — and neither can what you feel on your wrist.
 
 | Profile | Blue | Green | Yellow | Red |
 | --- | --- | --- | --- | --- |

@@ -80,7 +80,7 @@ class depthView extends WatchUi.View {
     // the state of this View and prepare it to be shown. This includes
     // loading resources into memory.
     function onShow() as Void {
-        _model.update(Activity.getActivityInfo());
+        readSensor();
 
         // The pressure sensor updates about once per second, so polling
         // faster only costs battery. The timer is owned by the visible
@@ -141,8 +141,22 @@ class depthView extends WatchUi.View {
 
     //! On a timer interval, read the pressure sensor and update the depth.
     function updateDepth() as Void {
-        _model.update(Activity.getActivityInfo());
+        readSensor();
         WatchUi.requestUpdate();
+    }
+
+    //! Feed the sensor to the model, and buzz if that reading crossed a colour
+    //! band boundary on the way down.
+    //!
+    //! Every path that takes a reading goes through here, onShow() as well as
+    //! the timer. A crossing is reported by the one update that saw it and
+    //! cleared by the next, so a reading taken anywhere else would swallow it.
+    private function readSensor() as Void {
+        _model.update(Activity.getActivityInfo());
+
+        if (_model.band_alerts) {
+            alertBandCrossing(_model.band_crossed);
+        }
     }
 
     //! The current depth, given the heading and the full-size number, with the

@@ -19,6 +19,9 @@
             <listEntry value="2">@Strings.ProfileDeep</listEntry>
         </settingConfig>
     </setting>
+    <setting propertyKey="@Properties.bandAlert" title="@Strings.BandAlertTitle" prompt="@Strings.BandAlertPrompt">
+        <settingConfig type="boolean" />
+    </setting>
     <setting propertyKey="@Properties.diveThreshold" title="@Strings.DiveThresholdTitle" prompt="@Strings.DiveThresholdPrompt">
         <settingConfig type="list">
             <listEntry value="50">@Strings.DiveThreshold05</listEntry>

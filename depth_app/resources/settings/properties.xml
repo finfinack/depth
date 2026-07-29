@@ -9,6 +9,10 @@
          that draws a colour declares this one; the two data fields return a
          string for the watch to colour, so they do not. -->
     <property id="colorProfile" type="number">0</property>
+    <!-- Whether to buzz on crossing a colorProfile boundary on the way down.
+         Only the app declares it: the four data fields can be run together and
+         cannot see each other, so a buzz in each would fire once per field. -->
+    <property id="bandAlert" type="boolean">true</property>
     <!-- Depth counting as a dive, in whole centimeters. Held as an integer so
          the list in settings.xml needs no decimal point; the model divides by
          100 and clamps. See DepthModel.default_dive_threshold. -->
