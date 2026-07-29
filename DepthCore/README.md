@@ -50,7 +50,9 @@ Source files then use `import DepthCore;`.
 
 ## Drawing on a round screen
 
-A `SimpleDataField` hands the system a string and the system finds room for it. A full `DataField` gets a rectangle and an `onUpdate(dc)`, and is on its own — including about the fact that on a round watch a good part of that rectangle is not on the lens. A field along the top edge has both its top corners cut away, and its topmost row is one pixel wide. Every device in the product lists is round, so this is the case that matters, not the exception.
+A `SimpleDataField` hands the system a string and the system finds room for it. A full `DataField` gets a rectangle and an `onUpdate(dc)`, and is on its own — including about the fact that on a round watch a good part of that rectangle is not on the lens. A field along the top edge has both its top corners cut away, and its topmost row is one pixel wide. Almost every device in the product lists is round, so this is the case that matters, not the exception.
+
+The three that are not — Instinct E 40/45 mm and Instinct 3 Solar 45 mm, all semi-octagons — are handled by not handling them: `measure()` sets the radius to 0 for any screen shape other than round or semi-round, and every caller treats a radius of 0 as "there is no lens here", falling back to the plain rectangle. That is deliberate. A semi-octagon is not a circle with a bite out of it, and approximating it with one would put pixels under the bezel while claiming they were safe.
 
 Connect IQ gives a field two clues about its place on the screen and no more: the size of its rectangle, and `getObscurityFlags()`, which says which screen edges that rectangle touches. Between them those pin down the origin for most fields — and from the origin the lens is a circle. Not for all of them, though; see [What the flags cannot tell you](#what-the-flags-cannot-tell-you).
 

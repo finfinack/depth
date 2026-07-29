@@ -53,7 +53,7 @@ The label and the maximum are both dropped when what is left of the field cannot
 
 ## Round screens
 
-Every device this ships to is round, and a data field is handed a rectangle regardless — see [the repository README](../README.md#round-screens).
+Almost every device this ships to is round, and a data field is handed a rectangle regardless — see [the repository README](../README.md#round-screens) for the three semi-octagon Instincts, where the lens geometry switches off and the gauge always takes the bar.
 
 The gauge is the one thing here that does not want a rectangle, which is why the barrel exposes the lens circle as well as its rows and columns — see [Arc or bar](#arc-or-bar) above for what it does with it. A field holding the *bottom* half of the lens gets the same arc mirrored, sweeping under the nadir instead of over the apex, so the two halves of a split screen look like two halves of one gauge.
 

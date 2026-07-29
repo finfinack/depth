@@ -23,7 +23,7 @@ Previously three separate repositories. They are one now because all three carri
 | Project | Type | What it is |
 | --- | --- | --- |
 | [DepthCore](DepthCore/) | Monkey Barrel | The depth model, colour scale, FIT helpers and the data field layout |
-| [depth_app](depth_app/) | App | Three pages plus a glance: current depth, maximum, and both together |
+| [depth_app](depth_app/) | App | Current depth and maximum in a gauge ring, plus this session's and the last session's dives, and a glance |
 | [depth_field](depth_field/) | Data field | Current depth during an activity; records the depth graph into the FIT file |
 | [depth_chart](depth_chart/) | Data field | Depth as a chart over time, drawn by the field itself. Shows only — records nothing |
 | [depth_gauge](depth_gauge/) | Data field | Depth as a zoned arc in the colour range, drawn by the field itself. Shows only — records nothing |
@@ -146,7 +146,9 @@ The gauge runs to one zone-width past the red boundary — 15 m on Snorkel, 40 m
 
 ### Round screens
 
-Every device in the product lists is round, and a data field is handed a rectangle regardless: a field along the top edge has both its top corners cut away, and its topmost row is one pixel wide. Drawing to the whole rectangle puts the label in the bezel.
+Almost every device in the product lists is round, and a data field is handed a rectangle regardless: a field along the top edge has both its top corners cut away, and its topmost row is one pixel wide. Drawing to the whole rectangle puts the label in the bezel.
+
+The exceptions are the **Instinct E 40 mm** (166×166), **Instinct E 45 mm** and **Instinct 3 Solar 45 mm** (176×176), whose screens are semi-octagons. `DepthFieldLayout` reports no lens at all on a screen that is not round, so the round-screen geometry below simply does not engage there: the gauge falls back to its bar and the chart to plain rows. Those three are also the only 1-bit displays in the lists, so the colour scale collapses to black and white on them — which is why the app's [gauge ring](depth_app/README.md#the-gauge-ring) is not drawn there either.
 
 Both fields therefore measure where they are before drawing — from their size and `getObscurityFlags()`, which is enough because the system tiles the fields — and then work with the lens rather than against it: the chart places its heading below the rows the lens has pinched away and fills its water column by column out to the curve, and the gauge puts its arc concentric with the display so it follows the bezel exactly.
 

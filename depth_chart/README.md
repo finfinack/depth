@@ -34,7 +34,7 @@ Three consequences:
 
 ## Round screens
 
-Every device this ships to is round, and a data field is handed a rectangle regardless — see [the repository README](../README.md#round-screens). The chart measures where it sits before drawing, places its heading below the rows the lens has pinched away, and fills the water one column at a time out to the curve rather than squaring itself off inside it — which on a corner field is most of the usable area. The geometry is [`DepthFieldLayout`](../DepthCore/README.md#drawing-on-a-round-screen) in the barrel, shared with Depth Gauge.
+Almost every device this ships to is round, and a data field is handed a rectangle regardless — see [the repository README](../README.md#round-screens) for the three semi-octagon Instincts, where the lens geometry switches off and the chart falls back to plain rows. The chart measures where it sits before drawing, places its heading below the rows the lens has pinched away, and fills the water one column at a time out to the curve rather than squaring itself off inside it — which on a corner field is most of the usable area. The geometry is [`DepthFieldLayout`](../DepthCore/README.md#drawing-on-a-round-screen) in the barrel, shared with Depth Gauge.
 
 ## What it records
 

@@ -126,7 +126,33 @@ class depth_chartView extends WatchUi.DataField {
         var font = _layout.fontFitting(dc, text, _layout.right(top, bottom) - _layout.left(top, bottom),
             (bottom - top) * 34 / 100);
         var lineHeight = dc.getFontHeight(font);
-        var headingBottom = top + lineHeight;
+
+        // drawText() anchors a line by its top, so drawing the label and the
+        // reading at the same y sits them on different baselines whenever their
+        // fonts differ — and here they nearly always do, since the reading is
+        // sized to fit and the label is fixed at FONT_XTINY. The label ends up
+        // floating above the number rather than standing on the same line.
+        //
+        // Dropping each by the difference between its ascent and the tallest
+        // ascent in the row puts them on one baseline. Which of the two is
+        // taller is not assumed: fontFitting() can return something smaller
+        // than FONT_XTINY on a short field, and then it is the reading that has
+        // to come down.
+        var labelFont = Graphics.FONT_XTINY;
+        var readingAscent = Graphics.getFontAscent(font);
+        var labelAscent = Graphics.getFontAscent(labelFont);
+        var ascent = (readingAscent > labelAscent) ? readingAscent : labelAscent;
+        var readingY = top + ascent - readingAscent;
+        var labelY = top + ascent - labelAscent;
+
+        // Normally the reading's descender is the lowest thing in the row, so
+        // this is the same value it always was. It only differs when the label
+        // is in the larger font, which is the case the line above allows for.
+        var headingBottom = readingY + lineHeight;
+        var labelBottom = labelY + dc.getFontHeight(labelFont);
+        if (labelBottom > headingBottom) {
+            headingBottom = labelBottom;
+        }
 
         var x0 = _layout.left(top, headingBottom);
         var x1 = _layout.right(top, headingBottom);
@@ -137,12 +163,12 @@ class depth_chartView extends WatchUi.DataField {
 
         if (showLabel) {
             dc.setColor(foreground, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(x0, top, Graphics.FONT_XTINY, _label, Graphics.TEXT_JUSTIFY_LEFT);
+            dc.drawText(x0, labelY, labelFont, _label, Graphics.TEXT_JUSTIFY_LEFT);
         }
 
         dc.setColor(DepthCore.readingColor(depth, _model.color_profile, limited),
             Graphics.COLOR_TRANSPARENT);
-        dc.drawText(showLabel ? x1 : (x0 + x1) / 2, top, font, text,
+        dc.drawText(showLabel ? x1 : (x0 + x1) / 2, readingY, font, text,
             showLabel ? Graphics.TEXT_JUSTIFY_RIGHT : Graphics.TEXT_JUSTIFY_CENTER);
 
         return headingBottom;
