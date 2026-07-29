@@ -46,8 +46,28 @@ module DepthCore {
 
     (:test)
     function testDepthCentimetersClampsToUint16(logger as Logger) as Boolean {
-        Test.assertEqual(depthCentimeters(655.35), fit_uint16_max);
-        Test.assertEqual(depthCentimeters(700.0), fit_uint16_max);
+        Test.assertEqual(depthCentimeters(655.35), fit_depth_max);
+        Test.assertEqual(depthCentimeters(700.0), fit_depth_max);
+        // Just under the ceiling still converts rather than clamping, so the
+        // clamp cannot be quietly swallowing a whole range of real values.
+        Test.assertEqual(depthCentimeters(655.33), 65533);
+        return true;
+    }
+
+    (:test)
+    function testDepthCentimetersNeverRecordsTheInvalidMarker(logger as Logger) as Boolean {
+        // 0xFFFF is the FIT profile's "no reading" marker for a uint16, so
+        // clamping to it would file garbage as *absent* rather than as pinned
+        // at the ceiling — the opposite of what the clamp exists for, and
+        // invisible afterwards because the sample simply would not be there.
+        Test.assertMessage(fit_depth_max < fit_uint16_invalid,
+            "the ceiling has to sit below the invalid marker");
+
+        var absurd = [655.35, 700.0, 1.0e9, 1.0e20] as Array<Float>;
+        for (var i = 0; i < absurd.size(); i += 1) {
+            Test.assertMessage(depthCentimeters(absurd[i]) != fit_uint16_invalid,
+                "recorded the invalid marker for " + absurd[i].format("%.2f"));
+        }
         return true;
     }
 
@@ -56,8 +76,8 @@ module DepthCore {
         // The reason the clamp compares before converting. A value this size
         // overflows a signed 32-bit Number, so clamping after .toNumber() would
         // wrap it into something small and believable instead of pinning it.
-        Test.assertEqual(depthCentimeters(1.0e9), fit_uint16_max);
-        Test.assertEqual(depthCentimeters(1.0e20), fit_uint16_max);
+        Test.assertEqual(depthCentimeters(1.0e9), fit_depth_max);
+        Test.assertEqual(depthCentimeters(1.0e20), fit_depth_max);
         return true;
     }
 

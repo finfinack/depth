@@ -5,14 +5,28 @@ import Toybox.Lang;
 //! scope is the tightest memory budget in the project.
 module DepthCore {
 
-    //! The largest value a FIT UINT16 field can hold.
-    const fit_uint16_max = 65535;
+    //! The FIT profile's "no reading" marker for a UINT16 field. A parser that
+    //! sees 0xFFFF drops the sample rather than plotting it.
+    const fit_uint16_invalid = 65535;
+
+    //! ...so the deepest value that can actually be *recorded* is one below it.
+    //! Clamping to the marker itself would file garbage as absent rather than
+    //! as pinned at the ceiling, which is the opposite of what a clamp is for.
+    //!
+    //! 655.34 m either way — orders of magnitude past anything a watch
+    //! barometer can report, which is the point: this bounds garbage, not
+    //! readings.
+    const fit_depth_max = fit_uint16_invalid - 1;
 
     //! Ceiling for a recorded pressure, in pascal. A UINT32 goes far higher,
     //! but a Monkey C Number is signed 32-bit and cannot even hold the UINT32
     //! maximum, so the clamp has to sit somewhere below it. 2 MPa is roughly
     //! 190 m of water — orders of magnitude past anything a watch barometer can
     //! report, which is the point: this bounds garbage, not real readings.
+    //!
+    //! No collision with the UINT32 invalid marker to worry about here, the way
+    //! there is above: 0xFFFFFFFF is three orders of magnitude further out than
+    //! this ceiling, and unreachable from a signed Number in any case.
     const fit_pressure_max = 2000000;
 
     //! Convert a depth in meters to the centimeters written to the FIT file.
@@ -32,8 +46,8 @@ module DepthCore {
 
         var centimeters = meters * 100.0;
         if (centimeters > 0.0) {
-            if (centimeters >= fit_uint16_max) {
-                return fit_uint16_max;
+            if (centimeters >= fit_depth_max) {
+                return fit_depth_max;
             }
             return (centimeters + 0.5).toNumber();
         }

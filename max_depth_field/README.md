@@ -16,7 +16,7 @@ The field writes one developer field into the activity's FIT file:
 | --- | --- | --- | --- |
 | `max_depth` | session | cm | The deepest reading of the whole activity |
 
-Centimetres whatever the display unit is set to, and clamped to 655.35 m — see the [Depth field README](../depth_field/README.md#what-it-records) for why.
+Centimetres whatever the display unit is set to, and clamped to 655.34 m — see the [Depth field README](../depth_field/README.md#what-it-records) for why.
 
 This field deliberately records no per-record series. The [Depth field](../depth_field/) already contributes one, along with the raw pressure, and writing it from both would duplicate the entire graph for anyone running the two together.
 
