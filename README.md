@@ -147,18 +147,6 @@ Both fields therefore measure where they are before drawing — from their size 
 
 That geometry is `DepthFieldLayout` in the barrel, shared by both and [documented there](DepthCore/README.md#drawing-on-a-round-screen), with unit tests — it is not something you can check by eye without a watch, and the tests already caught one off-by-one that handed back a pixel a fraction outside the lens.
 
-## App, not widget
-
-`depth_app` is a **`watch-app`**, not a `widget`. Connect IQ still accepts `type="widget"`, but none of the 25 devices in the product lists has a widget app type at all — System 5 merged widgets into apps, and the watch was already running it as one. The manifest now says what it is.
-
-Of the 166 devices the 9.2.0 SDK knows about, 89 still declare a `widget` type and 77 do not; every device this ships to is in the second group.
-
-Nothing in the source changed. `AppBase`, `getInitialView()`, the `BehaviorDelegate` paging and the `(:glance)` view all work identically, and an app with a glance still appears in the glance carousel — so it looks the same on the watch. The budget is the only visible difference: `watchApp` gets 786 KB on a fenix 7 against the glance's 65 KB.
-
-The directory was `depth_widget` until this change. Renaming it is safe — a Connect IQ project's directory name is local, and the app ID, the manifest and the store listing do not depend on it — so it now matches the other four.
-
-> ⚠️ **The store listing is the part that is not just a manifest edit.** An app's type is fixed when the listing is created, so publishing this as an app is likely to need a new listing and a new app ID, with existing installs staying on the old one. Check that in the developer portal before uploading.
-
 ## Icons
 
 Two launcher icons between the five apps, both the same disc of water split by the wave of the surface:
