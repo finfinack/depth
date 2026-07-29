@@ -1,6 +1,7 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
+import Toybox.System;
 import DepthCore;
 
 //! The zoned ring the app draws around the reading on the current-depth page:
@@ -62,18 +63,36 @@ class depthRing {
     ] as Array<Graphics.ColorType>;
 
     private var _model as DepthModel;
+    private var _round as Boolean;
 
     function initialize(model as DepthModel) {
         _model = model;
+
+        // Read once: the screen does not change shape, and onUpdate() runs
+        // every second.
+        _round = System.getDeviceSettings().screenShape == System.SCREEN_SHAPE_ROUND;
     }
 
-    //! Draw the ring concentric with the display. Does nothing if what is left
-    //! inside it would be too small to hold the reading.
+    //! Draw the ring concentric with the display. Does nothing if the screen is
+    //! not round, or if what is left inside the ring would be too small to hold
+    //! the reading.
     //!
     //! Concentric with the screen rather than fitted into a box: a circle on the
     //! display's own centre is on the display at every point, so the band can
     //! run right along the bezel and leave the whole middle to the number.
+    //!
+    //! That only holds on a round screen. Three of the devices this ships to —
+    //! the Instinct E 40/45 mm and Instinct 3 Solar 45 mm — are semi-octagons,
+    //! where a circle inscribed on the screen's own radius runs off the flats at
+    //! the corners. They are also the only three 1-bit displays in the list, so
+    //! the four zone colours would collapse to one and the band would carry no
+    //! scale even if it fitted. Both reasons point the same way: those devices
+    //! keep the plain page they have today.
     function draw(dc as Dc, width as Number, height as Number) as Void {
+        if (!_round) {
+            return;
+        }
+
         var centerX = width / 2;
         var centerY = height / 2;
         var radius = (width < height) ? centerX : centerY;
