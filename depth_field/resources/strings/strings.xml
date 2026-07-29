@@ -19,4 +19,19 @@
 
     <string id="RezeroTitle">Re-zero depth</string>
     <string id="RezeroPrompt">Discards the surface pressure baseline and the maximum, and starts measuring again. Switches itself back off. Use it if the activity started while the watch was already in the water.</string>
+
+    <!--
+        Both units, because the phone renders this list and cannot know what
+        Units is set to. The five entries carry no words but are repeated in
+        every language all the same: a settings string missing from one does not
+        fall back to this file, it warns at build time and leaves the phone with
+        nothing to label the entry with.
+    -->
+    <string id="DiveThresholdTitle">Dive threshold</string>
+    <string id="DiveThresholdPrompt">How deep counts as a dive, for the dive count and bottom time recorded into the activity. A dive ends once you come back up past half this depth, so bobbing at the surface is not counted as diving.</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 </strings>

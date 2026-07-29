@@ -5,4 +5,8 @@
     <property id="unitOverride" type="number">0</property>
     <!-- A trigger, not a state: the app acts on it and switches it back off. -->
     <property id="rezero" type="boolean">false</property>
+    <!-- Depth counting as a dive, in whole centimeters. Held as an integer so
+         the list in settings.xml needs no decimal point; the model divides by
+         100 and clamps. See DepthModel.default_dive_threshold. -->
+    <property id="diveThreshold" type="number">100</property>
 </properties>

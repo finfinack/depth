@@ -15,4 +15,13 @@
     <setting propertyKey="@Properties.rezero" title="@Strings.RezeroTitle" prompt="@Strings.RezeroPrompt">
         <settingConfig type="boolean" />
     </setting>
+    <setting propertyKey="@Properties.diveThreshold" title="@Strings.DiveThresholdTitle" prompt="@Strings.DiveThresholdPrompt">
+        <settingConfig type="list">
+            <listEntry value="50">@Strings.DiveThreshold05</listEntry>
+            <listEntry value="100">@Strings.DiveThreshold10</listEntry>
+            <listEntry value="150">@Strings.DiveThreshold15</listEntry>
+            <listEntry value="200">@Strings.DiveThreshold20</listEntry>
+            <listEntry value="300">@Strings.DiveThreshold30</listEntry>
+        </settingConfig>
+    </setting>
 </settings>

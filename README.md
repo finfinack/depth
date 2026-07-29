@@ -76,16 +76,21 @@ The [Depth data field](depth_field/) records the raw pressure into the activity 
 
 These live in Garmin Connect under the app's settings. The first three exist in all five apps:
 
+> **Each app keeps its own copy.** They are [separate Connect IQ projects with separate app IDs](#whats-in-here), and Connect IQ gives every app ID its own settings store — there is no shared one. So setting the colour range on the app does not set it on Depth Chart or Depth Gauge, and if you run several together they need setting in each. That is a platform limit, not a choice.
+
 | Setting | What it does |
 | --- | --- |
 | Water type | Fresh or salt, which sets the pressure per metre used above |
 | Units | Metres, feet, or follow the watch's elevation unit |
 | Re-zero depth | Discards the baseline and the maximum and starts over. Switches itself back off. |
 | Colour range | The app, Depth Chart and Depth Gauge — which depths the colour scale spans. See below. |
+| Dive threshold | The app, Depth and Max Depth — how deep counts as a dive. See [what counts as a dive](depth_app/README.md#what-counts-as-a-dive). |
 
 ### Colour range
 
 The app and its glance colour the reading blue, then green, yellow and red as it gets deeper, so a glance at it says roughly how deep you are without reading the number. That only works if the bands cover the range you actually swim: at a freediver's scale a snorkeller never leaves the first band and the colour tells them nothing at all.
+
+**One setting drives all of it.** The read-outs, the app's [gauge ring](depth_app/README.md#the-gauge-ring), [Depth Chart](depth_chart/)'s banded water and [Depth Gauge](depth_gauge/)'s zones are all drawn from the same three boundaries, so a gauge and the number inside it can never disagree about what colour a depth is.
 
 | Profile | Blue | Green | Yellow | Red |
 | --- | --- | --- | --- | --- |

@@ -8,13 +8,20 @@ The unit is shown in the field label (`Depth (m)` / `Depth (ft)`), because a sim
 
 ## What it records
 
-The field writes three developer fields into the activity's FIT file, so the dive is kept rather than just displayed:
+The field writes six developer fields into the activity's FIT file, so the dive is kept rather than just displayed:
 
 | Field | Scope | Unit | Meaning |
 | --- | --- | --- | --- |
 | `depth` | every record | cm | The depth at that moment, which Garmin Connect draws as a graph |
 | `pressure` | every record | Pa | The raw sensor reading the depth was derived from |
 | `max_depth` | session | cm | The deepest reading of the whole activity |
+| `max_depth_raw` | session | cm | The same, with no spike rejection at all — see below |
+| `dive_count` | session | — | How many times you went below the [dive threshold](../depth_app/README.md#what-counts-as-a-dive) |
+| `total_bottom_time` | session | s | How long was spent below it, added up |
+
+**`max_depth_raw` brackets the real peak.** The displayed maximum has to reject a lone deep sample, because a sensor glitch that got in could never be got out again — but that same caution costs it a little of a genuine fast descent. The raw one takes every sample as it came. The true deepest point of the session is somewhere between the two, and if they never diverge over a real session the rejection is not costing anything. It is recorded rather than shown: a second maximum on screen would only raise the question of which one is real.
+
+**`dive_count` and `total_bottom_time` are the snorkelling summary.** Bottom time adds up the interval each reading stands for rather than timing each dive end to end, so a gap in the readings is not claimed as time on the bottom. Both are session scope, so Garmin Connect shows them as one number each rather than as a series.
 
 Depth is always in **centimetres**, whatever the display unit is set to. The unit setting can be changed part way through an activity, and a recorded field whose meaning changed halfway would be worse than useless. Centimetres are also exactly the resolution the field displays, so nothing is lost. Values are clamped to 655.34 m: the model puts no ceiling on depth, and without the clamp a wild reading would wrap around into a small number that looked entirely plausible. The ceiling is 655.34 rather than 655.35 because 65535 cm is `0xFFFF`, which the FIT profile reserves to mean *no reading* — clamping there would file garbage as absent rather than as pinned.
 

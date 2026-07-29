@@ -9,21 +9,25 @@ class depthDelegate extends WatchUi.BehaviorDelegate {
 
     private var _model as DepthModel;
     private var _page as Number;
+    private var _session as depthSession?;
 
-    function initialize(model as DepthModel, page as Number) {
+    function initialize(model as DepthModel, page as Number, session as depthSession?) {
         BehaviorDelegate.initialize();
 
         _model = model;
         _page = page;
+        _session = session;
     }
 
     function onNextPage() as Boolean {
-        showPage((_page + 1) % PAGE_COUNT, WatchUi.SLIDE_UP);
+        var pages = pageCountFor(_session);
+        showPage((_page + 1) % pages, WatchUi.SLIDE_UP);
         return true;
     }
 
     function onPreviousPage() as Boolean {
-        showPage((_page + PAGE_COUNT - 1) % PAGE_COUNT, WatchUi.SLIDE_DOWN);
+        var pages = pageCountFor(_session);
+        showPage((_page + pages - 1) % pages, WatchUi.SLIDE_DOWN);
         return true;
     }
 
@@ -42,7 +46,8 @@ class depthDelegate extends WatchUi.BehaviorDelegate {
     //! Replace the current page. The model is handed on so the depth history
     //! survives the switch.
     private function showPage(page as Number, transition as WatchUi.SlideType) as Void {
-        WatchUi.switchToView(new depthView(_model, page), new depthDelegate(_model, page), transition);
+        WatchUi.switchToView(new depthView(_model, page, _session),
+            new depthDelegate(_model, page, _session), transition);
     }
 }
 

@@ -133,6 +133,35 @@ module DepthCore {
         // so a sensor that pins early is still caught.
         const saturation_depth = 0.5; // m
 
+        // Default depth, in meters, below which the watch is counted as being
+        // on a dive. Overridden by the diveThreshold setting; this is what an
+        // app that never declares the key gets.
+        const default_dive_threshold = 1.0; // m
+
+        // The range the threshold setting is held to. The floor is just above
+        // the ~0.29 m band the model already treats as "at the surface", below
+        // which the count would be measuring sensor noise; the ceiling is past
+        // any depth this is useful at and only exists so the value is bounded
+        // at both ends.
+        const min_dive_threshold = 0.3; // m
+        const max_dive_threshold = 100.0; // m
+
+        // The dive ends at this share of the threshold rather than at the
+        // threshold itself. One threshold would count a diver hovering right on
+        // it as a new dive on every sample that grazed it, which is the same
+        // chatter the trend uses two thresholds to avoid. Half is far enough
+        // apart that surface chop cannot bridge it and close enough that a real
+        // ascent still ends the dive promptly.
+        const dive_release_share = 0.5;
+
+        // Longest gap between samples that bottom time is still accumulated
+        // across. Bottom time adds up the interval each sample represents, so a
+        // sensor dropout while submerged would otherwise donate its whole length
+        // to the total — two minutes of missing data reading as two minutes on
+        // the bottom. Generous against a slow update rate, short enough that a
+        // real gap is dropped rather than counted.
+        const max_sample_gap = 10000; // ms
+
         // Weight of the newest sample in the rolling rate below. Roughly a
         // three second time constant at the 1 Hz this is fed at: long enough to
         // ride out sensor noise, short enough to still feel immediate. A single
@@ -178,8 +207,23 @@ module DepthCore {
         //! measured from it, so it applies to both equally.
         var baseline_stale as Boolean = false;
 
+        //! How many times the watch has gone below the dive threshold and come
+        //! back up since the last re-zero. A dive still under way is already
+        //! counted, so the number never goes backwards.
+        var dive_count as Number = 0;
+
+        //! Total time spent below the dive threshold since the last re-zero, in
+        //! milliseconds. Summed a sample at a time rather than measured from the
+        //! start of each dive, so a gap in the readings is not counted as time
+        //! on the bottom — see max_sample_gap.
+        var bottom_time as Number = 0;
+
         var unit as System.UnitsSystem = System.UNIT_METRIC; // or System.UNIT_STATUTE
         var water_pressure as Float = fresh_water_pressure;
+
+        //! Depth in meters at or below which a dive is counted. Read from the
+        //! diveThreshold setting.
+        var dive_threshold as Float = default_dive_threshold;
 
         //! Which set of colour bands depthColor() should use: one of the
         //! PROFILE_ values. Read here because this is where the settings are
@@ -220,6 +264,13 @@ module DepthCore {
         // How many samples in a row have not moved, behind saturated.
         private var _flat_count as Number = 0;
 
+        // Whether the watch is currently below the dive threshold, and when the
+        // last sample counted towards bottom time was taken. The timestamp is
+        // kept separately from _previous_time because that one is cleared
+        // whenever the samples either side of it stop being neighbours.
+        private var _in_dive as Boolean = false;
+        private var _dive_sample_time as Number = 0;
+
         // Whether this model is the one the re-zero trigger is meant for.
         private var _handles_rezero as Boolean;
 
@@ -241,6 +292,23 @@ module DepthCore {
             // An app that never declares this key — both data fields, which
             // colour nothing — gets the default without having to.
             color_profile = numberSetting("colorProfile", PROFILE_SNORKEL);
+
+            // Carried in whole centimeters so the setting stays an integer: the
+            // list in settings.xml holds its values as XML text, and a decimal
+            // point there is one more thing to get wrong per app per language.
+            //
+            // Clamped rather than trusted. A threshold of zero would make every
+            // sample a dive and the count run away, and the value arrives from
+            // outside the app.
+            var centimeters = numberSetting("diveThreshold",
+                (default_dive_threshold * 100).toNumber());
+            var threshold = centimeters / 100.0;
+            if (threshold < min_dive_threshold) {
+                threshold = min_dive_threshold;
+            } else if (threshold > max_dive_threshold) {
+                threshold = max_dive_threshold;
+            }
+            dive_threshold = threshold;
 
             var units = numberSetting("unitOverride", UNITS_AUTO);
             if (units == UNITS_METRIC) {
@@ -384,6 +452,44 @@ module DepthCore {
             // sample this reads.
             updateTrend(value, now);
             updateMaximum(value, now);
+            updateDive(value, now);
+        }
+
+        //! Count dives and add up the time spent on them.
+        //!
+        //! A dive starts at `dive_threshold` and ends higher up, at
+        //! `dive_release_share` of it — see that constant for why one threshold
+        //! is not enough. The count goes up as the dive starts rather than when
+        //! it ends, so a dive still under way is already in the total and the
+        //! number a diver sees never jumps after they surface.
+        //!
+        //! Bottom time adds up the interval each sample stands for instead of
+        //! subtracting a start time at the end. That costs nothing and means a
+        //! run of missing readings is simply not counted, rather than donating
+        //! its whole length to the total. Unmeasurable intervals — a gap longer
+        //! than max_sample_gap, or a millisecond counter that has wrapped and
+        //! reads backwards — are dropped for the same reason.
+        private function updateDive(value as Float, now as Number) as Void {
+            if (_in_dive) {
+                var elapsed = now - _dive_sample_time;
+                if (elapsed > 0 && elapsed <= max_sample_gap) {
+                    bottom_time += elapsed;
+                }
+                _dive_sample_time = now;
+
+                if (value < dive_threshold * dive_release_share) {
+                    _in_dive = false;
+                }
+                return;
+            }
+
+            if (value >= dive_threshold) {
+                _in_dive = true;
+                dive_count += 1;
+                // The dive is timed from this sample on. The interval leading
+                // into it was spent above the threshold and is not bottom time.
+                _dive_sample_time = now;
+            }
         }
 
         //! Drop the baseline and the maximum and start measuring again from the
@@ -404,6 +510,10 @@ module DepthCore {
             saturated = false;
             saturation_seen = false;
             baseline_stale = false;
+            dive_count = 0;
+            bottom_time = 0;
+            _in_dive = false;
+            _dive_sample_time = 0;
         }
 
         //! Format a depth in meters as a bare number in the user's unit, without a

@@ -4,7 +4,7 @@
         identity in the store and in the widget list, not a label.
 
         The on-screen labels are drawn centred into fixed slots and clip rather
-        than wrap, so LabelMaxDepth is abbreviated the way the English is.
+        than wrap, so keep them as short as the English is.
     -->
     <string id="AppName">Depth</string>
 
@@ -30,10 +30,21 @@
 
     <string id="LabelDepth">TIEFE</string>
     <string id="LabelMax">MAX</string>
-    <string id="LabelMaxDepth">MAX. TIEFE</string>
 
     <string id="GlanceDepth" scope="glance">Tiefe</string>
     <string id="GlanceMaxDepth" scope="glance">Max. Tiefe</string>
 
     <string id="RezeroConfirm">Tiefe zurücksetzen?</string>
+    <string id="DiveThresholdTitle">Tauchschwelle</string>
+    <string id="DiveThresholdPrompt">Ab welcher Tiefe ein Tauchgang zählt – für Anzahl und Grundzeit auf der Seite Letzte Sitzung. Ein Tauchgang endet, sobald du wieder über die Hälfte dieser Tiefe steigst, damit Dümpeln an der Oberfläche nicht als Tauchen zählt.</string>
+
+    <string id="LabelSession">SITZUNG</string>
+    <string id="LabelLastSession">LETZTE SITZUNG</string>
+    <string id="LabelDives">TAUCHGÄNGE</string>
+    <string id="LabelBottomTime">GRUNDZEIT</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 </strings>

@@ -14,7 +14,9 @@ class depthView extends WatchUi.SimpleDataField {
         FIELD_DEPTH = 0,
         FIELD_MAX_DEPTH = 1,
         FIELD_PRESSURE = 2,
-        FIELD_MAX_DEPTH_RAW = 3
+        FIELD_MAX_DEPTH_RAW = 3,
+        FIELD_DIVE_COUNT = 4,
+        FIELD_BOTTOM_TIME = 5
     }
 
     private var _model as DepthModel;
@@ -35,6 +37,12 @@ class depthView extends WatchUi.SimpleDataField {
     // at, and a guess cannot be checked against its own output — so the input
     // is recorded alongside it.
     private var _pressureField as FitContributor.Field;
+
+    // What the session came to as a snorkelling summary: how many times the
+    // watch went below the dive threshold, and how long it spent under. Session
+    // scope, so they are one number each in Garmin Connect rather than a series.
+    private var _diveCountField as FitContributor.Field;
+    private var _bottomTimeField as FitContributor.Field;
 
     function initialize() {
         SimpleDataField.initialize();
@@ -58,12 +66,24 @@ class depthView extends WatchUi.SimpleDataField {
         _pressureField = createField("pressure", FIELD_PRESSURE, FitContributor.DATA_TYPE_UINT32,
             { :mesgType => FitContributor.MESG_TYPE_RECORD, :units => "Pa" });
 
+        // Seconds rather than milliseconds: the FIT profile's own duration
+        // fields are in seconds, and a sum of one-second samples has no
+        // meaningful precision below that anyway.
+        _diveCountField = createField("dive_count", FIELD_DIVE_COUNT,
+            FitContributor.DATA_TYPE_UINT16,
+            { :mesgType => FitContributor.MESG_TYPE_SESSION });
+        _bottomTimeField = createField("total_bottom_time", FIELD_BOTTOM_TIME,
+            FitContributor.DATA_TYPE_UINT32,
+            { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "s" });
+
         // Every field needs a value before the first compute(), or an activity
         // that is saved without ever getting a pressure reading records nothing.
         _depthField.setData(0);
         _maxDepthField.setData(0);
         _maxDepthRawField.setData(0);
         _pressureField.setData(0);
+        _diveCountField.setData(0);
+        _bottomTimeField.setData(0);
     }
 
     //! A SimpleDataField has no room for a unit suffix on the value, so the unit
@@ -94,6 +114,8 @@ class depthView extends WatchUi.SimpleDataField {
         _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
         _maxDepthRawField.setData(DepthCore.depthCentimeters(_model.max_depth_raw));
         _pressureField.setData(DepthCore.pressurePascals(_model.pressure));
+        _diveCountField.setData(DepthCore.fitCount(_model.dive_count));
+        _bottomTimeField.setData(DepthCore.fitSeconds(_model.bottom_time));
 
         // ">=" in front once the sensor looks pinned: past its ceiling the
         // reading stops rising however deep the diver goes, and this field has

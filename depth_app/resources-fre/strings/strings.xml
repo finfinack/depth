@@ -4,7 +4,7 @@
         identity in the store and in the widget list, not a label.
 
         The on-screen labels are drawn centred into fixed slots and clip rather
-        than wrap, so LabelMaxDepth is abbreviated the way the English is.
+        than wrap, so keep them as short as the English is.
     -->
     <string id="AppName">Depth</string>
 
@@ -30,10 +30,21 @@
 
     <string id="LabelDepth">PROFONDEUR</string>
     <string id="LabelMax">MAX</string>
-    <string id="LabelMaxDepth">PROF. MAX</string>
 
     <string id="GlanceDepth" scope="glance">Profondeur</string>
     <string id="GlanceMaxDepth" scope="glance">Prof. max</string>
 
     <string id="RezeroConfirm">Remettre la profondeur à zéro ?</string>
+    <string id="DiveThresholdTitle">Seuil de plongée</string>
+    <string id="DiveThresholdPrompt">À partir de quelle profondeur une plongée est comptée, pour le nombre de plongées et le temps au fond de la page Session précédente. Une plongée se termine dès que vous remontez au-dessus de la moitié de cette profondeur, afin que le clapot ne compte pas comme une plongée.</string>
+
+    <string id="LabelSession">SESSION</string>
+    <string id="LabelLastSession">SESSION PRÉC.</string>
+    <string id="LabelDives">PLONGÉES</string>
+    <string id="LabelBottomTime">FOND</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 </strings>

@@ -5,7 +5,12 @@
     <property id="unitOverride" type="number">0</property>
     <!-- A trigger, not a state: the app acts on it and switches it back off. -->
     <property id="rezero" type="boolean">false</property>
-    <!-- 0 = snorkel, 1 = freedive, 2 = deep. See DepthCore.PROFILE_*. Only the
-         widget colours anything, so only the widget declares this one. -->
+    <!-- 0 = snorkel, 1 = freedive, 2 = deep. See DepthCore.PROFILE_*. Every app
+         that draws a colour declares this one; the two data fields return a
+         string for the watch to colour, so they do not. -->
     <property id="colorProfile" type="number">0</property>
+    <!-- Depth counting as a dive, in whole centimeters. Held as an integer so
+         the list in settings.xml needs no decimal point; the model divides by
+         100 and clamps. See DepthModel.default_dive_threshold. -->
+    <property id="diveThreshold" type="number">100</property>
 </properties>

@@ -24,4 +24,12 @@
     <string id="RezeroPrompt">Efface la pression de référence en surface ainsi que le maximum, et recommence la mesure. Se désactive tout seul. À utiliser si l'activité a démarré alors que la montre était déjà dans l'eau.</string>
 
     <string id="FieldLabel">Profondeur</string>
+
+    <string id="DiveThresholdTitle">Seuil de plongée</string>
+    <string id="DiveThresholdPrompt">À partir de quelle profondeur une plongée est comptée, pour le nombre de plongées et le temps au fond enregistrés dans l'activité. Une plongée se termine dès que vous remontez au-dessus de la moitié de cette profondeur, afin que le clapot ne compte pas comme une plongée.</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 </strings>

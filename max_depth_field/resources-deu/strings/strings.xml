@@ -24,4 +24,12 @@
     <string id="RezeroPrompt">Verwirft den Referenzdruck der Oberfläche und das Maximum und misst von vorn. Schaltet sich selbst wieder aus. Nutze das, wenn die Aktivität begann, während die Uhr schon im Wasser war.</string>
 
     <string id="FieldLabel">Max. Tiefe</string>
+
+    <string id="DiveThresholdTitle">Tauchschwelle</string>
+    <string id="DiveThresholdPrompt">Ab welcher Tiefe ein Tauchgang zählt – für Anzahl und Grundzeit in der Aktivität. Ein Tauchgang endet, sobald du wieder über die Hälfte dieser Tiefe steigst, damit Dümpeln an der Oberfläche nicht als Tauchen zählt.</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 </strings>

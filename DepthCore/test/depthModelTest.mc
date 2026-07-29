@@ -753,4 +753,186 @@ module DepthCore {
         assertClose(model.max_depth, 1.0, "maximum is not judged across the gap");
         return true;
     }
+
+    //! A model at the surface with a known dive threshold, ready to be dived.
+    //! Returns the time of the next sample.
+    function surfacedModel(model as DepthModel) as Number {
+        model.dive_threshold = 1.0;
+        diveTo(model, 0.0, 0);
+        return 1000;
+    }
+
+    (:test)
+    function testGoingPastTheThresholdCountsOneDive(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        Test.assertMessage(model.dive_count == 0, "no dive before going under");
+        now = holdAt(model, 2.0, now, 3);
+        Test.assertMessage(model.dive_count == 1,
+            "one dive, got " + model.dive_count);
+
+        // Surfacing does not count a second one.
+        holdAt(model, 0.0, now, 3);
+        Test.assertMessage(model.dive_count == 1,
+            "still one dive after surfacing, got " + model.dive_count);
+        return true;
+    }
+
+    (:test)
+    function testADiveIsCountedWhileItIsStillUnderWay(logger as Logger) as Boolean {
+        // The count goes up on the way down, not on the way back up, so what a
+        // diver sees does not jump the moment they surface.
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        diveTo(model, 1.5, now);
+        Test.assertMessage(model.dive_count == 1,
+            "counted as it starts, got " + model.dive_count);
+        return true;
+    }
+
+    (:test)
+    function testHoveringOnTheThresholdIsStillOneDive(logger as Logger) as Boolean {
+        // The whole point of the release being lower than the threshold: a
+        // diver sitting right on 1 m must not score a dive per sample.
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        for (var i = 0; i < 6; i += 1) {
+            diveTo(model, 1.1, now);
+            now += 1000;
+            diveTo(model, 0.9, now);
+            now += 1000;
+        }
+        Test.assertMessage(model.dive_count == 1,
+            "grazing the threshold is one dive, got " + model.dive_count);
+        return true;
+    }
+
+    (:test)
+    function testComingUpPastTheReleaseStartsANewDive(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        now = holdAt(model, 2.0, now, 2);
+        now = holdAt(model, 0.2, now, 2); // Clear of the 0.5 m release.
+        holdAt(model, 2.0, now, 2);
+        Test.assertMessage(model.dive_count == 2,
+            "two separate dives, got " + model.dive_count);
+        return true;
+    }
+
+    (:test)
+    function testStayingShallowIsNotADive(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        holdAt(model, 0.8, now, 10);
+        Test.assertMessage(model.dive_count == 0,
+            "above the threshold is no dive, got " + model.dive_count);
+        Test.assertMessage(model.bottom_time == 0,
+            "and no bottom time, got " + model.bottom_time);
+        return true;
+    }
+
+    (:test)
+    function testBottomTimeCountsFromTheSampleThatStartsTheDive(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        // Four samples a second apart: the first starts the dive and is not
+        // itself an interval, so three intervals are counted.
+        holdAt(model, 2.0, now, 4);
+        Test.assertMessage(model.bottom_time == 3000,
+            "three seconds of bottom time, got " + model.bottom_time);
+        return true;
+    }
+
+    (:test)
+    function testBottomTimeStopsWhenTheDiveDoes(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        now = holdAt(model, 2.0, now, 3); // Two intervals below.
+        holdAt(model, 0.1, now, 5);       // The first of these ends the dive.
+        Test.assertMessage(model.bottom_time == 3000,
+            "time at the surface is not bottom time, got " + model.bottom_time);
+        return true;
+    }
+
+    (:test)
+    function testBottomTimeIsNotCountedAcrossASensorGap(logger as Logger) as Boolean {
+        // Readings stop for two minutes while submerged. The watch cannot know
+        // it was down there the whole time, so it must not claim it was.
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        now = holdAt(model, 2.0, now, 2); // One interval, 1000 ms.
+        diveTo(model, 2.0, now + 120000);
+        Test.assertMessage(model.bottom_time == 1000,
+            "the gap is not bottom time, got " + model.bottom_time);
+        return true;
+    }
+
+    (:test)
+    function testBottomTimeIgnoresAWrappedClock(logger as Logger) as Boolean {
+        // System.getTimer() wraps. An interval that measures negative cannot be
+        // measured at all, so it is dropped rather than added or subtracted.
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        now = holdAt(model, 2.0, now, 2);
+        diveTo(model, 2.0, 5); // The counter has wrapped round to near zero.
+        Test.assertMessage(model.bottom_time == 1000,
+            "a backwards interval is dropped, got " + model.bottom_time);
+
+        // And the model keeps counting from the new clock rather than sulking.
+        diveTo(model, 2.0, 1005);
+        Test.assertMessage(model.bottom_time == 2000,
+            "counting resumes after the wrap, got " + model.bottom_time);
+        return true;
+    }
+
+    (:test)
+    function testRezeroForgetsDivesAndBottomTime(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        var now = surfacedModel(model);
+
+        holdAt(model, 2.0, now, 4);
+        Test.assertMessage(model.dive_count == 1 && model.bottom_time == 3000,
+            "there was a dive to forget");
+
+        model.rezero();
+        Test.assertMessage(model.dive_count == 0,
+            "dives forgotten, got " + model.dive_count);
+        Test.assertMessage(model.bottom_time == 0,
+            "bottom time forgotten, got " + model.bottom_time);
+        return true;
+    }
+
+    (:test)
+    function testDiveThresholdIsClampedToSomethingUsable(logger as Logger) as Boolean {
+        // The value comes from outside the app. Zero would make every sample a
+        // dive and the count run away, so it is held to a usable range rather
+        // than trusted.
+        var model = saltWaterModel();
+
+        Properties.setValue("diveThreshold", 0);
+        model.loadSettings();
+        assertClose(model.dive_threshold, model.min_dive_threshold,
+            "a zero threshold is clamped up");
+
+        Properties.setValue("diveThreshold", 1000000);
+        model.loadSettings();
+        assertClose(model.dive_threshold, model.max_dive_threshold,
+            "an absurd threshold is clamped down");
+
+        Properties.setValue("diveThreshold", 150);
+        model.loadSettings();
+        assertClose(model.dive_threshold, 1.5, "a sane threshold is taken as given");
+
+        Properties.setValue("diveThreshold", 100);
+        return true;
+    }
 }

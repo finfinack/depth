@@ -12,7 +12,9 @@ class max_depthView extends WatchUi.SimpleDataField {
     //! unique within the app, since the FIT file scopes them by developer id.
     enum FieldId {
         FIELD_MAX_DEPTH = 0,
-        FIELD_MAX_DEPTH_RAW = 1
+        FIELD_MAX_DEPTH_RAW = 1,
+        FIELD_DIVE_COUNT = 2,
+        FIELD_BOTTOM_TIME = 3
     }
 
     private var _model as DepthModel;
@@ -29,6 +31,13 @@ class max_depthView extends WatchUi.SimpleDataField {
     // else at all.
     private var _maxDepthRawField as FitContributor.Field;
 
+    // What the session came to as a snorkelling summary: how many times the
+    // watch went below the dive threshold, and how long it spent under. Both
+    // session scope, like the maximum, so this field stays a summary of the
+    // activity rather than a second copy of the Depth field's series.
+    private var _diveCountField as FitContributor.Field;
+    private var _bottomTimeField as FitContributor.Field;
+
     function initialize() {
         SimpleDataField.initialize();
 
@@ -44,10 +53,22 @@ class max_depthView extends WatchUi.SimpleDataField {
             FitContributor.DATA_TYPE_UINT16,
             { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "cm" });
 
+        // Seconds rather than milliseconds: the FIT profile's own duration
+        // fields are in seconds, and a sum of one-second samples has no
+        // meaningful precision below that anyway.
+        _diveCountField = createField("dive_count", FIELD_DIVE_COUNT,
+            FitContributor.DATA_TYPE_UINT16,
+            { :mesgType => FitContributor.MESG_TYPE_SESSION });
+        _bottomTimeField = createField("total_bottom_time", FIELD_BOTTOM_TIME,
+            FitContributor.DATA_TYPE_UINT32,
+            { :mesgType => FitContributor.MESG_TYPE_SESSION, :units => "s" });
+
         // The fields need a value before the first compute(), or an activity
         // saved without ever getting a pressure reading records nothing at all.
         _maxDepthField.setData(0);
         _maxDepthRawField.setData(0);
+        _diveCountField.setData(0);
+        _bottomTimeField.setData(0);
     }
 
     //! A SimpleDataField has no room for a unit suffix on the value, so the unit
@@ -76,6 +97,8 @@ class max_depthView extends WatchUi.SimpleDataField {
 
         _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
         _maxDepthRawField.setData(DepthCore.depthCentimeters(_model.max_depth_raw));
+        _diveCountField.setData(DepthCore.fitCount(_model.dive_count));
+        _bottomTimeField.setData(DepthCore.fitSeconds(_model.bottom_time));
 
         // ">=" in front once the sensor has looked pinned at any point: a
         // maximum reached while the reading was at its ceiling is the ceiling,
