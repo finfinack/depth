@@ -25,6 +25,7 @@ class depthView extends WatchUi.View {
     private var _model as DepthModel;
     private var _page as Number;
     private var _dataTimer as Timer.Timer?;
+    private var _ring as depthRing;
 
     // Loaded once rather than in onUpdate(), which runs every second.
     private var _depthLabel as String;
@@ -36,6 +37,7 @@ class depthView extends WatchUi.View {
 
         _model = model;
         _page = page;
+        _ring = new depthRing(model);
 
         _depthLabel = WatchUi.loadResource(Rez.Strings.LabelDepth) as String;
         _maxLabel = WatchUi.loadResource(Rez.Strings.LabelMax) as String;
@@ -112,6 +114,12 @@ class depthView extends WatchUi.View {
     }
 
     //! A single reading filling the page, with an accent rule under the label.
+    //!
+    //! The current-depth page carries the ring as well, which is the one page
+    //! with nothing else competing for the edges of the screen. The maximum page
+    //! does not: the ring's own orange tick already says where the maximum is,
+    //! so drawing it around a page that is only the maximum would say it twice
+    //! and leave the arrowhead pointing at a depth the page is not showing.
     private function drawSingle(dc as Dc, width as Number, height as Number, accent as Graphics.ColorType) as Void {
         var isMax = (_page == PAGE_MAX);
         var value = _model.depth;
@@ -119,6 +127,10 @@ class depthView extends WatchUi.View {
         if (isMax) {
             value = _model.max_depth;
             limited = _model.saturation_seen;
+        } else {
+            // Before the text, so a marker that reaches inwards cannot land on
+            // top of the number.
+            _ring.draw(dc, width, height);
         }
 
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
