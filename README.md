@@ -4,6 +4,20 @@ Barometric depth for Garmin watches (Fenix, Epix, Tactix) — an app, four data 
 
 Find them on the [Garmin ConnectIQ store](https://apps.garmin.com/developer/1e45545b-eec0-40b0-886d-61739dd6f510/apps) for free to install them.
 
+## TL;DR
+
+**What it is.** Your watch's barometer, read as a depth gauge for snorkelling and casual swimming. One app with a glance, plus four data fields you can put on an activity screen.
+
+**How it works.** Connect IQ has no depth API, so depth is inferred from air pressure: the lowest pressure of the last few minutes is taken as the surface, and every ~100 hPa above that is another metre of water.
+
+**How to use it.** Start it at the surface — that is what sets the surface point. Set **Water type** and **Colour range** once in Garmin Connect. If the surface ever ends up wrong, press Start in the app to re-zero, or flip **Re-zero depth** in the settings for the data fields.
+
+> ⚠️ **This is not a dive computer.** No decompression, no no-stop limits, no ascent-rate warning, no alarms, and no calibration against a reference gauge. The barometer is built for weather and stops responding somewhere past the first metre or two — the reading is marked `>=` when that happens, and `?` when the surface point looks wrong. **Use a real dive computer for anything where the number matters.**
+
+Everything below is detail. The [full warning](#this-is-not-a-dive-computer) is worth reading before you rely on any of it.
+
+## What's in here
+
 Previously three separate repositories. They are one now because all three carried an identical copy of the depth model, and keeping three copies in step by hand was the main source of drift.
 
 | Project | Type | What it is |
