@@ -82,7 +82,7 @@ class depth_gaugeView extends WatchUi.DataField {
     function initialize() {
         DataField.initialize();
 
-        _model = new DepthModel();
+        _model = new DepthModel(DepthCore.REZERO_HANDLE);
         _layout = new DepthFieldLayout();
         _label = WatchUi.loadResource(Rez.Strings.FieldLabel) as String;
         _maxLabel = WatchUi.loadResource(Rez.Strings.LabelMax) as String;

@@ -39,7 +39,7 @@ class depthView extends WatchUi.SimpleDataField {
     function initialize() {
         SimpleDataField.initialize();
 
-        _model = new DepthModel();
+        _model = new DepthModel(DepthCore.REZERO_HANDLE);
         updateLabel();
 
         // Always recorded in centimeters, whatever the display unit is set to.

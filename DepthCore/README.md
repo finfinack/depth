@@ -42,6 +42,8 @@ Source files then use `import DepthCore;`.
 | `rezero` | boolean | `false` |
 | `colorProfile` | number | `0` (snorkel) |
 
+`rezero` is a one-shot trigger rather than a state: it is acted on once and then switched back off. **Exactly one model per app may consume it**, which is what the constructor's `DepthCore.REZERO_HANDLE` / `REZERO_IGNORE` argument decides. An app with a glance builds two models against one property store, and the glance's is discarded after every draw — so it passes `REZERO_IGNORE` and leaves the trigger for the model the user is actually looking at. There is no default, because there is no answer that is right for both.
+
 `colorProfile` is declared by the app, Depth Chart and Depth Gauge — the three that colour something. Depth and Max Depth are `SimpleDataField`s, which hand the system a string and let it draw, so they leave it out and get the default from the fallback below.
 
 **A key the app does not declare falls back to the default above.** `Properties.getValue()` throws on an undeclared key, and `DepthModel` is constructed by every app that embeds the barrel — so the exception is caught and treated as "not configured", which is the same situation as a setting left at its default. Without that, adding a setting here would crash every app that had not yet declared it.
@@ -81,7 +83,7 @@ There is deliberately **no shared "draw the heading" helper**. The two fields he
 
 ## Two things worth knowing
 
-**Classes resolve unqualified, bare functions do not.** With `import DepthCore;` in scope, `new DepthModel()` compiles. `depthColor(x)` does not — Monkey C resolves an unqualified call against `self` first, and the build fails with `Cannot find symbol ':depthColor' on type 'self'`. Free functions from the barrel have to be called as `DepthCore.depthColor(x)` and `DepthCore.depthCentimeters(x)`.
+**Classes resolve unqualified; free functions and module constants do not.** With `import DepthCore;` in scope, `new DepthModel(...)` compiles. `depthColor(x)` does not — Monkey C resolves an unqualified name against `self` first, and the build fails with `Cannot find symbol ':depthColor' on type 'self'`. The same applies to module-level constants used from inside a class: it is `DepthCore.depthColor(x)`, `DepthCore.depthCentimeters(x)`, `DepthCore.REZERO_HANDLE` and `DepthCore.TREND_LEVEL`.
 
 **`(:glance)` has to stay on the barrel code.** It is a build exclusion applied by the consuming app rather than a barrel annotation, so it needs no `<iq:annotations>` entry and works on barrel code as-is. Removing it fails the app's build with `Value 'DepthModel' not available in all function scopes`.
 

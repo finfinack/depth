@@ -1,4 +1,5 @@
 import Toybox.Activity;
+import Toybox.Application;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Test;
@@ -28,7 +29,7 @@ module DepthCore {
     //! A model wired to salt water, whatever the settings say — the expected
     //! depths in the tests below depend on it.
     function saltWaterModel() as DepthModel {
-        var model = new DepthModel();
+        var model = new DepthModel(REZERO_HANDLE);
         model.water_pressure = test_salt_pressure;
         model.unit = System.UNIT_METRIC;
         return model;
@@ -199,13 +200,43 @@ module DepthCore {
         return true;
     }
 
+    //! Whether the one-shot re-zero trigger is still waiting to be acted on.
+    function rezeroPending() as Boolean {
+        var value = Application.Properties.getValue("rezero");
+        return (value instanceof Lang.Boolean) ? value : false;
+    }
+
+    (:test)
+    function testOnlyTheHandlingModelConsumesTheRezeroTrigger(logger as Logger) as Boolean {
+        // The trigger is one-shot, and switching it off is what consuming it
+        // means. An app with a glance builds two models against one property
+        // store, so a model built for a view that is thrown away after every
+        // draw has to leave the trigger for the one the user is looking at —
+        // otherwise the setting silently does nothing.
+        Application.Properties.setValue("rezero", true);
+
+        var ignored = new DepthModel(REZERO_IGNORE);
+        Test.assertMessage(rezeroPending(),
+            "the trigger survived a model that does not handle it");
+
+        var handler = new DepthModel(REZERO_HANDLE);
+        Test.assertMessage(!rezeroPending(),
+            "the trigger was consumed by the model that does handle it");
+
+        // The flag governs the trigger and nothing else: both models read the
+        // rest of the settings identically.
+        Test.assertEqual(ignored.color_profile, handler.color_profile);
+        Test.assertEqual(ignored.water_pressure, handler.water_pressure);
+        return true;
+    }
+
     (:test)
     function testUndeclaredSettingFallsBackToItsDefault(logger as Logger) as Boolean {
         // test/resources/settings/properties.xml deliberately leaves
         // colorProfile out, the way the two data fields do. Properties.getValue()
         // throws on a key the app never declared, so constructing the model at
         // all is half of what this asserts; landing on the default is the rest.
-        var model = new DepthModel();
+        var model = new DepthModel(REZERO_HANDLE);
         Test.assertEqual(model.color_profile, PROFILE_SNORKEL);
         return true;
     }

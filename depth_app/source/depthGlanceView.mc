@@ -16,7 +16,10 @@ class depthGlanceView extends WatchUi.GlanceView
     function initialize() {
         GlanceView.initialize();
 
-        _model = new DepthModel();
+        // The glance shares the app's property store but not its lifetime: this
+        // model is built and discarded on every draw, so it must leave the
+        // re-zero trigger for the app's own long-lived one.
+        _model = new DepthModel(DepthCore.REZERO_IGNORE);
         _depthLabel = WatchUi.loadResource(Rez.Strings.GlanceDepth) as String;
         _maxDepthLabel = WatchUi.loadResource(Rez.Strings.GlanceMaxDepth) as String;
     }

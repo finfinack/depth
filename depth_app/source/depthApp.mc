@@ -28,7 +28,7 @@ class depthApp extends Application.AppBase {
     (:typecheck(disableGlanceCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
         // The pages share one model so tracking continues whichever is shown.
-        var model = new DepthModel();
+        var model = new DepthModel(DepthCore.REZERO_HANDLE);
         _model = model;
         return [ new depthView(model, PAGE_SUMMARY), new depthDelegate(model, PAGE_SUMMARY) ];
     }

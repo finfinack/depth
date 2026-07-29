@@ -12,6 +12,22 @@ module DepthCore {
     (:glance) const TREND_DESCENDING = 1;
     (:glance) const TREND_ASCENDING = 2;
 
+    //! Values for DepthModel's constructor: whether this model is the one the
+    //! **Re-zero depth** setting is meant for.
+    //!
+    //! The setting is a one-shot trigger — acted on once, then switched back
+    //! off — so exactly one model per app may consume it, and consuming it is
+    //! what switching it off means. An app with a glance builds two models
+    //! against one property store: the glance's is thrown away after every
+    //! draw, so re-zeroing it achieves nothing and eats the trigger the model
+    //! the user is actually looking at was waiting for. The user then sees a
+    //! setting that did nothing, which is worse than not having it.
+    //!
+    //! There is no sensible default, so there is no default: whoever builds a
+    //! model has to say which kind it is.
+    (:glance) const REZERO_HANDLE = true;
+    (:glance) const REZERO_IGNORE = false;
+
     //! Depth derived from barometric pressure, relative to a tracked surface
     //! pressure baseline.
     //!
@@ -204,7 +220,13 @@ module DepthCore {
         // How many samples in a row have not moved, behind saturated.
         private var _flat_count as Number = 0;
 
-        function initialize() {
+        // Whether this model is the one the re-zero trigger is meant for.
+        private var _handles_rezero as Boolean;
+
+        //! `handles_rezero` is one of REZERO_HANDLE or REZERO_IGNORE — see
+        //! those for what the choice means and why it has to be made.
+        function initialize(handles_rezero as Boolean) {
+            _handles_rezero = handles_rezero;
             loadSettings();
         }
 
@@ -234,9 +256,22 @@ module DepthCore {
             // Re-zero is a trigger rather than a state, so it is acted on and then
             // switched off again. This is the only way into a re-zero for the data
             // fields, which have no input of their own.
-            if (booleanSetting("rezero", false)) {
+            //
+            // Only the model that was told to handle it may do so: switching it
+            // off is what makes it a trigger, and whoever switches it off is
+            // the only one that gets to act on it. See REZERO_HANDLE.
+            if (_handles_rezero && booleanSetting("rezero", false)) {
                 rezero();
-                Properties.setValue("rezero", false);
+                // Guarded like every read is. An app that declares the key can
+                // always write it, so this cannot throw today — but the read
+                // path was hardened for the next app to embed the barrel, and
+                // leaving the write bare puts the trap straight back.
+                try {
+                    Properties.setValue("rezero", false);
+                } catch (e) {
+                    // Nothing useful to do: the trigger stays set and fires
+                    // again next time, which is the harmless way to fail.
+                }
             }
         }
 
