@@ -103,18 +103,22 @@ class depthView extends WatchUi.View {
     //! of telling the two apart.
     private function drawSummary(dc as Dc, width as Number, height as Number) as Void {
         drawReading(dc, width, height * 28 / 100, height * 40 / 100,
-            _depthLabel, Graphics.COLOR_BLUE, _model.depth, true);
+            _depthLabel, Graphics.COLOR_BLUE, _model.depth, true, _model.saturated);
         // A maximum only ever goes one way, so a trend on it would say nothing.
+        // It is bounded by whether the sensor was ever pinned, not by whether
+        // it is pinned now: the maximum outlives the moment it was reached.
         drawReading(dc, width, height * 57 / 100, height * 69 / 100,
-            _maxLabel, Graphics.COLOR_ORANGE, _model.max_depth, false);
+            _maxLabel, Graphics.COLOR_ORANGE, _model.max_depth, false, _model.saturation_seen);
     }
 
     //! A single reading filling the page, with an accent rule under the label.
     private function drawSingle(dc as Dc, width as Number, height as Number, accent as Graphics.ColorType) as Void {
         var isMax = (_page == PAGE_MAX);
         var value = _model.depth;
+        var limited = _model.saturated;
         if (isMax) {
             value = _model.max_depth;
+            limited = _model.saturation_seen;
         }
 
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
@@ -127,19 +131,19 @@ class depthView extends WatchUi.View {
         dc.drawLine(width * 35 / 100, ruleY, width * 65 / 100, ruleY);
 
         drawValue(dc, width / 2, height / 2, value,
-            Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_LARGE, !isMax);
+            Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_LARGE, !isMax, limited);
     }
 
     //! A small label with its reading underneath, for the summary page.
     private function drawReading(dc as Dc, width as Number, labelY as Number, valueY as Number,
                                  label as String, accent as Graphics.ColorType, value as Float?,
-                                 withTrend as Boolean) as Void {
+                                 withTrend as Boolean, limited as Boolean) as Void {
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
         dc.drawText(width / 2, labelY, Graphics.FONT_XTINY, label,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         drawValue(dc, width / 2, valueY, value,
-            Graphics.FONT_NUMBER_MILD, Graphics.FONT_XTINY, Graphics.FONT_MEDIUM, withTrend);
+            Graphics.FONT_NUMBER_MILD, Graphics.FONT_XTINY, Graphics.FONT_MEDIUM, withTrend, limited);
     }
 
     //! Draw the reading centred on (x, y): the trend indicator, then the number
@@ -147,18 +151,25 @@ class depthView extends WatchUi.View {
     //! font.
     private function drawValue(dc as Dc, x as Number, y as Number, value as Float?,
                                numberFont as Graphics.FontType, unitFont as Graphics.FontType,
-                               fallbackFont as Graphics.FontType, withTrend as Boolean) as Void {
+                               fallbackFont as Graphics.FontType, withTrend as Boolean,
+                               limited as Boolean) as Void {
         var text = _model.formatDepth(value);
+        var color = DepthCore.readingColor(value, _model.color_profile, limited);
 
         if (value == null) {
             // The numeric fonts only contain digits, so "n/a" needs a text font.
-            dc.setColor(DepthCore.depthColor(value, _model.color_profile), Graphics.COLOR_TRANSPARENT);
+            dc.setColor(color, Graphics.COLOR_TRANSPARENT);
             dc.drawText(x, y, fallbackFont, text,
                 Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             return;
         }
 
+        // ">=" cannot go through formatBounded() here: it would land in the
+        // numeric font, which holds digits only. It gets its own draw in the
+        // unit's text font, the same way the unit itself does.
+        var boundText = ">=";
         var unitText = " " + _model.unitLabel();
+        var boundWidth = limited ? dc.getTextWidthInPixels(boundText, unitFont) : 0;
         var valueWidth = dc.getTextWidthInPixels(text, numberFont);
         var unitWidth = dc.getTextWidthInPixels(unitText, unitFont);
 
@@ -169,13 +180,18 @@ class depthView extends WatchUi.View {
         var trendSize = withTrend ? dc.getFontHeight(unitFont) / 2 : 0;
         var trendGap = trendSize / 2;
 
-        var left = x - (trendSize + trendGap + valueWidth + unitWidth) / 2;
+        var left = x - (trendSize + trendGap + boundWidth + valueWidth + unitWidth) / 2;
         if (withTrend) {
             drawTrend(dc, left + trendSize / 2, y, trendSize);
         }
 
         var valueX = left + trendSize + trendGap;
-        dc.setColor(DepthCore.depthColor(value, _model.color_profile), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+        if (limited) {
+            dc.drawText(valueX, y, unitFont, boundText,
+                Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            valueX += boundWidth;
+        }
         dc.drawText(valueX, y, numberFont, text,
             Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
 

@@ -41,8 +41,10 @@ class depthGlanceView extends WatchUi.GlanceView
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
 
-        drawRow(dc, font, labelX, valueX, centerY - lineHeight / 2, _depthLabel, Graphics.COLOR_BLUE, _model.depth);
-        drawRow(dc, font, labelX, valueX, centerY + lineHeight / 2, _maxDepthLabel, Graphics.COLOR_ORANGE, _model.max_depth);
+        drawRow(dc, font, labelX, valueX, centerY - lineHeight / 2, _depthLabel,
+            Graphics.COLOR_BLUE, _model.depth, _model.saturated);
+        drawRow(dc, font, labelX, valueX, centerY + lineHeight / 2, _maxDepthLabel,
+            Graphics.COLOR_ORANGE, _model.max_depth, _model.saturation_seen);
     }
 
     function onStop() as Void {
@@ -51,17 +53,19 @@ class depthGlanceView extends WatchUi.GlanceView
     //! One "<label>  <value><unit>" line, the label in the page accent colour
     //! and the value coloured by depth.
     private function drawRow(dc as Dc, font as Graphics.FontType, labelX as Number, valueX as Number,
-                             y as Number, label as String, accent as Graphics.ColorType, value as Float?) as Void {
+                             y as Number, label as String, accent as Graphics.ColorType,
+                             value as Float?, limited as Boolean) as Void {
         var justify = Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER;
 
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
         dc.drawText(labelX, y, font, label, justify);
 
-        var text = _model.formatDepth(value);
+        var text = _model.formatBounded(value, limited);
         if (value != null) {
             text += _model.unitLabel();
         }
-        dc.setColor(DepthCore.depthColor(value, _model.color_profile), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(DepthCore.readingColor(value, _model.color_profile, limited),
+            Graphics.COLOR_TRANSPARENT);
         dc.drawText(valueX, y, font, text, justify);
     }
 }

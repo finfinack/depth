@@ -64,6 +64,9 @@ class max_depthView extends WatchUi.SimpleDataField {
 
         _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
 
-        return _model.formatDepth(_model.max_depth);
+        // ">=" in front once the sensor has looked pinned at any point: a
+        // maximum reached while the reading was at its ceiling is the ceiling,
+        // not the dive.
+        return _model.formatBounded(_model.max_depth, _model.saturation_seen);
     }
 }

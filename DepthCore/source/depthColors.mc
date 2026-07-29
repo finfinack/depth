@@ -63,4 +63,27 @@ module DepthCore {
         }
         return Graphics.COLOR_RED;
     }
+
+    //! The colour a read-out is drawn in: its depth band normally, red when the
+    //! reading is a lower bound because the sensor is pinned.
+    //!
+    //! Red rather than a fifth colour of its own, because red is already the
+    //! "you are deep" end of every profile and so reads as a warning without
+    //! anything to learn — and the ">=" in front of the number says which kind
+    //! of warning it is. It does not collide with the band it replaces: a
+    //! ceiling anywhere near the reported 6-7 m is yellow on the snorkelling
+    //! scale and blue on the other two, so red is never what would have been
+    //! shown anyway.
+    //!
+    //! The bands themselves keep depthColor(). Recolouring the chart's whole
+    //! body of water red would destroy the scale it is drawn to, and the scale
+    //! is still true down to wherever the sensor stopped.
+    (:glance)
+    function readingColor(meters as Float?, profile as Number,
+                          limited as Boolean) as Graphics.ColorType {
+        if (limited && meters != null) {
+            return Graphics.COLOR_RED;
+        }
+        return depthColor(meters, profile);
+    }
 }

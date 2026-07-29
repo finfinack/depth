@@ -78,6 +78,23 @@ module DepthCore {
         const trend_commit = 0.15; // m/s
         const trend_release = 0.08; // m/s
 
+        // A pressure sample this close to the one before it did not come from a
+        // live sensor: a barometer's own noise is several pascal, so a run of
+        // readings this tight means the value is pinned rather than measured.
+        const flat_pressure = 0.5; // Pa
+
+        // How many consecutive flat samples before the sensor is called
+        // saturated. Eight seconds at the 1 Hz this is fed at: long enough that
+        // a quiet sensor and a still wrist do not trip it, short enough to warn
+        // while the diver is still down there.
+        const flat_samples = 8;
+
+        // Shallowest reading a saturation claim is made at. Above this the
+        // watch is plausibly just sitting still in air, where a flat pressure
+        // means nothing. Set below the ~0.9 m a wearable barometer is rated to,
+        // so a sensor that pins early is still caught.
+        const saturation_depth = 0.5; // m
+
         // Weight of the newest sample in the rolling rate below. Roughly a
         // three second time constant at the 1 Hz this is fed at: long enough to
         // ride out sensor noise, short enough to still feel immediate. A single
@@ -94,6 +111,16 @@ module DepthCore {
         //! The pressure the current depth was derived from, in pascal, exactly as
         //! the sensor reported it. Null while no reading is available.
         var pressure as Float?;
+
+        //! Whether the pressure reading looks pinned at the sensor's ceiling
+        //! rather than following the water. While this is set, `depth` is a
+        //! lower bound and not a measurement. See updateSaturation().
+        var saturated as Boolean = false;
+
+        //! Whether the sensor has looked saturated at any point since the last
+        //! re-zero, which makes `max_depth` a lower bound too — a maximum
+        //! reached while the reading was pinned is the ceiling, not the dive.
+        var saturation_seen as Boolean = false;
 
         var unit as System.UnitsSystem = System.UNIT_METRIC; // or System.UNIT_STATUTE
         var water_pressure as Float = fresh_water_pressure;
@@ -122,6 +149,9 @@ module DepthCore {
 
         // Smoothed rate of change in m/s, positive going deeper, behind trend.
         private var _rate as Float = 0.0;
+
+        // How many samples in a row have not moved, behind saturated.
+        private var _flat_count as Number = 0;
 
         function initialize() {
             loadSettings();
@@ -194,6 +224,10 @@ module DepthCore {
                 // Whatever the depth was doing, it is not doing it any more.
                 trend = TREND_LEVEL;
                 _rate = 0.0;
+                // A reading that is not there cannot be pinned. saturation_seen
+                // is left alone: it describes the session, not this sample.
+                saturated = false;
+                _flat_count = 0;
                 return;
             }
 
@@ -237,6 +271,7 @@ module DepthCore {
                 value = 0.0;
             }
             depth = value;
+            updateSaturation(previous_pressure, pressure, value);
             // Must come before updateMaximum(), which overwrites the previous
             // sample this reads.
             updateTrend(value, now);
@@ -254,10 +289,13 @@ module DepthCore {
             _previous_depth = null;
             _previous_pressure = null;
             _rate = 0.0;
+            _flat_count = 0;
             depth = null;
             max_depth = null;
             trend = TREND_LEVEL;
             pressure = null;
+            saturated = false;
+            saturation_seen = false;
         }
 
         //! Format a depth in meters as a bare number in the user's unit, without a
@@ -270,6 +308,19 @@ module DepthCore {
                 return meters.format("%.2f");
             }
             return (meters * feet_per_meter).format("%.1f");
+        }
+
+        //! formatDepth() with a ">=" in front when the reading is a lower bound
+        //! rather than a measurement — see updateSaturation(). "n/a" is left
+        //! alone: there is nothing to bound.
+        //!
+        //! ASCII rather than "≥" on purpose. The built-in fonts have patchy
+        //! glyph coverage and a missing glyph draws an empty box, which would
+        //! turn the warning into a puzzle. Same reason the trend indicator is a
+        //! polygon rather than an arrow character.
+        function formatBounded(meters as Float?, limited as Boolean) as String {
+            var text = formatDepth(meters);
+            return (limited && meters != null) ? ">=" + text : text;
         }
 
         //! The unit suffix matching formatDepth().
@@ -356,6 +407,56 @@ module DepthCore {
                 minimum = previous;
             }
             return minimum;
+        }
+
+        //! Decide whether the pressure reading is pinned at the sensor's
+        //! ceiling rather than following the water.
+        //!
+        //! A watch barometer is built for weather and altitude. The parts used
+        //! are rated to around 1100 hPa, which is only about 0.9 m of water
+        //! above a sea-level surface, and Garmin's firmware is reported to
+        //! clamp the value it hands out well before the sensor itself gives up.
+        //! Past whichever comes first the reading stops rising however much
+        //! deeper the diver goes — and nothing about the number says so. It is
+        //! the one failure this app can neither measure around nor survive
+        //! quietly, because it reads *shallow*, which is the direction that
+        //! misleads rather than alarms.
+        //!
+        //! What gives it away is the absence of noise. A live barometer jitters
+        //! by several pascal from one sample to the next; a pinned one repeats
+        //! itself. So a run of samples that agree to within a fraction of a
+        //! pascal, taken deep enough that the watch is certainly in water, is a
+        //! sensor that has stopped measuring rather than water that has stopped
+        //! moving.
+        //!
+        //! Note what this cannot do: it detects the ceiling, it does not lift
+        //! it. Once the flag is set the depth is a lower bound and that is all
+        //! it will ever be.
+        private function updateSaturation(previous as Float?, pressure as Float,
+                                          value as Float) as Void {
+            if (previous == null || value < saturation_depth) {
+                _flat_count = 0;
+                saturated = false;
+                return;
+            }
+
+            var change = pressure - previous;
+            if (change < 0.0) {
+                change = -change;
+            }
+            if (change >= flat_pressure) {
+                _flat_count = 0;
+                saturated = false;
+                return;
+            }
+
+            if (_flat_count < flat_samples) {
+                _flat_count += 1;
+            }
+            if (_flat_count >= flat_samples) {
+                saturated = true;
+                saturation_seen = true;
+            }
         }
 
         //! Track which way the depth is going, for the trend indicator.

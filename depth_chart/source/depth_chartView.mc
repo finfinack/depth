@@ -116,7 +116,8 @@ class depth_chartView extends WatchUi.DataField {
         var bottom = _layout.bottom();
 
         var depth = _model.depth;
-        var text = _model.formatDepth(depth);
+        var limited = _model.saturated;
+        var text = _model.formatBounded(depth, limited);
         if (depth != null) {
             text += " " + _model.unitLabel();
         }
@@ -138,7 +139,8 @@ class depth_chartView extends WatchUi.DataField {
             dc.drawText(x0, top, Graphics.FONT_XTINY, _label, Graphics.TEXT_JUSTIFY_LEFT);
         }
 
-        dc.setColor(DepthCore.depthColor(depth, _model.color_profile), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(DepthCore.readingColor(depth, _model.color_profile, limited),
+            Graphics.COLOR_TRANSPARENT);
         dc.drawText(showLabel ? x1 : (x0 + x1) / 2, top, font, text,
             showLabel ? Graphics.TEXT_JUSTIFY_RIGHT : Graphics.TEXT_JUSTIFY_CENTER);
 
@@ -303,7 +305,8 @@ class depth_chartView extends WatchUi.DataField {
             return;
         }
 
-        var text = _maxLabel + " " + _model.formatDepth(maximum) + " " + _model.unitLabel();
+        var text = _maxLabel + " " + _model.formatBounded(maximum, _model.saturation_seen)
+            + " " + _model.unitLabel();
         var textLeft = _layout.left(textTop, y);
         if (dc.getTextWidthInPixels(text, Graphics.FONT_XTINY) > _layout.right(textTop, y) - textLeft) {
             return;

@@ -76,6 +76,27 @@ module DepthCore {
     }
 
     (:test)
+    function testReadingColorWarnsWhenBounded(logger as Logger) as Boolean {
+        // A pinned sensor reads shallow, so the reading turns red whatever band
+        // it claims to be in — the point is that the band is no longer true.
+        // 6.4 m is yellow on snorkel and blue on the other two, so red is never
+        // what would have been drawn anyway.
+        Test.assertEqual(readingColor(6.4, PROFILE_SNORKEL, false), Graphics.COLOR_YELLOW);
+        Test.assertEqual(readingColor(6.4, PROFILE_SNORKEL, true), Graphics.COLOR_RED);
+        Test.assertEqual(readingColor(6.4, PROFILE_FREEDIVE, false), Graphics.COLOR_BLUE);
+        Test.assertEqual(readingColor(6.4, PROFILE_FREEDIVE, true), Graphics.COLOR_RED);
+        return true;
+    }
+
+    (:test)
+    function testReadingColorLeavesNoReadingAlone(logger as Logger) as Boolean {
+        // "n/a" is not a bounded reading, it is no reading, and colouring it
+        // red would claim a warning the app cannot support.
+        Test.assertEqual(readingColor(null, PROFILE_SNORKEL, true), Graphics.COLOR_LT_GRAY);
+        return true;
+    }
+
+    (:test)
     function testUnknownProfileFallsBackToSnorkel(logger as Logger) as Boolean {
         // A stored setting from a future version, or a hand-edited one. It has
         // to land on a scale rather than on no scale at all.

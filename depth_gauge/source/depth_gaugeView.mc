@@ -431,7 +431,8 @@ class depth_gaugeView extends WatchUi.DataField {
                                  boxWidth as Number, boxHeight as Number,
                                  foreground as Graphics.ColorType) as Void {
         var depth = _model.depth;
-        var text = _model.formatDepth(depth);
+        var limited = _model.saturated;
+        var text = _model.formatBounded(depth, limited);
         if (depth != null) {
             text += " " + _model.unitLabel();
         }
@@ -450,7 +451,8 @@ class depth_gaugeView extends WatchUi.DataField {
         var maximum = _model.max_depth;
         var maxText = (maximum == null)
             ? ""
-            : _maxLabel + " " + _model.formatDepth(maximum) + " " + _model.unitLabel();
+            : _maxLabel + " " + _model.formatBounded(maximum, _model.saturation_seen)
+                + " " + _model.unitLabel();
         var showMax = (maxText.length() > 0) && (spare >= smallHeight)
             && (dc.getTextWidthInPixels(maxText, Graphics.FONT_XTINY) <= boxWidth);
         if (showMax) {
@@ -469,7 +471,8 @@ class depth_gaugeView extends WatchUi.DataField {
             y += smallHeight;
         }
 
-        dc.setColor(DepthCore.depthColor(depth, _model.color_profile), Graphics.COLOR_TRANSPARENT);
+        dc.setColor(DepthCore.readingColor(depth, _model.color_profile, limited),
+            Graphics.COLOR_TRANSPARENT);
         dc.drawText(centerX, y, font, text, Graphics.TEXT_JUSTIFY_CENTER);
         y += lineHeight;
 

@@ -324,6 +324,116 @@ module DepthCore {
     }
 
     //
+    // Sensor saturation. A watch barometer stops rising somewhere past a metre
+    // or so of water, and the reading then understates the depth without
+    // anything else going wrong — the one failure mode that misleads instead of
+    // alarming, so the detection is worth pinning exactly.
+    //
+
+    //! Hold the pressure at a fixed depth for `count` samples, one second
+    //! apart, starting at `at` — what a pinned sensor looks like. Returns the
+    //! time after the last one.
+    function holdAt(model as DepthModel, meters as Float, at as Number,
+                    count as Number) as Number {
+        var now = at;
+        for (var i = 0; i < count; i += 1) {
+            diveTo(model, meters, now);
+            now += 1000;
+        }
+        return now;
+    }
+
+    (:test)
+    function testFlatPressureAtDepthReadsAsSaturated(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        Test.assertMessage(!model.saturated, "saturated at the surface");
+
+        // Eight identical samples at 6.4 m — roughly where the fenix firmware
+        // is reported to stop.
+        holdAt(model, 6.4, 1000, 9);
+        Test.assertMessage(model.saturated, "eight flat samples at depth");
+        Test.assertMessage(model.saturation_seen, "the session has seen it");
+        return true;
+    }
+
+    (:test)
+    function testShortFlatRunIsNotSaturation(logger as Logger) as Boolean {
+        // Holding still for a moment is not a pinned sensor. The run has to be
+        // long enough that a live barometer would have jittered.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        holdAt(model, 6.4, 1000, 4);
+        Test.assertMessage(!model.saturated, "four flat samples");
+        return true;
+    }
+
+    (:test)
+    function testFlatPressureAtTheSurfaceIsNotSaturation(logger as Logger) as Boolean {
+        // A watch sitting still on a table reads flat forever, and says nothing
+        // about the sensor's ceiling.
+        var model = saltWaterModel();
+        holdAt(model, 0.0, 0, 30);
+        Test.assertMessage(!model.saturated, "flat at the surface");
+        Test.assertMessage(!model.saturation_seen, "and never seen");
+        return true;
+    }
+
+    (:test)
+    function testMovingPressureClearsSaturation(logger as Logger) as Boolean {
+        // Coming back up under the ceiling, the sensor starts tracking again
+        // and the live reading has to be trusted again straight away.
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        var now = holdAt(model, 6.4, 1000, 9);
+        Test.assertMessage(model.saturated, "pinned");
+
+        diveTo(model, 3.0, now);
+        Test.assertMessage(!model.saturated, "after the pressure moved again");
+        // ...but the maximum was reached while pinned, so it stays bounded.
+        Test.assertMessage(model.saturation_seen, "the session still remembers");
+        return true;
+    }
+
+    (:test)
+    function testNoReadingClearsSaturation(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        var now = holdAt(model, 6.4, 1000, 9);
+        Test.assertMessage(model.saturated, "pinned");
+
+        var info = new Activity.Info();
+        info.rawAmbientPressure = null;
+        info.ambientPressure = null;
+        model.updateAt(info, now);
+        Test.assertMessage(!model.saturated, "a reading that is not there is not pinned");
+        return true;
+    }
+
+    (:test)
+    function testRezeroForgetsSaturation(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        diveTo(model, 0.0, 0);
+        holdAt(model, 6.4, 1000, 9);
+
+        model.rezero();
+        Test.assertMessage(!model.saturated, "saturated after a re-zero");
+        Test.assertMessage(!model.saturation_seen, "seen after a re-zero");
+        return true;
+    }
+
+    (:test)
+    function testFormatBoundedMarksALowerBound(logger as Logger) as Boolean {
+        // ASCII ">=", not "≥": the built-in fonts have patchy glyph coverage.
+        var model = saltWaterModel();
+        Test.assertEqual(model.formatBounded(6.4, true), ">=6.40");
+        Test.assertEqual(model.formatBounded(6.4, false), "6.40");
+        // There is nothing to bound when there is no reading.
+        Test.assertEqual(model.formatBounded(null, true), "n/a");
+        return true;
+    }
+
+    //
     // The baseline window. It is trailing rather than a ratcheting minimum, so
     // a low sample has to age out of it, and frozen while submerged, so a dive
     // cannot drag it down.

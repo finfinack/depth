@@ -83,7 +83,10 @@ class depthView extends WatchUi.SimpleDataField {
         _maxDepthField.setData(DepthCore.depthCentimeters(_model.max_depth));
         _pressureField.setData(DepthCore.pressurePascals(_model.pressure));
 
-        return _model.formatDepth(_model.depth);
+        // ">=" in front once the sensor looks pinned: past its ceiling the
+        // reading stops rising however deep the diver goes, and this field has
+        // no colour of its own to say so.
+        return _model.formatBounded(_model.depth, _model.saturated);
     }
 
 }
