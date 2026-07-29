@@ -172,8 +172,10 @@ module DepthCore {
         //!
         //! Both round *inwards*, towards the middle of the lens. Truncating
         //! instead would move the left edge outwards by up to a pixel and hand
-        //! back one that is fractionally off the lens — which contains(), doing
-        //! the same arithmetic without the rounding, then disagrees with.
+        //! back one that is fractionally off the lens, which is exactly the
+        //! off-by-one this class exists to avoid. Rounding inwards is also what
+        //! makes the row and column views agree at every point — see
+        //! testColumnExtentAgreesWithTheRowSpan.
         function rowLeft(row as Number) as Number {
             if (_radius <= 0.0) {
                 return margin;
@@ -244,20 +246,6 @@ module DepthCore {
                 return _height;
             }
             return (value < 0) ? 0 : value;
-        }
-
-        //! Whether a single point is on the lens.
-        //!
-        //! The same question rowLeft()/rowRight() answer for a whole row, but
-        //! without the square root: the chart asks it once per pixel column of
-        //! its trace, and a comparison of two squares is the cheaper way round.
-        function contains(x as Number, y as Number) as Boolean {
-            if (_radius <= 0.0) {
-                return (x >= margin) && (x <= _width - margin);
-            }
-            var dx = ((_originX + x) - _centerX).toFloat();
-            var dy = ((_originY + y) - _centerY).toFloat();
-            return (dx * dx + dy * dy) <= (_radius * _radius);
         }
 
         //! The largest text font that renders `text` inside the given box.

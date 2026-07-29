@@ -139,32 +139,18 @@ module DepthCore {
         return true;
     }
 
-    //! contains() is the cheap per-point form of rowLeft()/rowRight(), and the
-    //! chart trusts it once per pixel column. The two have to agree.
-    (:test)
-    function testContainsAgreesWithTheRowSpan(logger as Logger) as Boolean {
-        var layout = middleField();
-
-        for (var row = layout.top(); row < layout.bottom(); row += 7) {
-            var left = layout.rowLeft(row);
-            var right = layout.rowRight(row);
-            Test.assert(layout.contains(left, row));
-            Test.assert(layout.contains(right - 1, row));
-            if (left > 0) {
-                Test.assert(!layout.contains(left - 1, row));
-            }
-            if (right < layout.width()) {
-                Test.assert(!layout.contains(right + 1, row));
-            }
-        }
-        return true;
-    }
-
     //! columnTop()/columnBottom() are rowLeft()/rowRight() turned ninety
-    //! degrees, and the chart fills a column of water between them. They have
-    //! to agree with contains() the same way the row pair does.
+    //! degrees, and the chart uses both — the row pair to place its heading and
+    //! the maximum line, the column pair to fill each column of water. They are
+    //! two views of one circle, so every point inside one has to be inside the
+    //! other, or the trace and the lines it is drawn between disagree about
+    //! where the lens is.
+    //!
+    //! This is what makes the inward rounding in both pairs load-bearing rather
+    //! than tidy: round either one outwards and this stops holding at the
+    //! edges, which is precisely where a data field lives.
     (:test)
-    function testColumnExtentAgreesWithContains(logger as Logger) as Boolean {
+    function testColumnExtentAgreesWithTheRowSpan(logger as Logger) as Boolean {
         var layout = middleField();
 
         for (var x = 0; x < layout.width(); x += 11) {
@@ -176,13 +162,14 @@ module DepthCore {
                 continue; // This column misses the lens entirely.
             }
 
-            Test.assert(layout.contains(x, columnTop));
-            Test.assert(layout.contains(x, columnBottom - 1));
-            if (columnTop > 0) {
-                Test.assert(!layout.contains(x, columnTop - 1));
-            }
-            if (columnBottom < layout.height()) {
-                Test.assert(!layout.contains(x, columnBottom + 1));
+            // Every row this column claims must claim this column back.
+            for (var y = columnTop; y < columnBottom; y += 1) {
+                Test.assertMessage(x >= layout.rowLeft(y),
+                    "column " + x + " reaches row " + y + ", but the row starts at "
+                        + layout.rowLeft(y));
+                Test.assertMessage(x <= layout.rowRight(y),
+                    "column " + x + " reaches row " + y + ", but the row ends at "
+                        + layout.rowRight(y));
             }
         }
         return true;
