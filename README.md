@@ -2,7 +2,9 @@
 
 Barometric depth for Garmin watches (Fenix, Epix, Tactix) — an app, four data fields, and the model they share.
 
-Find them on the [Garmin ConnectIQ store](https://apps.garmin.com/developer/1e45545b-eec0-40b0-886d-61739dd6f510/apps) for free to install them.
+Unfortunately, Garmin did not approve many of the newer additions to be listed in their ConnectIQ store because they have their own range of devices and apps targeting diving(even with the disclaimers I added that these are just for testing and not a dive computer).
+
+The ones which are approved, you can find on the [Garmin ConnectIQ store](https://apps.garmin.com/developer/1e45545b-eec0-40b0-886d-61739dd6f510/apps). The rest you will have to compile and side load yourself unfortunately.
 
 ## TL;DR
 
