@@ -88,6 +88,12 @@ class depthRing {
     //! the four zone colours would collapse to one and the band would carry no
     //! scale even if it fitted. Both reasons point the same way: those devices
     //! keep the plain page they have today.
+    //!
+    //! Stricter than DepthFieldLayout, which also accepts SCREEN_SHAPE_SEMI_ROUND:
+    //! a field draws inside a rectangle that the flattened edge can be kept out
+    //! of, but a ring on the screen's own radius would run straight off it. No
+    //! device in the manifest is semi-round today, so this costs nothing now and
+    //! fails safe if one is added.
     function draw(dc as Dc, width as Number, height as Number) as Void {
         if (!_round) {
             return;

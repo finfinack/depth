@@ -70,6 +70,18 @@ class depthView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
 
+        // Before the readings, so a marker reaching inwards cannot land on top
+        // of a number.
+        //
+        // Not on the maximum page: there the ring's orange tick would only
+        // repeat what the page already says in full, and the arrowhead would
+        // sit at a depth that page is not showing. The summary and the depth
+        // page both show the current reading, so on both the arrowhead points
+        // at a number that is on screen.
+        if (_page != PAGE_MAX) {
+            _ring.draw(dc, width, height);
+        }
+
         // The summary carries both accent colours, so its page indicator stays
         // neutral rather than claiming one of them.
         var accent = Graphics.COLOR_WHITE;
@@ -114,12 +126,6 @@ class depthView extends WatchUi.View {
     }
 
     //! A single reading filling the page, with an accent rule under the label.
-    //!
-    //! The current-depth page carries the ring as well, which is the one page
-    //! with nothing else competing for the edges of the screen. The maximum page
-    //! does not: the ring's own orange tick already says where the maximum is,
-    //! so drawing it around a page that is only the maximum would say it twice
-    //! and leave the arrowhead pointing at a depth the page is not showing.
     private function drawSingle(dc as Dc, width as Number, height as Number, accent as Graphics.ColorType) as Void {
         var isMax = (_page == PAGE_MAX);
         var value = _model.depth;
@@ -127,10 +133,6 @@ class depthView extends WatchUi.View {
         if (isMax) {
             value = _model.max_depth;
             limited = _model.saturation_seen;
-        } else {
-            // Before the text, so a marker that reaches inwards cannot land on
-            // top of the number.
-            _ring.draw(dc, width, height);
         }
 
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
