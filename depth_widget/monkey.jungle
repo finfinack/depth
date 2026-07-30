@@ -1,0 +1,25 @@
+project.manifest = manifest.xml
+project.typecheck = 3
+
+# The depth model and colour scale live in the DepthCore barrel so the
+# widget and both data fields share one copy.
+base.barrelPath = ../DepthCore/monkey.jungle
+
+# The widget and the app are the same program built twice: one set of sources
+# and one set of resources, two manifests declaring two Connect IQ app types.
+# Nothing is copied here, so a change to a page, a setting or a translation
+# lands in both without anyone having to remember the second one — the barrel's
+# reasoning applied one level up. depth_app owns the files because it is where
+# they already are; neither project is the "real" one.
+#
+# There is no default for these that could pick the app's directory up, so every
+# path the default jungle sets has to be repeated, including one line per
+# language. A language added to depth_app/ needs its line here too, or it builds
+# clean and simply ships untranslated — see ../README.md#languages.
+base.sourcePath = ../depth_app/source
+base.resourcePath = ../depth_app/resources
+base.personality = ../depth_app/resources
+base.lang.deu = ../depth_app/resources-deu
+base.lang.fre = ../depth_app/resources-fre
+base.lang.ita = ../depth_app/resources-ita
+base.lang.spa = ../depth_app/resources-spa

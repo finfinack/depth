@@ -1,6 +1,6 @@
 # Depth
 
-Barometric depth for Garmin watches (Fenix, Epix, Tactix) — an app, four data fields, and the model they share.
+Barometric depth for Garmin watches (Fenix, Epix, Tactix) — a widget, the same thing again as an app, four data fields, and the model they share.
 
 Unfortunately, Garmin did not approve many of the newer additions to be listed in their ConnectIQ store because they have their own range of devices and apps targeting diving(even with the disclaimers I added that these are just for testing and not a dive computer).
 
@@ -8,7 +8,7 @@ The ones which are approved, you can find on the [Garmin ConnectIQ store](https:
 
 ## TL;DR
 
-**What it is.** Your watch's barometer, read as a depth gauge for snorkelling and casual swimming. One app with a glance, plus four data fields you can put on an activity screen.
+**What it is.** Your watch's barometer, read as a depth gauge for snorkelling and casual swimming. One read-out with a glance — shipped [as a widget and as an app](#widget-and-app), the same program either way, so install one of the two — plus four data fields you can put on an activity screen.
 
 **How it works.** Connect IQ has no depth API, so depth is inferred from air pressure: the lowest pressure of the last few minutes is taken as the surface, and every ~100 hPa above that is another metre of water.
 
@@ -25,23 +25,35 @@ Previously three separate repositories. They are one now because all three carri
 | Project | Type | What it is |
 | --- | --- | --- |
 | [DepthCore](DepthCore/) | Monkey Barrel | The depth model, colour scale, FIT helpers and the data field layout |
-| [depth_app](depth_app/) | App | Current depth and maximum in a gauge ring, plus this session's and the last session's dives, and a glance |
+| [depth_widget](depth_widget/) | Widget | Current depth and maximum in a gauge ring, plus this session's and the last session's dives, and a glance |
+| [depth_app](depth_app/) | App | The same program as `depth_widget`, built as a `watch-app`. See [below](#widget-and-app) |
 | [depth_field](depth_field/) | Data field | Current depth during an activity; records the depth graph into the FIT file |
 | [depth_chart](depth_chart/) | Data field | Depth as a chart over time, drawn by the field itself. Shows only — records nothing |
 | [depth_gauge](depth_gauge/) | Data field | Depth as a zoned arc in the colour range, drawn by the field itself. Shows only — records nothing |
 | [max_depth_field](max_depth_field/) | Data field | Deepest reading of the activity; records a session maximum |
 
-The five apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
+The six apps stay separate Connect IQ projects with their own manifests, app IDs and store listings — the monorepo only shares the source.
 
 | App | Shown as |
 | --- | --- |
+| `depth_widget` | **Depth** |
 | `depth_app` | **Depth** |
 | `depth_field` | **Depth** |
 | `max_depth_field` | **Max Depth** |
 | `depth_chart` | **Depth Chart** |
 | `depth_gauge` | **Depth Gauge** |
 
-The directory names are Connect IQ project names and stay in `snake_case`; the app names are what the user reads, in the store, in the launcher and in the data field picker, and are written out properly. The app and the Depth field share a name on purpose — they are the same thing in two places, and an app never appears in the same list as a data field.
+The directory names are Connect IQ project names and stay in `snake_case`; the app names are what the user reads, in the store, in the launcher and in the data field picker, and are written out properly. Three of them share the name **Depth** on purpose — they are the same thing in three places, and none of the three lists them together: a widget, an app and a data field are picked from different places on the watch.
+
+> **"The app" below means the widget as well.** They are one program built twice, so everything said about one is true of the other unless it says otherwise. Where the difference matters — settings, stored history, which of the two to install — it is [spelled out](#widget-and-app).
+
+## Widget and app
+
+Depth started as a widget. Garmin has been steering away from widgets since System 5, and a watch-app with a glance is where the platform is going - so we migrated there. However, there were complications in publishing it in the store, so we are keeping the widget around.
+
+`depth_widget/` holds a manifest and nothing else: its `monkey.jungle` points `sourcePath` and `resourcePath` at `../depth_app/`, so both build the same sources, the same settings and the same translations. Two manifests differing in `type` and app ID, one program. See [depth_widget/README.md](depth_widget/README.md) for the mechanics and the one maintenance trap in it.
+
+**Install one of the two, not both.** They are separate Connect IQ apps with separate IDs, so they keep separate settings and separate stored sessions, and the [depth buzz](depth_app/README.md#the-depth-buzz) would fire once from each.
 
 ## This is **not** a dive computer
 
@@ -77,9 +89,9 @@ The [Depth data field](depth_field/) records the raw pressure into the activity 
 
 ## Settings
 
-These live in Garmin Connect under the app's settings. The first three exist in all five apps:
+These live in Garmin Connect under the app's settings. The first three exist in all six apps:
 
-> **Each app keeps its own copy.** They are [separate Connect IQ projects with separate app IDs](#whats-in-here), and Connect IQ gives every app ID its own settings store — there is no shared one. So setting the colour range on the app does not set it on Depth Chart or Depth Gauge, and if you run several together they need setting in each. That is a platform limit, not a choice.
+> **Each app keeps its own copy.** They are [separate Connect IQ projects with separate app IDs](#whats-in-here), and Connect IQ gives every app ID its own settings store — there is no shared one. So setting the colour range on the app does not set it on Depth Chart or Depth Gauge, and if you run several together they need setting in each. This catches the [widget and the app](#widget-and-app) too, which share every line of their settings *resources* and still keep two separate sets of values. That is a platform limit, not a choice.
 
 | Setting | What it does |
 | --- | --- |
@@ -160,16 +172,16 @@ That geometry is `DepthFieldLayout` in the barrel, shared by both and [documente
 
 ## Icons
 
-Two launcher icons between the five apps, both the same disc of water split by the wave of the surface:
+Two launcher icons between the six apps, both the same disc of water split by the wave of the surface:
 
 | Icon | Apps | Arrow |
 | --- | --- | --- |
-| `resources/depth_icon.svg` | Depth, Depth Chart, Depth Gauge, the app | Runs on down into the deep |
+| `resources/depth_icon.svg` | Depth, Depth Chart, Depth Gauge, the app and the widget | Runs on down into the deep |
 | `resources/depth_icon_max.svg` | Max Depth | Stops on a floor line |
 
 Everything but the arrow is shared, so the family reads as one product at 40 px while Max Depth is still tellable from Depth — which matters, because those two sit next to each other in the data field picker.
 
-`resources/` holds the masters and is **not** in the repository (`.gitignore` excludes it, along with the store artwork). Each app ships its own byte-for-byte copy at `resources/drawables/launcher_icon.svg`, and those are what actually build. Copy a master over them rather than editing in place; they are expected to be identical to it.
+`resources/` holds the masters and is **not** in the repository (`.gitignore` excludes it, along with the store artwork). Each app ships its own byte-for-byte copy at `resources/drawables/launcher_icon.svg`, and those are what actually build — five copies rather than six, since the [widget builds the app's](#widget-and-app). Copy a master over them rather than editing in place; they are expected to be identical to it.
 
 ## Building
 
@@ -182,7 +194,9 @@ cd depth_field
 monkeyc -f monkey.jungle -o depth_field.prg -y /path/to/developer_key -d fenix7
 ```
 
-Building any of the four data fields prints a `(:glance) annotation will be ignored` warning per annotated declaration in the barrel, and a launcher icon warning about the 128 px source being scaled to the device's size. All of them are expected and harmless — see [DepthCore/README.md](DepthCore/README.md#two-things-worth-knowing) for the first and [`resources/depth_icon.svg`](resources/) for the second.
+Building any of the four data fields prints a `(:glance) annotation will be ignored` warning per annotated declaration in the barrel, and a launcher icon warning about the 128 px source being scaled to the device's size. All of them are expected and harmless — see [DepthCore/README.md](DepthCore/README.md#two-things-worth-knowing) for the first and [`resources/depth_icon.svg`](resources/) for the second. The app and the widget both have a glance, so they print the icon warning only.
+
+`depth_widget` is the one project that reaches outside its own directory for more than the barrel: its sources and resources are `depth_app`'s. It still builds from its own directory like the rest, but it needs `depth_app/` beside it to do so.
 
 The shared model and the field layout have unit tests, run against the barrel on its own — see [DepthCore/README.md](DepthCore/README.md#tests).
 
@@ -192,11 +206,13 @@ See the [Connect IQ basics](https://developer.garmin.com/connect-iq/connect-iq-b
 
 ## Languages
 
-All five apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the app and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
+All six apps ship in **English, German, French, Italian and Spanish**. Every string the user sees comes from resources — the settings, the app and glance labels, the re-zero confirmation and the data field labels — so adding another is a resource-only change:
 
 1. Copy `resources/strings/strings.xml` to `resources-<lang>/strings/strings.xml` in the project and translate the values, keeping the `id`s. Use Garmin's code for `<lang>`: `deu`, `fre`, `ita`, `spa`, `por`, `dut`, `nob`, and so on — the full list is in `bin/projectInfo.xml` in the SDK.
 2. Add the language to `<iq:languages>` in that project's `manifest.xml`. Without this the build prints `String resources will be ignored` and the folder is skipped entirely.
-3. Repeat per project — the five are separate Connect IQ apps and do not share resources.
+3. Repeat per project — the six are separate Connect IQ apps and do not share resources.
+
+`depth_widget` is the exception to step 3, and the one place this can go wrong quietly. It has no resources of its own — it builds `depth_app`'s — so it needs step 2 but not step 1. It does need one line in [its `monkey.jungle`](depth_widget/monkey.jungle) naming the new `resources-<lang>` directory, because the SDK's default paths cannot reach into another project. **Miss that line and the build says nothing**: `<iq:languages>` declares the language, the manifest is satisfied, and the widget ships that language untranslated.
 
 Four things to know before translating:
 
@@ -210,7 +226,8 @@ The shipped translations have been compiled but not seen on a watch: the on-scre
 
 ### Running in the emulator
 
-- Open the project directory you want to run — the five are separate Connect IQ projects, so VS Code needs the one, not the repository root.
+- Open the project directory you want to run — the six are separate Connect IQ projects, so VS Code needs the one, not the repository root.
+- `depth_widget` has no source files of its own for the next step to select. Run `depth_app` instead: it is the same program off the same files, and the manifest is all that differs. What that does not exercise is the app type itself — for that, build `depth_widget` on the command line and side load it.
 - Make sure one of its source files (in `source`, with the `.mc` extension) is open and selected in the editor.
 - Select `Run > Run Without Debugging` (`Command + F5` on Mac, `Ctrl + F5` elsewhere).
 - Pick a product from the list you are prompted with.

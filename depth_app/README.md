@@ -2,7 +2,7 @@
 
 An app showing the current water depth, inferred from the barometric pressure sensor.
 
-A `watch-app` with a glance, not a `widget` — see [App, not widget](../README.md#app-not-widget) for why.
+A `watch-app` with a glance. [`depth_widget`](../depth_widget/) is this same program built as a `widget` and is what currently ships — see [Widget and app](../README.md#widget-and-app). Everything below is true of both; install one of the two.
 
 > ⚠️ **This is not a dive computer.** Do not rely on it for safety. See the [repository README](../README.md#this-is-not-a-dive-computer) for what that means, and [how it works](../README.md#how-it-works-and-drawbacks) for why the number can be wrong.
 
