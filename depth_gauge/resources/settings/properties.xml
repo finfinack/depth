@@ -8,4 +8,10 @@
     <!-- 0 = snorkel, 1 = freedive, 2 = deep. See DepthCore.PROFILE_*. The gauge
          splits its bar at these boundaries, so it declares it too. -->
     <property id="colorProfile" type="number">0</property>
+    <!-- Depth counting as a dive, in whole centimeters. Held as an integer so
+         the list in settings.xml needs no decimal point; the model divides by
+         100 and clamps. See DepthModel.default_dive_threshold. Declared here
+         because the field shows the dive count and bottom time when it has the
+         room, and a total the user cannot set the rule for is a puzzle. -->
+    <property id="diveThreshold" type="number">100</property>
 </properties>

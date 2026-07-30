@@ -16,6 +16,13 @@
          cannot be read as a second reading. The depth is drawn after it. -->
     <string id="LabelMax">MAX</string>
 
+    <!-- The session totals, under the maximum and in the same small font. Each
+         is drawn as one row with its value after it, and the pair is dropped
+         together when either is too wide for the field - so these are the two
+         to keep shortest of all. -->
+    <string id="LabelDives">DIVES</string>
+    <string id="LabelBottomTime">BOTTOM</string>
+
     <string id="WaterTypeTitle">Water type</string>
     <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>
     <string id="WaterFresh">Fresh</string>
@@ -32,6 +39,24 @@
     <string id="ProfileSnorkel">Snorkel (2/5/10 m, 7/16/33 ft)</string>
     <string id="ProfileFreedive">Freedive (10/20/30 m, 33/66/98 ft)</string>
     <string id="ProfileDeep">Deep (20/40/60 m, 66/131/197 ft)</string>
+
+    <!--
+        Both units, and for the same reason as the colour ranges: the phone
+        renders this list and cannot know what Units is set to.
+
+        The five entries carry no words, and are repeated verbatim in every
+        language all the same. A settings string missing from a language does
+        not fall back to this file: the resource compiler warns "String id ...
+        undefined for language" and the phone has nothing to label the entry
+        with.
+    -->
+    <string id="DiveThresholdTitle">Dive threshold</string>
+    <string id="DiveThresholdPrompt">How deep counts as a dive, for the dive count and bottom time this field shows. A dive ends once you come back up past half this depth, so bobbing at the surface is not counted as diving.</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 
     <string id="RezeroTitle">Re-zero depth</string>
     <string id="RezeroPrompt">Discards the surface pressure baseline and the maximum, and starts measuring again. Switches itself back off. Use it if the activity started while the watch was already in the water.</string>

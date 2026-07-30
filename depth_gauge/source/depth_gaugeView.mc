@@ -65,6 +65,34 @@ class depth_gaugeView extends WatchUi.DataField {
     const arc_min_radius = 40;
     const arc_max_trim_degrees = 15.0;
 
+    // How far above and below the lens centre the reading's box reaches on a
+    // full-screen gauge, as a percentage of the inside radius.
+    //
+    // It is a trade between the two dimensions: a taller box is a narrower one,
+    // because both ends are bounded by the same circle. Half the radius, which
+    // this used to be, leaves the box 1.73 times the radius across and the disc
+    // three quarters empty — the reading was capped at the largest *text* font
+    // with rows to spare. Three quarters buys about half again as many rows,
+    // enough for a numeric font and the session totals under it, and still
+    // leaves it 1.32 times the radius across, which is wider than the widest
+    // line ever drawn into it.
+    const arc_box_offset_percent = 75;
+
+    // How tall the box has to be before the session totals are offered at all,
+    // in rows of the small font: the label, a reading worth two of them, the
+    // trend, the maximum, and the two totals themselves. Below that they would
+    // reserve rows they go on to drop and shrink the reading to pay for it.
+    const stats_min_lines = 7;
+
+    // Numeric fonts, largest first. They hold digits, "." and ":" and nothing
+    // else, which is why the unit, any ">=" and the stale mark are drawn beside
+    // them rather than in them.
+    const number_fonts = [
+        Graphics.FONT_NUMBER_HOT,
+        Graphics.FONT_NUMBER_MEDIUM,
+        Graphics.FONT_NUMBER_MILD,
+    ] as Array<Graphics.FontType>;
+
     // The sweep a field that holds the whole lens gets: 270 degrees with the
     // gap at the bottom, the way a speedometer runs and the way the watch's own
     // zone gauges do. 225 degrees is lower-left and -45 lower-right, and
@@ -91,6 +119,8 @@ class depth_gaugeView extends WatchUi.DataField {
     private var _layout as DepthFieldLayout;
     private var _label as String;
     private var _maxLabel as String;
+    private var _divesLabel as String;
+    private var _bottomLabel as String;
 
     function initialize() {
         DataField.initialize();
@@ -99,6 +129,8 @@ class depth_gaugeView extends WatchUi.DataField {
         _layout = new DepthFieldLayout();
         _label = WatchUi.loadResource(Rez.Strings.FieldLabel) as String;
         _maxLabel = WatchUi.loadResource(Rez.Strings.LabelMax) as String;
+        _divesLabel = WatchUi.loadResource(Rez.Strings.LabelDives) as String;
+        _bottomLabel = WatchUi.loadResource(Rez.Strings.LabelBottomTime) as String;
     }
 
     //! Called by the app when the user changes a setting.
@@ -181,12 +213,12 @@ class depth_gaugeView extends WatchUi.DataField {
             startDegrees = full_sweep_start;
             endDegrees = full_sweep_end;
 
-            // The reading sits at the centre of the lens, in the widest box
-            // that clears the band: half the inner radius above and below the
-            // middle, which leaves the chord at those rows about 1.7 times the
-            // radius across. Room enough for the reading, the maximum, the
-            // label and the trend without any of them crowding.
-            offset = inside / 2;
+            // The reading sits at the centre of the lens, in a box reaching
+            // arc_box_offset_percent of the inner radius above and below the
+            // middle — see there for why that fraction and not another. Room
+            // enough for the reading in a numeric font, the maximum, the label,
+            // the trend and the session totals without any of them crowding.
+            offset = inside * arc_box_offset_percent / 100;
             boxTop = centerY - offset;
             boxBottom = centerY + offset;
         } else {
@@ -473,8 +505,9 @@ class depth_gaugeView extends WatchUi.DataField {
         ] as Array<[Numeric, Numeric]>);
     }
 
-    //! The label, the reading, the session maximum and — where it was asked for
-    //! — the trend, stacked and centred in the given box.
+    //! The label, the reading, the session maximum, the trend where it was
+    //! asked for, and the session totals where they fit — stacked and centred
+    //! in the given box.
     //!
     //! The reading has first call on the space and the rest are dropped when
     //! what is left cannot hold them — a quarter-screen field cannot carry them
@@ -488,23 +521,53 @@ class depth_gaugeView extends WatchUi.DataField {
                                  withTrend as Boolean) as Void {
         var depth = _model.depth;
         var limited = _model.saturated;
-        var text = _model.formatBounded(depth, limited);
-        if (depth != null) {
-            text += " " + _model.unitLabel();
-        }
-        text += _model.staleMark(depth);
+
+        // The digits kept apart from everything that qualifies them, because a
+        // numeric font holds digits and nothing else: the ">=", the unit and the
+        // stale mark have to be drawn beside them in a text font. Joined again
+        // for the text-font path, which renders the lot in one call.
+        var number = _model.formatDepth(depth);
+        var prefix = (limited && depth != null) ? ">=" : "";
+        var suffix = (depth == null)
+            ? ""
+            : " " + _model.unitLabel() + _model.staleMark(depth);
+        var text = prefix + number + suffix;
 
         var smallHeight = dc.getFontHeight(Graphics.FONT_XTINY);
+
+        // Whether the totals are on the table at all. Tested before the reserve
+        // below rather than after, because a field too small for them must not
+        // reserve two rows it goes on to drop and shrink the reading to pay.
+        var withStats = boxHeight >= stats_min_lines * smallHeight;
 
         // Leave room for every extra line that could be drawn if anything at
         // all fits that way, and give the reading the whole box when nothing
         // does. The count has to match what the block below can actually draw:
         // reserve two and draw three and a tall font overruns the box.
-        var extraLines = withTrend ? 3 : 2;
-        var font = _layout.fontFitting(dc, text, boxWidth,
-            boxHeight - extraLines * smallHeight);
-        if (font == Graphics.FONT_XTINY) {
-            font = _layout.fontFitting(dc, text, boxWidth, boxHeight);
+        var extraLines = 2 + (withTrend ? 1 : 0) + (withStats ? 2 : 0);
+        var available = boxHeight - extraLines * smallHeight;
+
+        // A numeric font first, and a text one only when none fits. They run
+        // half again the height of the largest text font, which is what fills
+        // the disc a full-screen arc leaves empty — fontFitting()'s list stops
+        // at FONT_LARGE, and on a full screen that was the cap with rows still
+        // to spare. The app's summary page already pays the same two-draw price
+        // for them. Nothing to put in one when there is no reading: "n/a" has
+        // no digits in it.
+        var numberFont = (depth == null)
+            ? null
+            : numberFontFitting(dc, number,
+                boxWidth - dc.getTextWidthInPixels(prefix + suffix, Graphics.FONT_XTINY),
+                available);
+
+        var font = Graphics.FONT_XTINY;
+        if (numberFont != null) {
+            font = numberFont;
+        } else {
+            font = _layout.fontFitting(dc, text, boxWidth, available);
+            if (font == Graphics.FONT_XTINY) {
+                font = _layout.fontFitting(dc, text, boxWidth, boxHeight);
+            }
         }
         var lineHeight = dc.getFontHeight(font);
         var spare = boxHeight - lineHeight;
@@ -533,9 +596,25 @@ class depth_gaugeView extends WatchUi.DataField {
 
         var showLabel = (spare >= smallHeight)
             && (dc.getTextWidthInPixels(_label, Graphics.FONT_XTINY) <= boxWidth);
+        if (showLabel) {
+            spare -= smallHeight;
+        }
+
+        // How the outing is going, under the maximum and in the same small
+        // hand: this is a gauge, and the totals are context around the reading
+        // rather than part of it.
+        //
+        // Both rows or neither. A dive count with no time under it reads as a
+        // row that failed to draw rather than as a deliberate pair, and the two
+        // answer half a question each.
+        var divesText = _divesLabel + " " + _model.dive_count.format("%d");
+        var bottomText = _bottomLabel + " " + DepthCore.formatDuration(_model.bottom_time);
+        var showStats = withStats && (spare >= 2 * smallHeight)
+            && (dc.getTextWidthInPixels(divesText, Graphics.FONT_XTINY) <= boxWidth)
+            && (dc.getTextWidthInPixels(bottomText, Graphics.FONT_XTINY) <= boxWidth);
 
         var used = lineHeight + (showLabel ? smallHeight : 0) + (showMax ? smallHeight : 0)
-            + (showTrend ? smallHeight : 0);
+            + (showTrend ? smallHeight : 0) + (showStats ? 2 * smallHeight : 0);
         var y = centerY - used / 2;
 
         if (showLabel) {
@@ -544,9 +623,13 @@ class depth_gaugeView extends WatchUi.DataField {
             y += smallHeight;
         }
 
-        dc.setColor(DepthCore.readingColor(depth, _model.color_profile, limited),
-            Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, y, font, text, Graphics.TEXT_JUSTIFY_CENTER);
+        var color = DepthCore.readingColor(depth, _model.color_profile, limited);
+        if (numberFont != null) {
+            drawNumberRow(dc, centerX, y, prefix, number, suffix, numberFont, color);
+        } else {
+            dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(centerX, y, font, text, Graphics.TEXT_JUSTIFY_CENTER);
+        }
         y += lineHeight;
 
         if (showTrend) {
@@ -557,7 +640,68 @@ class depth_gaugeView extends WatchUi.DataField {
         if (showMax) {
             dc.setColor(Graphics.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
             dc.drawText(centerX, y, Graphics.FONT_XTINY, maxText, Graphics.TEXT_JUSTIFY_CENTER);
+            y += smallHeight;
         }
+
+        if (showStats) {
+            dc.setColor(foreground, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(centerX, y, Graphics.FONT_XTINY, divesText, Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(centerX, y + smallHeight, Graphics.FONT_XTINY, bottomText,
+                Graphics.TEXT_JUSTIFY_CENTER);
+        }
+    }
+
+    //! The largest numeric font that renders `digits` inside the given box, or
+    //! null when none of them does.
+    //!
+    //! Kept here rather than folded into DepthFieldLayout.fontFitting(): that
+    //! one is shared with Depth Chart, whose reading is short, wide and drawn in
+    //! a single call, and it takes the whole string including the unit. Pulling
+    //! the number out of its unit to buy a taller font is this field's own
+    //! trade, worth making because its arc leaves it a tall box.
+    private function numberFontFitting(dc as Dc, digits as String,
+                                       availableWidth as Number,
+                                       availableHeight as Number) as Graphics.FontType? {
+        for (var i = 0; i < number_fonts.size(); i += 1) {
+            if (dc.getFontHeight(number_fonts[i]) <= availableHeight
+                && dc.getTextWidthInPixels(digits, number_fonts[i]) <= availableWidth) {
+                return number_fonts[i];
+            }
+        }
+        return null;
+    }
+
+    //! The reading on one row centred at `centerX`, with `y` its top: the number
+    //! in a numeric font, and the ">=" and the unit that qualify it beside it in
+    //! the small text font.
+    //!
+    //! The small parts are set on the number's bottom edge rather than its top,
+    //! because the two fonts differ in height by more than the unit is tall and
+    //! aligning their tops would leave it floating above the digits.
+    //!
+    //! One colour for all three. The app mutes its unit to grey, which works
+    //! against the black it always draws on; a data field is handed white in day
+    //! mode, where grey on white is what the system's own low-contrast text
+    //! looks like just before it becomes unreadable.
+    private function drawNumberRow(dc as Dc, centerX as Number, y as Number,
+                                   prefix as String, number as String, suffix as String,
+                                   numberFont as Graphics.FontType,
+                                   color as Graphics.ColorType) as Void {
+        var smallHeight = dc.getFontHeight(Graphics.FONT_XTINY);
+        var prefixWidth = dc.getTextWidthInPixels(prefix, Graphics.FONT_XTINY);
+        var numberWidth = dc.getTextWidthInPixels(number, numberFont);
+        var suffixWidth = dc.getTextWidthInPixels(suffix, Graphics.FONT_XTINY);
+
+        var smallY = y + dc.getFontHeight(numberFont) - smallHeight;
+        var x = centerX - (prefixWidth + numberWidth + suffixWidth) / 2;
+
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+        if (prefixWidth > 0) {
+            dc.drawText(x, smallY, Graphics.FONT_XTINY, prefix, Graphics.TEXT_JUSTIFY_LEFT);
+        }
+        dc.drawText(x + prefixWidth, y, numberFont, number, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(x + prefixWidth + numberWidth, smallY, Graphics.FONT_XTINY, suffix,
+            Graphics.TEXT_JUSTIFY_LEFT);
     }
 
     //! A triangle centred on (x, y) pointing the way the depth is going: red

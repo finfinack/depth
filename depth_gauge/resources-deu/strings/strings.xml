@@ -12,6 +12,8 @@
 
     <string id="FieldLabel">Tiefe</string>
     <string id="LabelMax">MAX</string>
+    <string id="LabelDives">TAUCHGÄNGE</string>
+    <string id="LabelBottomTime">GRUNDZEIT</string>
 
     <string id="WaterTypeTitle">Wasserart</string>
     <string id="WaterTypePrompt">Salzwasser ist dichter, dieselbe Tiefe ergibt also mehr Druck. Salzwasser verwendet die Konvention 1 msw = 10000 Pa, mit der auch Tauchcomputer rechnen.</string>
@@ -29,6 +31,14 @@
     <string id="ProfileSnorkel">Schnorcheln (2/5/10 m, 7/16/33 ft)</string>
     <string id="ProfileFreedive">Apnoe (10/20/30 m, 33/66/98 ft)</string>
     <string id="ProfileDeep">Tief (20/40/60 m, 66/131/197 ft)</string>
+
+    <string id="DiveThresholdTitle">Tauchschwelle</string>
+    <string id="DiveThresholdPrompt">Ab welcher Tiefe ein Tauchgang zählt – für Anzahl und Grundzeit in dieser Anzeige. Ein Tauchgang endet, sobald du wieder über die Hälfte dieser Tiefe steigst, damit Dümpeln an der Oberfläche nicht als Tauchen zählt.</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 
     <string id="RezeroTitle">Tiefe zurücksetzen</string>
     <string id="RezeroPrompt">Verwirft den Referenzdruck der Oberfläche und das Maximum und misst von vorn. Schaltet sich selbst wieder aus. Nutze das, wenn die Aktivität begann, während die Uhr schon im Wasser war.</string>

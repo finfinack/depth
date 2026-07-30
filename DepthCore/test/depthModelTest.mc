@@ -200,6 +200,27 @@ module DepthCore {
         return true;
     }
 
+    //! formatDuration() picks one of three shapes by magnitude, and each
+    //! boundary between them is a place it can pick the wrong one.
+    (:test)
+    function testFormatDuration(logger as Logger) as Boolean {
+        Test.assertEqual(formatDuration(0), "0s");
+        Test.assertEqual(formatDuration(999), "0s");      // Under a second.
+        Test.assertEqual(formatDuration(42 * 1000), "42s");
+        Test.assertEqual(formatDuration(59 * 1000), "59s");
+
+        // A minute is where the seconds gain their zero padding.
+        Test.assertEqual(formatDuration(60 * 1000), "1m 00s");
+        Test.assertEqual(formatDuration(134 * 1000), "2m 14s");
+        Test.assertEqual(formatDuration(3599 * 1000), "59m 59s");
+
+        // An hour drops the seconds and pads the minutes instead.
+        Test.assertEqual(formatDuration(3600 * 1000), "1h 00m");
+        Test.assertEqual(formatDuration(3900 * 1000), "1h 05m");
+        Test.assertEqual(formatDuration(45296 * 1000), "12h 34m");
+        return true;
+    }
+
     //! Whether the one-shot re-zero trigger is still waiting to be acted on.
     function rezeroPending() as Boolean {
         var value = Application.Properties.getValue("rezero");

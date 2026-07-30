@@ -8,9 +8,25 @@ Laid out like the upper half of the watch's own heart rate zone gauge.
 
 ## What it draws
 
-The colour profile's four bands as a scale, with the field's label, the current reading and the session maximum in the middle of it.
+The colour profile's four bands as a scale, with the field's label, the current reading and the session maximum in the middle of it — and, where the field is big enough to hold them, this outing's dive count and bottom time under those.
 
 The zones come from the same numbers `depthColor()` colours by, so the gauge and the reading cannot disagree about what colour a depth is. The reading takes the colour of the zone it is in, exactly as the app's does.
+
+### The reading
+
+**The number is drawn in a numeric font**, with the unit, any `>=` and the stale `?` set beside it in the small text font. Those fonts hold digits, `.` and `:` and nothing else, so the split is what buying them costs — the same two-draw trade the [app's summary page](../depth_app/README.md#reading-it) already makes. It is worth it because they run about half again the height of the largest text font: on a full-screen arc the reading used to cap out at `FONT_LARGE` with rows still to spare, leaving three quarters of the disc empty.
+
+A reading with no digits in it — `n/a`, when there is no pressure to work from — takes a text font instead, because there is nothing to put in a numeric one.
+
+### The session totals
+
+Dive count and time under, in the same small hand as the maximum and under it. They are context around the reading rather than part of it, which is why they are not given a size of their own: this is a gauge, and what it is for is where you are now.
+
+**Both rows or neither.** A dive count with no time under it reads as a row that failed to draw rather than as a deliberate pair, and each answers half a question.
+
+They are offered only where the box could hold them on top of everything else — in practice the full-screen arc and a full-screen bar. Below that they are not merely dropped but never reserved, because reserving two rows and then dropping them would shrink the reading to pay for lines that never appear.
+
+What counts as a dive is the **Dive threshold** setting, the same one [the app](../depth_app/README.md#what-counts-as-a-dive) and the two recording fields use, and it means the same thing here. Note that this field keeps its own copy of it, as every app here keeps its own copy of every setting — see [the settings section](../README.md#settings).
 
 The gauge runs to **one zone-width past the red boundary** — 15 m on Snorkel, 40 m on Freedive, 80 m on Deep — rather than ending where red begins. Ending it at the boundary would leave the last zone infinitely thin, and a gauge that pins the moment it turns red says nothing after that. Past full scale the marker stays at the deep end rather than wrapping round to the shallow one.
 
@@ -49,7 +65,7 @@ The band scales with what it sits on — 16% of the arc's radius, 26% of the fie
 
 Two different shapes on purpose. A second arrowhead would read as a second current reading, and on the arc a short segment in another colour would just read as one more zone — so the maximum crosses the band rather than following it, and says what it is in words whenever the field has a row to spare.
 
-The label and the maximum are both dropped when what is left of the field cannot hold them; the reading has first call on the space, and whether the other two fit is measured rather than guessed at, so a long translation drops its own line instead of running off the side.
+The label, the maximum and the [session totals](#the-session-totals) are all dropped when what is left of the field cannot hold them; the reading has first call on the space, and whether the rest fit is measured rather than guessed at, so a long translation drops its own line instead of running off the side.
 
 ## Round screens
 

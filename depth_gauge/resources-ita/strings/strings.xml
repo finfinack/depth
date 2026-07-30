@@ -12,6 +12,8 @@
 
     <string id="FieldLabel">Profondità</string>
     <string id="LabelMax">MAX</string>
+    <string id="LabelDives">IMMERSIONI</string>
+    <string id="LabelBottomTime">FONDO</string>
 
     <string id="WaterTypeTitle">Tipo di acqua</string>
     <string id="WaterTypePrompt">L'acqua salata è più densa, quindi la stessa profondità produce più pressione. Salata usa la convenzione 1 msw = 10000 Pa, la stessa dei computer subacquei.</string>
@@ -29,6 +31,14 @@
     <string id="ProfileSnorkel">Snorkeling (2/5/10 m, 7/16/33 ft)</string>
     <string id="ProfileFreedive">Apnea (10/20/30 m, 33/66/98 ft)</string>
     <string id="ProfileDeep">Profondo (20/40/60 m, 66/131/197 ft)</string>
+
+    <string id="DiveThresholdTitle">Soglia di immersione</string>
+    <string id="DiveThresholdPrompt">Da quale profondità viene contata un'immersione, per il numero di immersioni e il tempo di fondo mostrati da questo campo. Un'immersione termina quando risali oltre la metà di questa profondità, così il moto ondoso non viene contato come immersione.</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 
     <string id="RezeroTitle">Azzera profondità</string>
     <string id="RezeroPrompt">Elimina la pressione di riferimento in superficie e il massimo, e ricomincia a misurare. Usalo se l'attività è iniziata con l'orologio già in acqua. Si disattiva da solo.</string>

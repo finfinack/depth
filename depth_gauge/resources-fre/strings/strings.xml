@@ -12,6 +12,8 @@
 
     <string id="FieldLabel">Profondeur</string>
     <string id="LabelMax">MAX</string>
+    <string id="LabelDives">PLONGÉES</string>
+    <string id="LabelBottomTime">FOND</string>
 
     <string id="WaterTypeTitle">Type d'eau</string>
     <string id="WaterTypePrompt">L'eau salée est plus dense : la même profondeur donne donc plus de pression. Le réglage Salée utilise la convention 1 msw = 10000 Pa, celle des ordinateurs de plongée.</string>
@@ -29,6 +31,14 @@
     <string id="ProfileSnorkel">Snorkeling (2/5/10 m, 7/16/33 ft)</string>
     <string id="ProfileFreedive">Apnée (10/20/30 m, 33/66/98 ft)</string>
     <string id="ProfileDeep">Profond (20/40/60 m, 66/131/197 ft)</string>
+
+    <string id="DiveThresholdTitle">Seuil de plongée</string>
+    <string id="DiveThresholdPrompt">À partir de quelle profondeur une plongée est comptée, pour le nombre de plongées et le temps au fond affichés par ce champ. Une plongée se termine dès que vous remontez au-dessus de la moitié de cette profondeur, afin que le clapot ne compte pas comme une plongée.</string>
+    <string id="DiveThreshold05">0.5 m (1.6 ft)</string>
+    <string id="DiveThreshold10">1.0 m (3.3 ft)</string>
+    <string id="DiveThreshold15">1.5 m (4.9 ft)</string>
+    <string id="DiveThreshold20">2.0 m (6.6 ft)</string>
+    <string id="DiveThreshold30">3.0 m (9.8 ft)</string>
 
     <string id="RezeroTitle">Remettre à zéro</string>
     <string id="RezeroPrompt">Efface la pression de référence en surface ainsi que le maximum, et recommence la mesure. Se désactive tout seul. À utiliser si l'activité a démarré alors que la montre était déjà dans l'eau.</string>

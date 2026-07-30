@@ -195,7 +195,7 @@ class depthView extends WatchUi.View {
         drawStat(dc, width, height * 50 / 100, Graphics.FONT_NUMBER_MILD, _divesLabel,
             _model.dive_count.format("%d"), Graphics.COLOR_WHITE);
         drawStat(dc, width, height * 66 / 100, Graphics.FONT_MEDIUM, _bottomLabel,
-            formatDuration(_model.bottom_time), Graphics.COLOR_WHITE);
+            DepthCore.formatDuration(_model.bottom_time), Graphics.COLOR_WHITE);
     }
 
     //! A page title with an accent rule under it, as every page but the summary
@@ -235,7 +235,7 @@ class depthView extends WatchUi.View {
         drawStat(dc, width, height * 59 / 100, Graphics.FONT_SMALL, _divesLabel,
             session.dive_count.format("%d"), Graphics.COLOR_WHITE);
         drawStat(dc, width, height * 71 / 100, Graphics.FONT_SMALL, _bottomLabel,
-            formatDuration(session.bottom_time), Graphics.COLOR_WHITE);
+            DepthCore.formatDuration(session.bottom_time), Graphics.COLOR_WHITE);
     }
 
     //! One "LABEL  value" line centred on the page, the label muted so the
