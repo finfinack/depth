@@ -24,6 +24,8 @@
     <string id="RezeroPrompt">Elimina la pressione di riferimento in superficie e il massimo, e ricomincia a misurare. Usalo se l'attività è iniziata con l'orologio già in acqua. Si disattiva da solo.</string>
 
     <string id="FieldLabel">Profondità</string>
+    <string id="FitMaxDepthLabel">Profondità massima</string>
+    <string id="FitCentimeters">cm</string>
 
     <string id="DiveThresholdTitle">Soglia di immersione</string>
     <string id="DiveThresholdPrompt">Da quale profondità viene contata un'immersione, per il numero di immersioni e il tempo di fondo registrati nell'attività. Un'immersione termina quando risali oltre la metà di questa profondità, così il moto ondoso non viene contato come immersione.</string>

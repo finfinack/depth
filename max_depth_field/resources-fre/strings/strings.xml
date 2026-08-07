@@ -24,6 +24,7 @@
     <string id="RezeroPrompt">Efface la pression de référence en surface ainsi que le maximum, et recommence la mesure. Se désactive tout seul. À utiliser si l'activité a démarré alors que la montre était déjà dans l'eau.</string>
 
     <string id="FieldLabel">Prof. max</string>
+    <string id="FitCentimeters">cm</string>
 
     <string id="DiveThresholdTitle">Seuil de plongée</string>
     <string id="DiveThresholdPrompt">À partir de quelle profondeur une plongée est comptée, pour le nombre de plongées et le temps au fond enregistrés dans l'activité. Une plongée se termine dès que vous remontez au-dessus de la moitié de cette profondeur, afin que le clapot ne compte pas comme une plongée.</string>

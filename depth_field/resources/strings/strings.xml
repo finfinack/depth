@@ -5,6 +5,8 @@
          SimpleDataField has no room for a unit next to the value itself. Data
          field labels get very little width, so keep this short. -->
     <string id="FieldLabel">Depth</string>
+    <string id="FitMaxDepthLabel">Max Depth</string>
+    <string id="FitCentimeters">cm</string>
 
     <string id="WaterTypeTitle">Water type</string>
     <string id="WaterTypePrompt">Salt water is denser, so the same depth reads as more pressure. Salt uses the 1 msw = 10000 Pa convention that dive computers use.</string>

@@ -1,0 +1,9 @@
+<resources>
+    <fitContributions>
+        <fitField id="0" displayInChart="true" sortOrder="0" precision="0"
+                  chartTitle="@Strings.FieldLabel" dataLabel="@Strings.FieldLabel"
+                  unitLabel="@Strings.FitCentimeters" />
+        <fitField id="1" displayInActivitySummary="true" sortOrder="1" precision="0"
+                  dataLabel="@Strings.FitMaxDepthLabel" unitLabel="@Strings.FitCentimeters" />
+    </fitContributions>
+</resources>

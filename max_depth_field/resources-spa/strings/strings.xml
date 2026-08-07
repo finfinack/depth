@@ -24,6 +24,7 @@
     <string id="RezeroPrompt">Descarta la presión de referencia en superficie y el máximo, y vuelve a empezar a medir. Se desactiva solo. Úsalo si la actividad empezó con el reloj ya dentro del agua.</string>
 
     <string id="FieldLabel">Prof. máx</string>
+    <string id="FitCentimeters">cm</string>
 
     <string id="DiveThresholdTitle">Umbral de inmersión</string>
     <string id="DiveThresholdPrompt">A partir de qué profundidad se cuenta una inmersión, para el número de inmersiones y el tiempo de fondo registrados en la actividad. Una inmersión termina cuando subes por encima de la mitad de esta profundidad, para que el oleaje no cuente como inmersión.</string>
