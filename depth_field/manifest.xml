@@ -66,7 +66,7 @@
             command palette to edit the included barrels.
         -->
     <iq:barrels>
-      <iq:depends name="DepthCore" version="2.3.3"/>
+      <iq:depends name="DepthCore" version="2.3.4"/>
     </iq:barrels>
   </iq:application>
 </iq:manifest>
