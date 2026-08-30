@@ -19,6 +19,37 @@ class depthDelegate extends WatchUi.BehaviorDelegate {
         _session = session;
     }
 
+    //! Ignore the touchscreen while the app is open.
+    //!
+    //! Under water the screen fires by itself: water pressure reads as a tap
+    //! and water moving across the glass reads as a swipe. On every touch
+    //! device in the product list a tap is the Select behaviour and a swipe is
+    //! a page change or Back, so the water can open the re-zero confirmation,
+    //! page the app, or close it — and it does so exactly when none of it can
+    //! be checked or undone.
+    //!
+    //! Consuming the raw events costs nothing here. Returning true stops them
+    //! being mapped to a behaviour at all, and every device this ships to has
+    //! physical buttons for the same three behaviours, so the app is driven by
+    //! buttons and by nothing else.
+    //!
+    //! It is not a complete guard against being closed by the water: some
+    //! devices deliver a swipe right as a KEY_ESC rather than as a swipe, and
+    //! that arrives at onBack() below without passing through here. Blocking
+    //! onBack() as well would take away the only way out of the app, so it is
+    //! deliberately left alone.
+    function onTap(event as WatchUi.ClickEvent) as Boolean {
+        return true;
+    }
+
+    function onSwipe(event as WatchUi.SwipeEvent) as Boolean {
+        return true;
+    }
+
+    function onHold(event as WatchUi.ClickEvent) as Boolean {
+        return true;
+    }
+
     function onNextPage() as Boolean {
         var pages = pageCountFor(_session);
         showPage((_page + 1) % pages, WatchUi.SLIDE_UP);
