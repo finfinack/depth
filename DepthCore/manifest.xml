@@ -4,7 +4,7 @@
         The depth model, its colour scale and the data field layout, shared by
         the app, the widget and the four data fields. See DepthCore/README.md.
     -->
-  <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="2.3.5" minApiLevel="5.2.0">
+  <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="2.3.6" minApiLevel="5.2.0">
     <iq:products>
       <iq:product id="fenix7"/>
       <iq:product id="fenix7pro"/>
@@ -14,6 +14,7 @@
       <iq:product id="fenix7x"/>
       <iq:product id="fenix7xpro"/>
       <iq:product id="fenix7xpronowifi"/>
+      <iq:product id="epix2pro51mm"/>
       <iq:product id="fenix843mm"/>
       <iq:product id="fenix847mm"/>
       <iq:product id="fenix8pro47mm"/>
