@@ -6,34 +6,27 @@
     -->
   <iq:barrel id="48ff05e6-69cd-4354-a68b-9b55bd762c37" module="DepthCore" version="2.3.5" minApiLevel="5.2.0">
     <iq:products>
-        <iq:product id="epix2"/>
-        <iq:product id="epix2pro42mm"/>
-        <iq:product id="epix2pro47mm"/>
-        <iq:product id="epix2pro51mm"/>
-        <iq:product id="fenix7"/>
-        <iq:product id="fenix7pro"/>
-        <iq:product id="fenix7pronowifi"/>
-        <iq:product id="fenix7s"/>
-        <iq:product id="fenix7spro"/>
-        <iq:product id="fenix7x"/>
-        <iq:product id="fenix7xpro"/>
-        <iq:product id="fenix7xpronowifi"/>
-        <iq:product id="fenix843mm"/>
-        <iq:product id="fenix847mm"/>
-        <iq:product id="fenix8pro47mm"/>
-        <iq:product id="fenix8solar47mm"/>
-        <iq:product id="fenix8solar51mm"/>
-        <iq:product id="fr955"/>
-        <iq:product id="fr965"/>
-        <iq:product id="instinct3amoled45mm"/>
-        <iq:product id="instinct3amoled50mm"/>
-        <iq:product id="instinct3solar45mm"/>
-        <iq:product id="instinctcrossoveramoled"/>
-        <iq:product id="instincte40mm"/>
-        <iq:product id="instincte45mm"/>
-        <iq:product id="marq2"/>
-        <iq:product id="marq2aviator"/>
-      </iq:products>
+      <iq:product id="fenix7"/>
+      <iq:product id="fenix7pro"/>
+      <iq:product id="fenix7pronowifi"/>
+      <iq:product id="fenix7s"/>
+      <iq:product id="fenix7spro"/>
+      <iq:product id="fenix7x"/>
+      <iq:product id="fenix7xpro"/>
+      <iq:product id="fenix7xpronowifi"/>
+      <iq:product id="fenix843mm"/>
+      <iq:product id="fenix847mm"/>
+      <iq:product id="fenix8pro47mm"/>
+      <iq:product id="fenix8solar47mm"/>
+      <iq:product id="fenix8solar51mm"/>
+      <iq:product id="fenix943mm"/>
+      <iq:product id="fenix947mm"/>
+      <iq:product id="fenix9pro43mm"/>
+      <iq:product id="fenix9pro47mm"/>
+      <iq:product id="fenix9pro51mm"/>
+      <iq:product id="fenix9prosolar47mm"/>
+      <iq:product id="fenix9prosolar51mm"/>
+    </iq:products>
     <iq:permissions>
       <iq:uses-permission id="Sensor"/>
     </iq:permissions>
