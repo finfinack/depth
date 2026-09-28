@@ -441,10 +441,15 @@ module DepthCore {
             // rawAmbientPressure is read straight from the sensor (temperature
             // compensated). ambientPressure is smoothed by a two-stage filter,
             // which lags during a fast descent, so it is only a fallback for
-            // devices/contexts where the raw value is not populated.
+            // devices/contexts where the raw value is not usable. Absolute
+            // pressure cannot be zero or negative; treat those like missing
+            // readings rather than zero depth or a new surface baseline.
             var pressure = info.rawAmbientPressure;
-            if (pressure == null) {
+            if (pressure == null || pressure <= 0.0) {
                 pressure = info.ambientPressure;
+            }
+            if (pressure != null && pressure <= 0.0) {
+                pressure = null;
             }
             self.pressure = pressure;
             if (pressure == null) {

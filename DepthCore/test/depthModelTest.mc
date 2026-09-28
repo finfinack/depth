@@ -142,6 +142,61 @@ module DepthCore {
     }
 
     (:test)
+    function testNonpositiveRawPressureUsesSmoothedPressure(logger as Logger) as Boolean {
+        var invalids = [0.0, -1.0];
+        for (var i = 0; i < invalids.size(); i += 1) {
+            var model = saltWaterModel();
+            var info = new Activity.Info();
+            info.rawAmbientPressure = invalids[i];
+            info.ambientPressure = test_surface;
+            model.updateAt(info, 0);
+
+            info.ambientPressure = test_surface + 10000.0;
+            model.updateAt(info, 1000);
+            assertClose(model.depth, 1.0, "depth from valid filtered pressure");
+            assertClose(model.pressure, test_surface + 10000.0, "selected pressure");
+        }
+        return true;
+    }
+
+    (:test)
+    function testNonpositivePressureDoesNotSetTheBaseline(logger as Logger) as Boolean {
+        var invalids = [0.0, -1.0];
+        for (var i = 0; i < invalids.size(); i += 1) {
+            var model = saltWaterModel();
+            var info = new Activity.Info();
+            info.rawAmbientPressure = invalids[i];
+            info.ambientPressure = invalids[i];
+            model.updateAt(info, 0);
+            Test.assertMessage(model.depth == null, "invalid pressure is unknown");
+            Test.assertMessage(model.pressure == null, "invalid pressure is not retained");
+
+            readingAt(model, test_surface, 1000);
+            assertClose(model.depth, 0.0, "first valid reading defines the surface");
+        }
+        return true;
+    }
+
+    (:test)
+    function testZeroPressureDropoutPreservesTheSurface(logger as Logger) as Boolean {
+        var model = saltWaterModel();
+        readingAt(model, test_surface, 0);
+        diveTo(model, 1.0, 1000);
+
+        var info = new Activity.Info();
+        info.rawAmbientPressure = 0.0;
+        info.ambientPressure = 0.0;
+        model.updateAt(info, 2000);
+        Test.assertMessage(model.depth == null, "zero dropout is unknown");
+        Test.assertEqual(model.formatDepth(model.depth), "n/a");
+        assertClose(model.max_depth_raw, 1.0, "dropout preserves the maximum");
+
+        diveTo(model, 1.0, 3000);
+        assertClose(model.depth, 1.0, "recovery keeps the existing surface");
+        return true;
+    }
+
+    (:test)
     function testRezeroForgetsEverything(logger as Logger) as Boolean {
         var model = saltWaterModel();
         readingAt(model, test_surface, 0);
